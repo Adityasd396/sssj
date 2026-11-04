@@ -1,0 +1,21 @@
+# Development-only dependencies.
+#
+# These were previously in requirements.txt, which meant the production Docker
+# image shipped pytest, ruff and coverage. Runtime deps go in requirements.txt;
+# anything a developer or CI needs goes here.
+#
+#   pip install -r requirements.txt -r requirements-dev.txt
+
+-r requirements.txt
+
+# lint + format (one tool, both jobs)
+ruff==0.16.7
+
+# coverage gate
+pytest-cov==7.0.0
+
+# pre-commit runs the hooks below on every commit
+pre-commit==4.3.0
+
+# load testing the billing page before a season rush (optional)
+# locust==2.37.0

@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Collect{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Collect</h1>
+    <div class="sub">
+      {% if rows %}
+      ₹{{ total_due|inr }} outstanding from {{ rows|length }} {{ 'person' if rows|length == 1 else 'people' }}
+      {% else %}Nothing outstanding{% endif %}
+    </div>
+  </div>
+  <div class="page-actions">
+    <a href="{{ url_for('reports') }}" class="btn btn-ghost">Reports</a>
+    <a href="{{ url_for('clients') }}" class="btn btn-ghost">All customers</a>
+  </div>
+</div>
+
+{% if rows %}
+<div class="tiles" style="margin-bottom:18px">
+  <div class="tile due">
+    <div class="tile-label">Outstanding</div>
+    <div class="tile-value">₹{{ total_due|inr }}</div>
+    <div class="tile-hint">{{ rows|length }} {{ 'client' if rows|length == 1 else 'clients' }}</div>
+  </div>
+  <div class="tile {{ 'due' if overdue_due else 'good' }}">
+    <div class="tile-label">Over 30 days</div>
+    <div class="tile-value">₹{{ overdue_due|inr }}</div>
+    <div class="tile-hint">
+      {% if overdue_due %}Chase these first{% else %}All within terms{% endif %}
+    </div>
+  </div>
+</div>
+
+{# Where the money is sitting. Same buckets as the reports page, so the two
+   screens can never disagree about what "over 60 days" means. #}
+<div class="card tight" style="margin-bottom:18px">
+  <div class="card-head" style="margin-bottom:10px">
+    <h3>How old</h3>
+    <span class="hint">every bucket adds up to the total above</span>
+  </div>
+  <div class="stat-grid">
+    {% for key, label in [('0-30','0–30 days'), ('31-60','31–60'), ('61-90','61–90'), ('90+','Over 90')] %}
+    <div class="stat {{ 'warn' if key in ('61-90','90+') and buckets[key] else '' }}">
+      <div class="stat-label">{{ label }}</div>
+      <div class="stat-value">₹{{ buckets[key]|inr }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="section-head">
+  <h2>Oldest first</h2>
+  <span class="hint">collect a payment or send a reminder</span>
+</div>
+
+<div class="rows">
+  {% for r in rows %}
+  <div class="row">
+    <span class="avatar {{ 'r' if r.overdue else '' }}">{{ r.client.name[:2]|upper }}</span>
+    <span class="body">
+      <span class="name">{{ r.client.name }}</span>
+      <span class="meta">
+        {{ r.bills }} {{ 'bill' if r.bills == 1 else 'bills' }} ·
+        oldest {{ r.oldest.date_created.strftime('%d %b %Y') }} ·
+        {{ r.days }} {{ 'day' if r.days == 1 else 'days' }} old
+      </span>
+    </span>
+    <span class="amt num">
+      ₹{{ r.amount|inr }}
+      <small>
+        {% if r.overdue %}<span class="badge badge-cancelled">Overdue</span>
+        {% else %}<span class="badge badge-pending">Within terms</span>{% endif %}
+      </small>
+    </span>
+    <span class="row-actions" style="flex-direction:column">
+      <a class="btn btn-sm btn-success" href="{{ url_for('pay_remaining', client_id=r.client.id) }}">Collect</a>
+      <a class="btn btn-sm btn-ghost" href="{{ r.wa }}" target="_blank" rel="noopener">Remind</a>
+      <a class="btn btn-sm btn-ghost" href="{{ url_for('view_client', client_id=r.client.id) }}">Open</a>
+    </span>
+  </div>
+  {% endfor %}
+</div>
+
+<p class="mini" style="margin-top:14px">
+  A bill is treated as overdue after 30 days, the same credit window the bill
+  itself is raised with. Reminders open WhatsApp with the message written out —
+  nothing is sent until you press send.
+</p>
+
+{% else %}
+<div class="empty">
+  <span class="big">✓</span>
+  <strong>Nothing outstanding</strong>
+  <p class="mini" style="margin-top:6px">Every bill on the books is paid up.</p>
+  <p style="margin-top:16px"><a class="btn btn-ghost" href="{{ url_for('invoices') }}">See all bills</a></p>
+</div>
+{% endif %}
+{% endblock %}

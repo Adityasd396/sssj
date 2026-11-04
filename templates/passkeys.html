@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Passkeys{% endblock %}
+{% block content %}
+<div class="page-head"><div><h1>Passkeys</h1><p class="sub">Sign in with fingerprint, Face ID or your device screen lock.</p></div><div class="page-actions"><a class="btn btn-ghost" href="{{ url_for('change_password') }}">Change password</a></div></div>
+<div class="card passkey-enrol">
+<h2>Add a passkey</h2>
+<p>Your device keeps your fingerprint and private key. Your shop stores only the public key. Keep your password for account recovery.</p>
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><form id="passkey-register" style="margin-top:20px"><div class="field"><label for="key-name">Device name</label><input type="text" id="key-name" maxlength="80" value="My device" required></div><div class="field"><label for="key-password">Confirm current password</label><input id="key-password" type="password" autocomplete="current-password" required></div><button class="btn btn-gold" type="submit">Add passkey</button></form>
+<p id="passkey-status" role="status" aria-live="polite" class="help"></p>
+</div>
+<div class="card passkey-list"><h2>Your passkeys</h2>{% if keys %}<div class="table-wrap"><table><thead><tr><th>Device</th><th>Added</th><th>Last used</th><th>Manage</th></tr></thead><tbody>{% for key in keys %}<tr><td>{{ key.name }}</td><td>{{ key.created_at.strftime('%d %b %Y') }}</td><td>{{ key.last_used.strftime('%d %b %Y') if key.last_used else 'Not used yet' }}</td><td><form class="passkey-remove" method="POST" action="{{ url_for('passkey_delete', key_id=key.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><div class="field"><label for="remove-key-{{ key.id }}">Password to remove</label><input type="password" id="remove-key-{{ key.id }}" name="password" autocomplete="current-password" required></div><button type="submit" class="btn btn-danger btn-sm">Remove</button></form></td></tr>{% else %}<tr><td colspan="4">No passkeys yet. Add one on a device you trust.</td></tr>{% endfor %}</tbody></table></div>{% else %}<p class="passkey-empty">No passkeys yet. Add one on a device you trust.</p>{% endif %}</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/passkeys.js', v='1') }}" defer></script>{% endblock %}

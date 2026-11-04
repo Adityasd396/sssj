@@ -1,0 +1,18 @@
+{
+  "static/js/vendor/zxing-browser-0.2.1.min.js": {
+    "source": "https://registry.npmjs.org/@zxing/browser/-/browser-0.2.1.tgz",
+    "version": "0.2.1",
+    "license": "MIT; bundled library Apache-2.0",
+    "sha256": "066bc34edfcdd4a33f0964aeec967752a0dea1ccaf36e58e319ac9fcb5070f6a"
+  },
+  "static/fonts/manrope-variable.ttf": {
+    "source": "https://github.com/google/fonts/tree/main/ofl/manrope",
+    "license": "SIL Open Font License 1.1",
+    "sha256": "3ae11c49db0455a3cc33e37d380f20fdb8c7f8b41dc07625c177e3d87a9d6ae6"
+  },
+  "static/fonts/cormorant-garamond-variable.ttf": {
+    "source": "https://github.com/google/fonts/tree/main/ofl/cormorantgaramond",
+    "license": "SIL Open Font License 1.1",
+    "sha256": "b20b7d9626dd956b2c5e558692ad328b1f19e3275e2782db4fa07670d83f35e0"
+  }
+}

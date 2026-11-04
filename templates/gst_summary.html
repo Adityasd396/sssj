@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% block title %}GST summary{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>GST summary</h1>
+    <div class="sub">
+      {% if f or t %}{{ f or 'beginning' }} → {{ t or 'today' }}{% else %}All time{% endif %}
+      · {{ totals.bills }} bill(s) · cancelled bills excluded
+    </div>
+  </div>
+  <div class="page-actions">
+    <a href="{{ url_for('export_gstr1') }}" class="btn btn-gold">⬇ GSTR-1 CSV</a>
+    <a href="{{ url_for('reports') }}" class="btn btn-ghost">Back to reports</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-head"><h3>What you owe</h3>
+    <span class="hint">the same numbers as the CSV, before you download it</span></div>
+  <div class="stat-grid">
+    <div class="stat"><div class="stat-label">Taxable value</div>
+      <div class="stat-value">₹{{ (totals.taxable or 0)|inr }}</div></div>
+    <div class="stat"><div class="stat-label">IGST</div>
+      <div class="stat-value">₹{{ (totals.igst or 0)|inr }}</div></div>
+    <div class="stat"><div class="stat-label">CGST</div>
+      <div class="stat-value">₹{{ (totals.cgst or 0)|inr }}</div></div>
+    <div class="stat"><div class="stat-label">SGST</div>
+      <div class="stat-value">₹{{ (totals.sgst or 0)|inr }}</div></div>
+    <div class="stat good"><div class="stat-label">Total tax</div>
+      <div class="stat-value">₹{{ ((totals.igst or 0) + (totals.cgst or 0) + (totals.sgst or 0))|inr }}</div>
+      <div class="stat-hint">IGST for other states, CGST + SGST for your own</div></div>
+  </div>
+  <p class="mini" style="margin-top:12px">
+    Split by <strong>place of supply</strong>: a buyer in your own state pays CGST + SGST,
+    a buyer in another state pays IGST. Your state comes from the firm GSTIN in
+    <a href="{{ url_for('settings') }}">Settings</a>; a bill with a customer GSTIN
+    decides it from that GSTIN instead.
+  </p>
+</div>
+
+<div class="card">
+  <div class="card-head"><h3>B2B — sales to registered dealers</h3>
+    <span class="hint">{{ tables.b2b|length }} invoice(s)</span></div>
+  {% if tables.b2b %}
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>GSTIN</th><th>Party</th><th>Invoice</th><th>Date</th>
+        <th class="r">Value</th><th>POS</th><th class="r">Rate</th>
+        <th class="r">Taxable</th><th class="r">IGST</th><th class="r">CGST</th><th class="r">SGST</th></tr></thead>
+      <tbody>
+      {% for r in tables.b2b %}
+      <tr>
+        <td class="mini">{{ r.gstin }}</td>
+        <td>{{ r.name }}</td>
+        <td class="mini">{{ r.invoice_number }}</td>
+        <td class="mini">{{ r.date }}</td>
+        <td class="r">₹{{ r.value|inr }}</td>
+        <td class="mini">{{ r.pos }}</td>
+        <td class="r mini">{{ r.rate }}%</td>
+        <td class="r">₹{{ r.taxable|inr }}</td>
+        <td class="r">₹{{ r.igst|inr }}</td>
+        <td class="r">₹{{ r.cgst|inr }}</td>
+        <td class="r">₹{{ r.sgst|inr }}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty"><span class="big">🏢</span>No registered-dealer sales in this period.</div>
+  {% endif %}
+</div>
+
+<div class="card">
+  <div class="card-head"><h3>B2CL — big inter-state sales to consumers</h3>
+    <span class="hint">{{ tables.b2cl|length }} invoice(s) over ₹2.5 lakh</span></div>
+  {% if tables.b2cl %}
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Invoice</th><th>Date</th><th class="r">Value</th><th>POS</th>
+        <th class="r">Rate</th><th class="r">Taxable</th><th class="r">IGST</th>
+        <th class="r">CGST</th><th class="r">SGST</th></tr></thead>
+      <tbody>
+      {% for r in tables.b2cl %}
+      <tr>
+        <td class="mini">{{ r.invoice_number }}</td>
+        <td class="mini">{{ r.date }}</td>
+        <td class="r">₹{{ r.value|inr }}</td>
+        <td class="mini">{{ r.pos }}</td>
+        <td class="r mini">{{ r.rate }}%</td>
+        <td class="r">₹{{ r.taxable|inr }}</td>
+        <td class="r">₹{{ r.igst|inr }}</td>
+        <td class="r">₹{{ r.cgst|inr }}</td>
+        <td class="r">₹{{ r.sgst|inr }}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty"><span class="big">🚚</span>Nothing over the inter-state threshold.</div>
+  {% endif %}
+</div>
+
+<div class="split">
+  <div class="card">
+    <div class="card-head"><h3>B2CS — sales to consumers</h3>
+      <span class="hint">grouped by rate and place of supply</span></div>
+    {% if tables.b2cs %}
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th class="r">Rate</th><th>POS</th><th class="r">Taxable</th>
+          <th class="r">IGST</th><th class="r">CGST</th><th class="r">SGST</th></tr></thead>
+        <tbody>
+        {% for r in tables.b2cs %}
+        <tr>
+          <td class="r mini">{{ r.rate }}%</td>
+          <td class="mini">{{ r.pos }}</td>
+          <td class="r">₹{{ r.taxable|inr }}</td>
+          <td class="r">₹{{ r.igst|inr }}</td>
+          <td class="r">₹{{ r.cgst|inr }}</td>
+          <td class="r">₹{{ r.sgst|inr }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty"><span class="big">🛍️</span>No consumer sales in this period.</div>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h3>HSN summary</h3>
+      <span class="hint">quantity and weight actually sold</span></div>
+    {% if tables.hsn %}
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>HSN</th><th>Description</th><th class="r">Qty</th>
+          <th class="r">Weight</th><th class="r">Value</th><th class="r">Taxable</th>
+          <th class="r">IGST</th><th class="r">CGST</th><th class="r">SGST</th></tr></thead>
+        <tbody>
+        {% for r in tables.hsn %}
+        <tr>
+          <td class="mini">{{ r.hsn }}</td>
+          <td class="mini">{{ r.desc }}</td>
+          <td class="r">{{ '%g'|format(r.qty) }}</td>
+          <td class="r">{{ '%.3f'|format(r.weight) }} g</td>
+          <td class="r">₹{{ r.value|inr }}</td>
+          <td class="r">₹{{ r.taxable|inr }}</td>
+          <td class="r">₹{{ r.igst|inr }}</td>
+          <td class="r">₹{{ r.cgst|inr }}</td>
+          <td class="r">₹{{ r.sgst|inr }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p class="mini" style="margin-top:10px">
+      HSN comes from each product's <strong>HSN</strong> field in
+      <a href="{{ url_for('products') }}">Stock</a>; items without one are filed under
+      the jewellery default (7113).
+    </p>
+    {% else %}
+    <div class="empty"><span class="big">🧾</span>Nothing sold in this period.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}All tools{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>All tools</h1>
+    <div class="sub">Everything that isn't on the top bar, with what it's for</div>
+  </div>
+  <div class="page-actions">
+    <a href="{{ url_for('index') }}" class="btn btn-ghost">Back to dashboard</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-head"><h3>Everyday</h3><span class="hint">what you'll use most weeks</span></div>
+  <div class="tool-grid">
+    <a class="tool" href="{{ url_for('create_invoice') }}">
+      <span class="tool-ico">🧾</span>
+      <b>New bill</b>
+      <span class="mini">Write a bill, take a payment, print or send it.</span>
+    </a>
+    <a class="tool" href="{{ url_for('invoices') }}">
+      <span class="tool-ico">📄</span>
+      <b>Bills</b>
+      <span class="mini">Search, open, cancel or reprint any bill.</span>
+    </a>
+    <a class="tool" href="{{ url_for('clients') }}">
+      <span class="tool-ico">👥</span>
+      <b>Clients</b>
+      <span class="mini">Balances, statements, GSTINs and payment history.</span>
+    </a>
+    <a class="tool" href="{{ url_for('products') }}">
+      <span class="tool-ico">💍</span>
+      <b>Stock</b>
+      <span class="mini">Add items, set weights and HSN codes, reprice everything.</span>
+    </a>
+    <a class="tool" href="{{ url_for('tag_designer') }}">
+      <span class="tool-ico">🏷️</span>
+      <b>Tags</b>
+      <span class="mini">Design a label once, print it for any item.</span>
+    </a>
+    <a class="tool" href="{{ url_for('reports') }}">
+      <span class="tool-ico">📊</span>
+      <b>Reports</b>
+      <span class="mini">Sales, profit, stock position and money owed by age.</span>
+    </a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-head"><h3>Money &amp; compliance</h3>
+    <span class="hint">month-end work</span></div>
+  <div class="tool-grid">
+    <a class="tool" href="{{ url_for('gst_summary') }}">
+      <span class="tool-ico">🧮</span>
+      <b>GST summary</b>
+      <span class="mini">B2B / B2CL / B2CS / HSN breakdown of what you owe.</span>
+    </a>
+    <a class="tool" href="{{ url_for('export_gstr1') }}">
+      <span class="tool-ico">⬇️</span>
+      <b>GSTR-1 CSV</b>
+      <span class="mini">The same four sections, as a file for your accountant.</span>
+    </a>
+    <a class="tool" href="{{ url_for('settings') }}">
+      <span class="tool-ico">⚙️</span>
+      <b>Settings</b>
+      <span class="mini">Gold &amp; silver rates, GST on/off, firm name and GSTIN.</span>
+    </a>
+    <a class="tool" href="{{ url_for('tag_calibration') }}">
+      <span class="tool-ico">📏</span>
+      <b>Print a ruler</b>
+      <span class="mini">Check the printer isn't scaling your tags before you waste stock.</span>
+    </a>
+  </div>
+</div>
+
+{% if is_admin %}
+<div class="card" id="backup">
+  <div class="card-head"><h3>Admin</h3><span class="hint">only you can see these</span></div>
+  <div class="tool-grid">
+    <a class="tool" href="{{ url_for('users') }}">
+      <span class="tool-ico">🔑</span>
+      <b>Team</b>
+      <span class="mini">Add users, reset passwords, remove access.</span>
+    </a>
+    <a class="tool" href="{{ url_for('audit_logs') }}">
+      <span class="tool-ico">🗂️</span>
+      <b>Audit log</b>
+      <span class="mini">Who changed what, and when.</span>
+    </a>
+    <a class="tool" href="{{ url_for('deleted_bills') }}">
+      <span class="tool-ico">🗑️</span>
+      <b>Deleted bills</b>
+      <span class="mini">A permanent archive of every bill that was deleted.</span>
+    </a>
+    <a class="tool" href="{{ url_for('settings') }}#backup">
+      <span class="tool-ico">💾</span>
+      <b>Backup &amp; restore</b>
+      <span class="mini">Download a safe copy, or load one back in.</span>
+    </a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-head"><h3>Recent backups</h3>
+    <span class="hint">newest first · stored next to the database</span></div>
+  {% if backups %}
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>File</th><th class="r">Size</th></tr></thead>
+      <tbody>
+      {% for name, size in backups %}
+      <tr><td class="mini">{{ name }}</td><td class="r mini">{{ (size / 1024)|round(0)|int }} KB</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty"><span class="big">💾</span>
+    No backups yet — take one from Settings before you restore anything.</div>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}
+
+{% block head %}
+<style>
+.tool-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.tool{display:block;padding:14px;border:1px solid var(--line);border-radius:12px;
+  background:#fff;text-decoration:none;color:var(--ink)}
+.tool:hover{border-color:var(--gold-2);background:#fdf8ec;text-decoration:none}
+.tool-ico{display:block;font-size:20px;margin-bottom:6px}
+.tool b{display:block;font-size:14px;margin-bottom:2px}
+.tool .mini{display:block;font-size:12.5px;color:var(--muted);line-height:1.45}
+</style>
+{% endblock %}

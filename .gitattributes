@@ -1,0 +1,13 @@
+# Keep line endings stable across machines. A Windows checkout and a Linux CI
+# runner disagreeing about CRLF is a whole class of "it works on my machine".
+* text=auto eol=lf
+
+# Binary: never normalise, never diff.
+*.png binary
+*.jpg binary
+*.pdf binary
+*.db binary
+*.ico binary
+
+# Generated files that would drown a diff.
+*.min.js linguist-generated=true

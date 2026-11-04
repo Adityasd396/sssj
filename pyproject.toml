@@ -1,0 +1,163 @@
+# Tooling configuration for the billing app.
+#
+# Everything lives in this one file on purpose: ruff, pytest and coverage all
+# read pyproject.toml, so there is no setup.cfg / .flake8 / tox.ini to keep in
+# sync. One file, one source of truth.
+#
+#   ruff check .        lint
+#   ruff format .       format
+#   pytest              test
+#   pytest --cov=app    test + coverage
+#
+# Or just: make check
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+extend-exclude = [
+    "instance", ".venv", "migrations", "static",
+    # scratch copies left over from debugging; not shipped
+    "tests_patched*.py", "_*.py", "_orig",
+]
+
+[tool.ruff.lint]
+# ---------------------------------------------------------------------------
+# CURATED, not "everything". A rule nobody has justified does not belong in
+# this list. Every ignore below is a decision about THIS codebase with the
+# reason written down - if you cannot say why a rule is off, turn it on.
+# ---------------------------------------------------------------------------
+select = [
+    "E", "W",   # pycodestyle
+    "F",        # pyflakes - real bugs: unused names, undefined names, shadowing
+    "I",        # import sorting
+    "B",        # bugbear - mutable defaults, raise-without-from, loop gotchas
+    "C4",       # comprehensions
+    "DTZ",      # naive datetimes - this app HAS shipped a timezone bug
+    "UP",       # pyupgrade
+    "S",        # bandit - security
+    "PIE",      # misc lints
+    "RET",      # return statements
+    "SIM",      # simplifications
+    "RUF",
+]
+
+ignore = [
+    # ===== OFF BY DESIGN ===================================================
+    # These are correct as written. Turning them on would make the code worse.
+
+    # `int(round(x))` before writing a price into an INTEGER paise column is
+    # deliberate: SQLite tolerates a float, Postgres rejects it. The cast is
+    # documentation as much as code. Do not "simplify" it away.
+    "RUF046",
+
+    # ensure_schema() builds ALTER TABLE / CREATE TABLE with f-strings. Every
+    # interpolated value is a table or column name from our own model metadata
+    # or a hardcoded dict - never user input. DDL identifiers cannot be
+    # parameterised anyway.
+    "S608",
+
+    # The dev-default SECRET_KEY is a sentinel that trips a startup guard, and
+    # 0.0.0.0 is the dev-server bind. Both intentional.
+    "S104",
+    "S105",
+
+    # A Flask app with a global error handler catches broadly on purpose in a
+    # few places (schema check, audit log, tag seeding): a failure there must
+    # never take a page down. Narrow them to specific exceptions as they are
+    # touched, but do not mass-edit them.
+    "BLE001",
+    "S110",
+    "S112",
+
+    # The UI deliberately uses ₹, ×, ·, —, ✓ in strings and comments. These
+    # rules exist to catch homoglyph attacks in identifiers; in display text
+    # the characters are the point.
+    "RUF001",
+    "RUF002",
+    "RUF003",
+
+    # tests.py sets DATABASE_URL before importing app (Flask-SQLAlchemy freezes
+    # the engine at import), and verify_*.py chdir first. The imports have to
+    # come after that code.
+    "E402",
+
+    # Long lines here are prose in comments and long error-message strings that
+    # the formatter will not split. Keep the limit for code, do not chase
+    # strings.
+    "E501",
+
+    # `(meta.split("|") + [""])[:2]` - pad-then-truncate. The suggested
+    # `[*meta.split("|"), ""]` is denser and harder to read at the call site.
+    "RUF005",
+
+    # ===== PARKED - BURN THESE DOWN ========================================
+    # Real findings we have chosen not to fix in one go. Each is a small,
+    # mechanical change; the counts were accurate when this was written. Work
+    # through them file by file and delete the line from this list.
+
+    # 17x: `raise ValueError(...)` inside `except` without `from err`. The
+    # original exception is lost from the traceback, which makes production
+    # debugging harder. Fix as files are touched.
+    "B904",
+
+    # 6x: datetime.strptime / datetime() without a tzinfo. THIS IS THE RULE
+    # THAT MATTERS MOST HERE - the app already shipped a bug where an evening
+    # bill landed on the previous day. Fix these next, with tests.
+    "DTZ001",
+    "DTZ007",
+
+    # 3x: try/except/pass that could be contextlib.suppress.
+    "SIM105",
+
+    # 1x: a lambda assigned to a name.
+    "E731",
+
+    # 1x: subprocess in verify_camera.py - fixed argv, no user input.
+    "S603",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests may use assert, magic numbers, and broad excepts around best-effort
+# cleanup.
+"tests.py" = ["S101", "S105", "S106", "E402", "BLE001"]
+"tests/*.py" = ["S101", "S105", "S106", "E402", "BLE001", "S311"]
+"verify_*.py" = ["S101", "E402", "BLE001", "T201", "S603"]
+"init_db.py" = ["T201"]
+"seed_demo.py" = ["T201"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app", "config"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.pytest.ini_options]
+# Explicit, not a glob: verify_*.py are runnable scripts that execute on
+# import, so they must never be collected as tests.
+testpaths = ["tests"]
+# -ra prints a summary of anything skipped, so a skip is visible rather than
+# silently reducing coverage.
+addopts = "-q -ra --strict-markers"
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.coverage.run]
+source = ["app"]
+branch = true
+
+[tool.coverage.report]
+# THE GATE. Measured at 74.5% (statements + branches) with this config when it
+# was written; the gate sits below that so a small refactor cannot block a
+# bugfix. Raise it as coverage rises - never lower it to make a build pass.
+#
+# Always quote the number CI produces, not one from an ad-hoc pytest flag
+# combination. Measuring differently is how a team ends up arguing about
+# coverage instead of raising it.
+fail_under = 70
+show_missing = true
+skip_covered = true
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+    "raise NotImplementedError",
+]

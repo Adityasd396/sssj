@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Welcome back{% endblock %}
+{% block content %}
+<section class="login-scene">
+ <div class="login-identity"><span class="login-emblem">{{ navicon('tag') }}</span><span class="eyebrow">{{ shop_settings.firm_name if shop_settings and shop_settings.firm_name else 'JEWELLERY WORKSPACE' }}</span><h1>Your shop.<br>In good order.</h1><p>Sign in to take care of today's business.</p></div>
+ <form method="POST" class="card login-card"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><h2>Welcome back</h2><p class="mini">Your workspace is ready when you are.</p><div class="field"><label for="username">Username</label><input type="text" id="username" name="username" autocomplete="username" placeholder="Enter your username" required autofocus></div><div class="field"><label for="password">Password</label><div class="password-field"><input type="password" id="password" name="password" autocomplete="current-password" placeholder="Enter your password" required><button type="button" data-password-toggle="password" aria-label="Show password" aria-pressed="false">Show</button></div></div><button type="submit" class="btn btn-gold btn-block">Sign in to your workspace ↗</button><button id="passkey-login" type="button" class="btn btn-ghost btn-block" style="margin-top:12px">Sign in with passkey</button><p id="passkey-status" role="status" aria-live="polite" class="help"></p><p class="login-support">Need access? Please contact the shop owner.</p></form>
+</section>
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', filename='js/passkeys.js', v='1') }}" defer></script>{% endblock %}
