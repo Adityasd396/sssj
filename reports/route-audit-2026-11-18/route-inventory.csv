@@ -1,0 +1,66 @@
+﻿Route,Methods,Access,Endpoint,Source,Owner GET baseline,Owner POST baseline,Staff GET baseline,Staff POST baseline
+/,"GET, HEAD, OPTIONS",signed-in,index,app.py:1914,200,—,200,—
+/account/passkeys,"GET, HEAD, OPTIONS",signed-in,passkeys,passkeys.py:106,200,—,200,—
+/account/passkeys/<int:key_id>/delete,"OPTIONS, POST",signed-in,passkey_delete,passkeys.py:240,—,403,—,403
+/account/password,"GET, HEAD, OPTIONS, POST",signed-in,change_password,app.py:1510,200,200,200,200
+/api/invoices/preview,"OPTIONS, POST",signed-in,invoice_preview,app.py:2727,—,200,—,200
+/api/prices,"GET, HEAD, OPTIONS",signed-in,get_prices,app.py:1988,200,—,200,—
+/api/session,"GET, HEAD, OPTIONS",signed-in,current_session,app.py:2232,200,—,200,—
+/audit-logs,"GET, HEAD, OPTIONS",owner,audit_logs,app.py:1632,200,—,403,—
+/backup/database,"GET, HEAD, OPTIONS",owner,backup_database,database_recovery.py:56,200,—,403,—
+/backup/download,"GET, HEAD, OPTIONS",owner,backup_download,database_recovery.py:38,200,—,403,—
+/backup/restore,"OPTIONS, POST",owner,backup_restore,database_recovery.py:60,—,302,—,403
+/clients,"GET, HEAD, OPTIONS",signed-in,clients,app.py:2176,200,—,200,—
+/clients/<int:client_id>,"GET, HEAD, OPTIONS",signed-in,view_client,app.py:2316,200,—,200,—
+/clients/<int:client_id>/delete,"OPTIONS, POST",owner,delete_client,app.py:2411,—,302,—,403
+/clients/<int:client_id>/edit,"GET, HEAD, OPTIONS, POST",signed-in,edit_client,app.py:2386,200,302,200,302
+/clients/<int:client_id>/pay-remaining,"GET, HEAD, OPTIONS, POST",signed-in,pay_remaining,app.py:2426,200,422,200,422
+/clients/<int:client_id>/statement,"GET, HEAD, OPTIONS",signed-in,client_statement,app.py:2367,200,—,200,—
+/clients/add,"GET, HEAD, OPTIONS, POST",signed-in,add_client,app.py:2199,200,302,200,302
+/clients/quick,"OPTIONS, POST",signed-in,quick_client,app.py:2238,—,422,—,422
+/collect,"GET, HEAD, OPTIONS",signed-in,collect,app.py:2122,200,—,200,—
+/deleted-bills,"GET, HEAD, OPTIONS",owner,deleted_bills,app.py:4790,200,—,403,—
+/deleted-bills.csv,"GET, HEAD, OPTIONS",owner,deleted_bills_csv,app.py:4827,200,—,403,—
+/deleted-bills/<int:row_id>,"GET, HEAD, OPTIONS",owner,view_deleted_bill,app.py:4816,200,—,403,—
+/export/data,"GET, HEAD, OPTIONS",owner,export_data,app.py:1721,200,—,403,—
+/export/gstr1.csv,"GET, HEAD, OPTIONS",owner,export_gstr1,app.py:1842,200,—,403,—
+/export/invoices.csv,"GET, HEAD, OPTIONS",owner,export_invoices_csv,app.py:1733,200,—,403,—
+/healthz,"GET, HEAD, OPTIONS",public,healthz,app.py:1445,200,—,200,—
+/invoices,"GET, HEAD, OPTIONS",signed-in,invoices,app.py:2520,200,—,200,—
+/invoices/<int:invoice_id>,"GET, HEAD, OPTIONS",signed-in,view_invoice,app.py:3062,200,—,200,—
+/invoices/<int:invoice_id>/delete,"OPTIONS, POST",owner,delete_invoice,app.py:3352,—,302,—,403
+/invoices/<int:invoice_id>/payment,"GET, HEAD, OPTIONS, POST",signed-in,add_payment,app.py:3468,200,422,200,422
+/invoices/<int:invoice_id>/pdf,"GET, HEAD, OPTIONS",signed-in,invoice_pdf,app.py:3123,200,—,200,—
+/invoices/<int:invoice_id>/receipt,"GET, HEAD, OPTIONS",signed-in,invoice_receipt,app.py:3332,200,—,200,—
+/invoices/<int:invoice_id>/update_status,"OPTIONS, POST",owner,update_invoice_status,app.py:3415,—,302,—,403
+/invoices/create,"GET, HEAD, OPTIONS, POST",signed-in,create_invoice,app.py:2742,200,302,200,302
+/login,"GET, HEAD, OPTIONS, POST",public,login,app.py:1476,200,200,200,200
+/logout,"OPTIONS, POST",public,logout,app.py:1548,—,302,—,302
+/passkeys/login/options,"OPTIONS, POST",public,passkey_login_options,passkeys.py:178,—,200,—,200
+/passkeys/login/verify,"OPTIONS, POST",public,passkey_login_verify,passkeys.py:191,—,400,—,400
+/passkeys/register/options,"OPTIONS, POST",signed-in,passkey_register_options,passkeys.py:113,—,403,—,403
+/passkeys/register/verify,"OPTIONS, POST",signed-in,passkey_register_verify,passkeys.py:143,—,400,—,400
+/prices/quick,"OPTIONS, POST",owner,quick_prices,app.py:2005,—,302,—,403
+/printers,"GET, HEAD, OPTIONS",signed-in,printer_setup,app.py:3346,200,—,200,—
+/products,"GET, HEAD, OPTIONS",signed-in,products,app.py:3537,200,—,200,—
+/products/<int:product_id>,"GET, HEAD, OPTIONS",signed-in,view_product,app.py:3742,200,—,200,—
+/products/<int:product_id>/delete,"OPTIONS, POST",owner,delete_product,app.py:3870,—,302,—,403
+/products/<int:product_id>/edit,"GET, HEAD, OPTIONS, POST",owner,edit_product,app.py:3810,200,409,403,403
+/products/<int:product_id>/tag,"GET, HEAD, OPTIONS",signed-in,print_product_tag,app.py:3755,200,—,200,—
+/products/add,"GET, HEAD, OPTIONS, POST",owner,add_product,app.py:3645,200,400,403,403
+/products/scan/<path:barcode>,"GET, HEAD, OPTIONS",signed-in,scan_product,app.py:3884,200,—,200,—
+/register,"GET, HEAD, OPTIONS, POST",owner,register,app.py:1558,200,302,403,403
+/reports,"GET, HEAD, OPTIONS",signed-in,reports,app.py:4421,200,—,200,—
+/reports.csv,"GET, HEAD, OPTIONS",signed-in,reports_csv,app.py:4700,200,—,200,—
+/reports/products.csv,"GET, HEAD, OPTIONS",signed-in,reports_products_csv,app.py:4743,200,—,200,—
+/settings,"GET, HEAD, OPTIONS, POST",owner,settings,app.py:2033,200,302,403,403
+/shared/bill/<token>.pdf,"GET, HEAD, OPTIONS",signed token,shared_invoice_pdf,app.py:3133,410,—,410,—
+/static/<path:filename>,"GET, HEAD, OPTIONS",public,static,app.py:278,—,—,—,—
+/tags,"GET, HEAD, OPTIONS",signed-in,tag_designer,app.py:4238,200,—,200,—
+/tags/<int:tpl_id>/delete,"OPTIONS, POST",owner,delete_tag_template,app.py:4300,—,404,—,403
+/tags/calibrate,"GET, HEAD, OPTIONS",signed-in,tag_calibration,app.py:4357,200,—,200,—
+/tags/print,"GET, HEAD, OPTIONS",signed-in,print_tags,app.py:4314,200,—,200,—
+/tags/save,"OPTIONS, POST",owner,save_tag_template,app.py:4280,—,302,—,403
+/users,"GET, HEAD, OPTIONS",owner,users,app.py:1589,200,—,403,—
+/users/<int:user_id>/delete,"OPTIONS, POST",owner,delete_user,app.py:1614,—,302,—,403
+/users/<int:user_id>/reset-password,"OPTIONS, POST",owner,reset_password,app.py:1595,—,302,—,403

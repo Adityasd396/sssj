@@ -1,0 +1,25 @@
+{
+  "unchanged_model_schema_and_function_definitions": [
+    "AuditLog",
+    "AuthThrottle",
+    "Client",
+    "DeletedInvoice",
+    "Invoice",
+    "InvoiceItem",
+    "Payment",
+    "Product",
+    "Settings",
+    "TagTemplate",
+    "User",
+    "_rebuild_table",
+    "calc_discount",
+    "calc_exchange",
+    "calc_line_total",
+    "ensure_schema",
+    "preview_original_invoice",
+    "rs",
+    "validate_rs"
+  ],
+  "production_database_opened_for_tests": false,
+  "schema_migration_required": false
+}

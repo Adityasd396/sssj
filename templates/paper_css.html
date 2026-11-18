@@ -1,0 +1,51 @@
+{# ============================================================================
+   PAPER TOKENS — for everything that ends up on paper.
+
+   Deliberately separate from the app tokens in base.html, because paper has
+   different needs:
+
+     * pure black text, because thermal printers dither anything lighter and a
+       mid-grey that looks fine on screen prints as mush;
+     * no background tint to lean on — the sheet is the background;
+     * ONE accent, so a shop's invoice, tag and statement look like they came
+       from one shop rather than three.
+
+   Include it once per document, before that document's own styles:
+
+       {% include "paper_css.html" %}
+
+   Documents that use it: view_invoice.html, statement.html, product_tag.html,
+   tags_print.html, tags_calibrate.html.
+
+   Adding a colour here is fine. Typing a hex into a print template is not —
+   ui_audit.py fails the build on it.
+   ============================================================================ #}
+<style>
+:root{
+  /* the sheet */
+  --paper:#ffffff;
+  --paper-ink:#000000;        /* printed text: pure black, never a grey */
+  --paper-soft:#333333;       /* secondary printed text */
+  --paper-muted:#5c5344;      /* text inside a tinted panel */
+  --paper-hint:#767676;       /* small print, on white */
+
+  /* surfaces on paper */
+  --paper-tint:#fffdf6;       /* a panel, faintly warm */
+  --paper-letterhead:#fffdf4; /* the invoice's own sheet */
+  --paper-tick:#f5f5f5;       /* calibration ruler ticks */
+
+  /* rules */
+  --paper-rule:#e2d9c3;
+  --paper-rule-2:#dddddd;
+  --paper-rule-soft:#f0e6cf;
+  --paper-badge:#e5c07b;      /* the outline on a printed badge */
+
+  /* ink for the letterhead */
+  --paper-letter:#8a6d1b;     /* the firm's name on the invoice */
+  --paper-caps:#713f12;       /* small-caps labels */
+
+  /* the single accent, and the one green a print button may use */
+  --paper-accent:#8a5b00;     /* 5.77:1 on --paper-tint */
+  --paper-ok:#1e874b;         /* 4.54:1 under white text */
+}
+</style>

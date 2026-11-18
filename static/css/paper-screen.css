@@ -1,0 +1,24 @@
+/* Screen-only controls around paper documents; never change printed label sizes. */
+@media screen {
+  html { -webkit-text-size-adjust:100%; }
+  body { max-width:100%; }
+  .no-print { box-sizing:border-box; max-width:100%; }
+  .no-print button, .no-print a, .no-print select, .no-print input { min-height:44px; box-sizing:border-box; }
+  .no-print input, .no-print select { max-width:100%; font-size:16px; }
+  .no-print a, .no-print button { display:inline-flex; align-items:center; justify-content:center; }
+  .sheet { overflow-x:auto; max-width:100%; justify-content:flex-start; }
+  .sheet > * { flex-shrink:0; }
+  .document-table { overflow:auto; width:100%; }
+  @media (max-width:640px) {
+    body { margin:12px; }
+    .no-print { width:100%; }
+    .no-print form { display:flex; flex-wrap:wrap; gap:10px; }
+    .no-print .row { flex-wrap:wrap; }
+    .document-table table { min-width:520px; }
+    .tot { overflow-wrap:anywhere; }
+  }
+}
+
+@font-face{font-family:Manrope;src:url('../fonts/manrope-variable.ttf') format('truetype');font-weight:200 800;font-display:swap}
+@font-face{font-family:Cormorant;src:url('../fonts/cormorant-garamond-variable.ttf') format('truetype');font-weight:300 700;font-display:swap}
+@media screen{body{background:#f5f4f0}.no-print{font-family:Manrope,'Segoe UI',sans-serif!important;background:#fff;border:1px solid #e2e6db!important;border-radius:16px!important;padding:22px!important;box-shadow:0 4px 20px rgba(34,47,34,.03)}.no-print h3{font-family:Cormorant,Georgia,serif;font-size:26px!important;font-weight:550}.no-print .print-btn,.no-print button{background:#304b39;color:#fff;border:1px solid #304b39;font-size:13px;border-radius:8px;min-height:44px}.no-print .ghost{font-size:13px;border-radius:8px;border-color:#dfe4d5;min-height:44px}.no-print input,.no-print select{border-radius:7px;border-color:#dfe4d5}.no-print .hint{font-size:12px}.document-table{border-radius:9px}}

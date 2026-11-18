@@ -1,0 +1,50 @@
+/* Slow-device workflow checks; synthetic shop, camera and share sheet only. */
+const assert=require('node:assert/strict');const fs=require('node:fs');
+const {chromium}=require(process.env.PLAYWRIGHT_PATH||'playwright');
+const base='http://127.0.0.1:56837';
+(async()=>{const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH});try{
+ const context=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});
+ const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
+ const cdp=await context.newCDPSession(page);await cdp.send('Emulation.setCPUThrottlingRate',{rate:6});
+ await cdp.send('Network.enable');await cdp.send('Network.emulateNetworkConditions',{offline:false,latency:100,downloadThroughput:250*1024,uploadThroughput:100*1024});
+ await page.goto(base+'/login');await page.locator('#username').fill('ui-owner');await page.locator('#password').fill('preview-password');
+ await Promise.all([page.waitForURL(base+'/'),page.locator('.login-card [type=submit]').click()]);
+ await page.goto(base+'/invoices/create');
+ assert.equal(await page.evaluate(()=>typeof ZXingBrowser),'undefined','Decoder should be lazy');
+ await page.locator('#product-code').fill('GOLD-01');await page.locator('#product-code').press('Enter');
+ await page.waitForSelector('.item-row [name=product_code][value="GOLD-01"]',{state:'attached'});
+ await page.locator('#new-customer').click();await page.locator('#quick-name').fill('Slow phone customer');await page.locator('#quick-phone').fill('9666600017');
+ await page.evaluate(()=>document.querySelector('#quick-customer-form [name=csrf_token]').value='expired-token');
+ let refreshes=0;page.on('request',r=>{if(r.url().endsWith('/api/session'))refreshes++;});
+ await page.locator('#quick-customer-form [type=submit]').click();await page.waitForFunction(()=>!document.getElementById('customer-dialog').open);
+ assert.equal(refreshes,1);assert.match(await page.locator('#client_id option:checked').textContent(),/Slow phone customer/);
+ assert.equal(await page.locator('[name=product_code]').inputValue(),'GOLD-01');
+ await page.locator('#dock-save-bill').click();await page.waitForURL(/\/invoices\/\d+$/);const billId=page.url().split('/').pop();
+ const wa=new URL(await page.locator('#wa-link').getAttribute('href'));assert.equal(wa.pathname,'/919666600017');
+ const quote=wa.searchParams.get('text');assert.match(quote,/Slow phone customer/);assert.match(quote,/Thank you/);
+ const publicPdf=quote.match(/https?:\/\/\S+\/shared\/bill\/\S+\.pdf/)[0];
+ const visitor=await browser.newContext();const pdfResponse=await visitor.request.get(publicPdf);assert.equal(pdfResponse.status(),200);assert((await pdfResponse.body()).subarray(0,4).equals(Buffer.from('%PDF')));await visitor.close();
+ await page.evaluate(()=>{Object.defineProperty(navigator,'canShare',{configurable:true,value:()=>true});Object.defineProperty(navigator,'share',{configurable:true,value:async data=>{window.sharedPdf={name:data.files[0].name,type:data.files[0].type,text:data.text,activation:navigator.userActivation.isActive};}});});
+ await page.locator('#share-pdf').click();await page.waitForFunction(()=>document.getElementById('share-pdf').textContent==='Share prepared PDF');
+ await page.locator('#share-pdf').click();await page.waitForFunction(()=>Boolean(window.sharedPdf));
+ const shared=await page.evaluate(()=>window.sharedPdf);assert.equal(shared.type,'application/pdf');assert.equal(shared.text,quote);assert(shared.activation);
+ await page.evaluate(()=>Object.defineProperty(navigator,'share',{configurable:true,value:()=>Promise.reject(new DOMException('Cancelled','AbortError'))}));
+ await page.locator('#share-pdf').click();await page.waitForFunction(()=>document.getElementById('share-status').textContent==='Sharing cancelled.');
+ for(const width of [320,390,768,1440]){await page.setViewportSize({width,height:1000});for(const route of ['/products?q=2.125g','/printers',`/invoices/${billId}/receipt?width=58`,`/invoices/${billId}/receipt?width=80`,`/invoices/${billId}`]){const r=await page.goto(base+route);assert.equal(r.status(),200);assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),route+' '+width);}}
+ await page.setViewportSize({width:390,height:844});await page.goto(base+'/invoices/create');
+ await page.evaluate(async imageData=>{
+  const image=new Image();image.src=imageData;await image.decode();const canvas=document.createElement('canvas');canvas.width=3840;canvas.height=2160;const ctx=canvas.getContext('2d');ctx.fillStyle='white';ctx.fillRect(0,0,3840,2160);ctx.imageSmoothingEnabled=false;ctx.drawImage(image,1846,1006,148,148);
+  navigator.mediaDevices.getUserMedia=async()=>{const stream=canvas.captureStream(5);window.syntheticTracks=stream.getTracks();setTimeout(()=>ctx.drawImage(image,1846,1006,148,148),100);return stream;};
+  window.cameraWorkers=0;window.frameTransfers=0;window.transferWidth=0;window.workerErrors=[];const Actual=Worker;window.Worker=function(url,options){window.cameraWorkers++;const worker=new Actual(url,options);const send=worker.postMessage.bind(worker);worker.postMessage=function(data,transfer){if(data.frame){window.frameTransfers++;window.transferWidth=data.frame.codedWidth;}return send(data,transfer);};worker.addEventListener('error',event=>window.workerErrors.push(event.message));worker.addEventListener('message',event=>{if(event.data.error)window.workerErrors.push(event.data.error);});return worker;};
+  window.heartbeat=[];let before=performance.now();window.heartbeatTimer=setInterval(()=>{const now=performance.now();window.heartbeat.push(now-before);before=now;},50);
+ },'data:image/png;base64,'+fs.readFileSync('.cache/scanner-qr.png').toString('base64'));
+ await page.locator('.header-tools [data-open-scanner]').click();await page.waitForSelector('#scan-result:not([hidden])',{timeout:45000});
+ const metrics=await page.evaluate(()=>{clearInterval(window.heartbeatTimer);return {workers:window.cameraWorkers,beats:window.heartbeat,mainDecoder:typeof ZXingBrowser,workerErrors:window.workerErrors,frames:window.frameTransfers,width:window.transferWidth};});
+ console.log('Worker diagnostics:',metrics.workerErrors);assert(metrics.workers>0);assert(metrics.frames>0);assert.equal(metrics.width,3840);assert.equal(metrics.mainDecoder,'undefined','Decode must remain in worker');assert(metrics.beats.length>3);
+ metrics.beats.sort((a,b)=>a-b);console.log('Camera heartbeat p95 ms:',Math.round(metrics.beats[Math.floor(metrics.beats.length*.95)]));
+ assert(metrics.beats[Math.floor(metrics.beats.length*.95)]<1000,'UI should keep yielding while decoding');
+ assert(await page.evaluate(()=>window.syntheticTracks.every(track=>track.readyState==='ended')));
+ await page.locator('[data-close-scanner]').click();
+ assert.deepEqual(errors,[]);
+ console.log('PASS: 6x CPU + constrained network, CSRF recovery, quick customer, mobile save, recipient/PDF link, native PDF share/cancel, 20 responsive views and worker responsiveness.');
+}finally{await browser.close();}})().catch(e=>{console.error(e);process.exit(1)});

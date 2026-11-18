@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+{% block title %}New bill{% endblock %}
+{% block bodyclass %}has-totalbar{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>New bill</h1>
+    <div class="sub">Selling rates · Gold ₹<span id="current-gold-rate">{{ (settings.gold_manual_price or 0)|inr }}</span>/g ·
+      silver ₹<span id="current-silver-rate">{{ (settings.silver_manual_price or 0)|inr }}</span>/g · saved with this bill</div>
+  </div>
+  <div class="page-actions">
+    <a href="{{ url_for('invoices') }}" class="btn btn-ghost">All bills</a>
+  </div>
+</div>
+
+<ol class="workflow-steps" aria-label="Billing sections"><li><button class="workflow-step" type="button" data-bill-go="customer"><b>1</b> Customer</button></li><li><button class="workflow-step" type="button" data-bill-go="items"><b>2</b> Items</button></li><li><button class="workflow-step" type="button" data-bill-go="payment"><b>3</b> Payment</button></li></ol>
+<div class="draft-notice" id="draft-notice" hidden><p id="draft-summary">An unfinished bill is available on this device.</p><button type="button" class="btn btn-ghost btn-sm" id="restore-draft">Resume bill</button><button type="button" class="btn btn-ghost btn-sm" id="discard-draft">Discard</button></div>
+<dialog id="customer-dialog" aria-labelledby="customer-dialog-title">
+  <form id="quick-customer-form" method="POST" data-async>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <h2 id="customer-dialog-title">Add customer</h2><p class="mini">Your bill stays open while you add their details.</p>
+    <div class="bill-error" id="customer-error" role="alert"></div><button type="button" id="use-existing-customer" class="btn btn-ghost btn-sm" hidden>Use existing customer</button>
+    <div class="field"><label for="quick-name">Customer name</label><input type="text" id="quick-name" name="name" maxlength="100" required autocomplete="name"></div>
+    <div class="field"><label for="quick-phone">Phone number</label><input type="tel" id="quick-phone" name="phone" maxlength="20" required autocomplete="tel"></div>
+    <div class="field"><label for="quick-gstin">GSTIN (optional)</label><input type="text" id="quick-gstin" name="gstin" maxlength="20"></div>
+    <div class="form-actions"><button class="btn btn-ghost" type="button" id="close-customer">Cancel</button><button class="btn btn-gold" type="submit">Add &amp; select customer</button></div>
+  </form>
+</dialog>
+<div class="card">
+    <form method="POST" id="invoice-form" data-user="{{ session.get('user_id') }}">
+    <input type="hidden" name="submission_key" value="{{ submission_key }}">
+    <div id="bill-error" class="bill-error" role="alert" tabindex="-1">{{ form_error or '' }}</div>
+    <div class="draft-state" id="draft-state" role="status">Drafts are saved on this device for 24 hours; signing out clears them.</div>
+    <fieldset class="billing-section billing-customer" id="bill-customer" data-bill-section="customer"><legend tabindex="-1">Customer</legend>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="form-group">
+            <label for="client-search">Customer *</label>
+            <input type="text" id="client-search" placeholder="🔍 Type name or phone..." autocomplete="off"
+                   style="margin-bottom: 8px;">
+            <select id="client_id" name="client_id" required size="1">
+                <option value="">Select a customer</option>
+                {% for client in clients %}
+                <option value="{{ client.id }}" data-search="{{ (client.name ~ ' ' ~ client.phone)|lower }}"
+                        data-balance="{{ (client.balance or 0)|inr }}"
+                        data-gstin="{{ client.gstin or '' }}"
+                        {% if selected_client_id == client.id %}selected{% endif %}>{{ client.name }} ({{ client.phone }})</option>
+                {% endfor %}
+            </select>
+            <button type="button" class="btn btn-ghost btn-sm" id="new-customer" style="margin-top:8px">+ Add customer here</button>
+            <div id="recent-customers" hidden><span class="recent-label">Recent customers</span><div class="recent-customer-buttons"></div></div>
+            <div id="client-hint" style="font-size: 13px; color: var(--muted); margin-top: 4px;"></div>
+        </div>
+
+        <div class="form-group" id="gstin-group">
+            <label for="client_gstin">Customer GSTIN (optional)</label>
+            <input type="text" id="client_gstin" name="client_gstin" maxlength="20"
+                   placeholder="e.g. 27ABCDE1234F1Z5" autocomplete="off">
+            <div id="gstin-hint" style="font-size: 13px; color: var(--muted); margin-top: 4px;"></div>
+        </div>
+
+    <div class="section-next"><button type="button" class="btn btn-primary" data-bill-continue="items">Continue to items</button></div>
+    </fieldset>
+    <fieldset class="billing-section" id="bill-items" data-bill-section="items"><legend tabindex="-1">Items</legend>
+
+
+        <div class="scan-entry"><button type="button" class="btn scan-trigger" data-open-scanner><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5M7 9v6m3-7v8m4-8v8m3-7v6"/></svg>Scan tag</button><span class="scan-entry-copy"><strong>Scan or enter a product code.</strong><small>Camera · photo · USB scanner</small></span><div class="scan-code-entry"><input id="product-code" type="text" aria-label="Enter or scan tag number" placeholder="Or enter a tag number…" autocomplete="off"><button type="button" class="btn btn-ghost" onclick="addProductByCode()">Add</button></div></div><p id="scan-msg" role="status" class="mini" style="margin-bottom:12px"></p>
+        <div id="items-container"></div>
+        <noscript><p class="bill-error">Please enable JavaScript to enter items and preview your bill.</p></noscript>
+        <button type="button" class="btn btn-ghost add-item-btn" onclick="addItem()">+ Add item</button>
+        <div class="section-next"><button type="button" class="btn btn-primary" data-bill-continue="payment">Review payment</button></div>
+
+    </fieldset>
+        {# What the bill is made of. The inputs live here; the money lives in
+           the sticky bar below, so it never scrolls out of sight. #}
+        <details id="billing-options" class="billing-options"><summary>Discount &amp; old-metal exchange <span>Optional</span></summary>
+        <div class="card tight" style="margin-top:12px">
+            <div class="card-head" style="margin-bottom:10px">
+                <h3>Discount &amp; exchange</h3>
+                <span class="hint">Gold ₹<span id="rate-gold">{{ (settings.gold_manual_price or 0)|inr }}</span>/g ·
+                    Silver ₹<span id="rate-silver">{{ (settings.silver_manual_price or 0)|inr }}</span>/g</span>
+            </div>
+            <div class="field-grid">
+                <div class="field">
+                    <label for="discount_type">Discount</label>
+                    <div style="display:flex;gap:8px">
+                        <select id="discount_type" name="discount_type">
+                            <option value="none">None</option>
+                            <option value="percent">Percent %</option>
+                            <option value="flat">Flat ₹</option>
+                        </select>
+                        <input type="number" id="discount_value" name="discount_value" step="0.01" min="0"
+                               value="0" placeholder="0" style="max-width:120px">
+                    </div>
+                    <div class="help">Taking off ₹<span id="discount-amount">0.00</span></div>
+                </div>
+                <div class="field">
+                    <label for="exchange_metal">Old metal exchange</label>
+                    <div style="display:flex;gap:8px">
+                        <select id="exchange_metal" name="exchange_metal">
+                            <option value="none">No exchange</option>
+                            <option value="gold">Old gold</option>
+                            <option value="silver">Old silver</option>
+                        </select>
+                        <input type="number" id="exchange_amount" name="exchange_amount" step="0.01" min="0"
+                               value="0" placeholder="Amount ₹" style="max-width:130px">
+                    </div>
+                    <div class="help">Taking off ₹<span id="exchange-amount">0.00</span></div>
+                </div>
+            </div>
+            <p class="mini" style="margin:0">
+                Subtotal ₹<span id="subtotal">0.00</span> ·
+                GST <span id="gst-rate-display">3</span>% ₹<span id="gst-amount">0.00</span> ·
+                rates are frozen on this bill
+            </p>
+        </div>
+
+        </details>
+    <fieldset class="billing-section" id="payment-details" data-bill-section="payment"><legend tabindex="-1">Payment</legend>
+        <div class="form-grid" style="margin-top: 20px;">
+            <div class="form-group">
+                <label for="payment_type">Payment Type *</label>
+                <select id="payment_type" name="payment_type" required>
+                    <option value="full">Full Payment</option>
+                    <option value="partial">Partial / pay later</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="payment_method">Payment Method *</label>
+            <select id="payment_method" name="payment_method" required>
+                <option value="cash">Cash</option>
+                <option value="UPI">UPI</option>
+                <option value="bank_transfer">Bank Transfer</option>
+                <option value="card">Card</option>
+            </select>
+        </div>
+
+        <div class="form-group" id="partial_payment_section" style="display: none;">
+            <label for="partial_amount">Partial Payment Amount (₹)</label>
+            <input type="number" id="partial_amount" name="partial_amount" step="0.01" min="0" placeholder="Enter partial payment amount">
+        </div>
+
+    </fieldset>
+        {# Sticky: the number a customer is watching. #}
+        <div class="totalbar"><p class="pricing-state" id="pricing-status" role="status">Enter an item to see the total.</p>
+            <div class="sum">
+                <span class="l">Bill total
+                    <span class="mini" id="bill-lines">no items yet</span>
+                </span>
+                <span class="v num">₹<span id="total">0.00</span></span>
+            </div>
+            <div class="settlement"><span>Receiving now <strong>₹<span id="received-amount">0.00</span></strong></span><span>Balance after payment <strong>₹<span id="remaining-amount">0.00</span></strong></span></div>
+            <p id="balance-due" hidden><span id="balance-amount">0.00</span></p>
+            <div class="acts">
+                <a href="{{ url_for('invoices') }}" class="btn btn-ghost">Cancel</a>
+                <button type="submit" class="btn btn-gold">Save bill</button>
+            </div>
+        </div>
+    </form>
+</div>
+<div class="checkout-dock" aria-label="Bill summary"><div><span class="dock-label">Bill total</span><strong class="num">₹<span id="dock-total">0.00</span></strong><span class="dock-settlement"><span>Receiving ₹<span id="dock-paid">0.00</span></span><span>Balance ₹<span id="dock-due">0.00</span></span></span></div><button type="submit" form="invoice-form" class="btn btn-gold" id="dock-save-bill">Save bill</button></div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+
+var QUICK_CLIENT_URL = {{ url_for('quick_client')|tojson }};
+var SERVER_FORM = {{ (form_data or none)|tojson }};
+var GOLD_MAKING_MODE = '{{ settings.gold_making_mode if settings and settings.gold_making_mode else 'percent' }}';
+var SILVER_MAKING_MODE = '{{ settings.silver_making_mode if settings and settings.silver_making_mode else 'flat' }}';
+var GOLD_RATE = {{ (settings.gold_manual_price or 0)/100 if settings else 0 }};
+var SILVER_RATE = {{ (settings.silver_manual_price or 0)/100 if settings else 0 }};
+var SHOW_MAKING = {{ 'true' if settings is none or settings.show_making_charges else 'false' }};
+
+var INVOICE_PREVIEW_URL = {{ url_for('invoice_preview')|tojson }};
+</script>
+<script src="{{ url_for('static', filename='js/shop-request.js', v='workflow-1') }}"></script>
+<script src="{{ url_for('static', filename='js/client-search.js', v='routes-1') }}"></script>
+<script src="{{ url_for('static', filename='js/mobile-billing.js', v='routes-1') }}"></script>
+<script src="{{ url_for('static', filename='js/billing.js', v='routes-1') }}"></script>
+<script src="{{ url_for('static', filename='js/invoice-pricing.js', v='routes-1') }}"></script>
+<script src="{{ url_for('static', filename='js/bill-draft.js', v='routes-1') }}"></script>
+{% endblock %}

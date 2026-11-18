@@ -1,0 +1,7 @@
+{
+  "route": "/reports",
+  "synthetic_bills": 100,
+  "status": 200,
+  "sql_statements_before": 314,
+  "sql_statements_after": 14
+}

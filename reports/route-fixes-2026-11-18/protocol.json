@@ -1,0 +1,572 @@
+[
+  {
+    "route": "/",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/account/passkeys",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/account/passkeys",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/account/passkeys/<int:key_id>/delete",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/account/password",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/account/password",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/api/clients",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/api/clients",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/api/invoices/preview",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/api/prices",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/api/prices",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/api/session",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/api/session",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/audit-logs",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/audit-logs",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/backup/database",
+    "method": "HEAD",
+    "status": 302
+  },
+  {
+    "route": "/backup/database",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/backup/download",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/backup/download",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/backup/restore",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/clients",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/clients",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/clients/<int:client_id>",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/clients/<int:client_id>",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/clients/<int:client_id>/delete",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/clients/<int:client_id>/edit",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/clients/<int:client_id>/edit",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/clients/<int:client_id>/pay-remaining",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/clients/<int:client_id>/pay-remaining",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/clients/<int:client_id>/statement",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/clients/<int:client_id>/statement",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/clients/add",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/clients/add",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/clients/quick",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/collect",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/collect",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/deleted-bills",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/deleted-bills",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/deleted-bills.csv",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/deleted-bills.csv",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/deleted-bills/<int:row_id>",
+    "method": "HEAD",
+    "status": 404
+  },
+  {
+    "route": "/deleted-bills/<int:row_id>",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/export/data",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/export/data",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/export/gstr1.csv",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/export/gstr1.csv",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/export/invoices.csv",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/export/invoices.csv",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/healthz",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/healthz",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/invoices",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/invoices",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/invoices/<int:invoice_id>",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/invoices/<int:invoice_id>",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/invoices/<int:invoice_id>/delete",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/invoices/<int:invoice_id>/payment",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/invoices/<int:invoice_id>/payment",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/invoices/<int:invoice_id>/pdf",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/invoices/<int:invoice_id>/pdf",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/invoices/<int:invoice_id>/receipt",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/invoices/<int:invoice_id>/receipt",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/invoices/<int:invoice_id>/update_status",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/invoices/create",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/invoices/create",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/login",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/login",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/logout",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/passkeys/login/options",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/passkeys/login/verify",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/passkeys/register/options",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/passkeys/register/verify",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/prices/quick",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/printers",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/printers",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/products",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/products",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/products/<int:product_id>",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/products/<int:product_id>",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/products/<int:product_id>/delete",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/products/<int:product_id>/edit",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/products/<int:product_id>/edit",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/products/<int:product_id>/tag",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/products/<int:product_id>/tag",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/products/add",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/products/add",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/products/scan/<path:barcode>",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/products/scan/<path:barcode>",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/register",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/register",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/reports",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/reports",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/reports.csv",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/reports.csv",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/reports/products.csv",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/reports/products.csv",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/settings",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/settings",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/shared/bill/<token>.pdf",
+    "method": "HEAD",
+    "status": 410
+  },
+  {
+    "route": "/shared/bill/<token>.pdf",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/static/<path:filename>",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/static/<path:filename>",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/tags",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/tags",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/tags/<int:tpl_id>/delete",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/tags/calibrate",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/tags/calibrate",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/tags/print",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/tags/print",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/tags/save",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/users",
+    "method": "HEAD",
+    "status": 200
+  },
+  {
+    "route": "/users",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/users/<int:user_id>/delete",
+    "method": "OPTIONS",
+    "status": 200
+  },
+  {
+    "route": "/users/<int:user_id>/reset-password",
+    "method": "OPTIONS",
+    "status": 200
+  }
+]

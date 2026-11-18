@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block title %}Add product{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div><h1>Add product</h1><div class="sub">Price follows the metal rate unless you set a custom price</div></div>
+  <div class="page-actions"><a href="{{ url_for('products') }}" class="btn btn-ghost">Back</a></div>
+</div>
+
+<div class="card" style="max-width:720px">
+  <form method="POST" id="product-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="field">
+      <label for="name">Product name *</label>
+      <input type="text" id="name" name="name" placeholder="e.g. Gold Ring" required autofocus>
+    </div>
+
+    <div class="field-grid">
+      <div class="field">
+        <label for="item_type">Metal *</label>
+        <select id="item_type" name="item_type">
+          <option value="gold">Gold</option>
+          <option value="silver">Silver</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="category">Category</label>
+        <input type="text" id="category" name="category" list="cat-list" placeholder="e.g. Handring">
+        <datalist id="cat-list">
+          <option value="Ring"></option>
+          <option value="Handring"></option>
+          <option value="Chain"></option>
+          <option value="Bangle"></option>
+          <option value="Earring"></option>
+          <option value="Pendant"></option>
+          <option value="Coin"></option>
+          <option value="Pearls"></option>
+        </datalist>
+      </div>
+    </div>
+
+    <div class="field-grid">
+      <div class="field">
+        <label for="unit">Sold by *</label>
+        <select id="unit" name="unit" onchange="syncUnit(this.value)">
+          <option value="pcs">Pieces (fixed qty)</option>
+          <option value="g">Weight in grams (pearls etc.)</option>
+        </select>
+      </div>
+      <div class="field" id="wpu-field">
+        <label for="weight_per_unit">Weight per unit (g) *</label>
+        <input type="number" id="weight_per_unit" name="weight_per_unit" step="0.001" min="0.001" required required>
+        <div class="help" id="wpu-help">Auto price = weight × metal rate.</div>
+      </div>
+    </div>
+    <script>
+    /* Sold by weight: the unit IS one gram, so "weight per unit" does not
+       apply — the item is priced straight off the per-gram metal rate. */
+    function syncUnit(v){
+      var isG = v === 'g';
+      document.getElementById('pcs-row').style.display = isG ? 'none' : 'block';
+      document.getElementById('g-row').style.display = isG ? 'block' : 'none';
+      document.getElementById('wpu-field').style.display = isG ? 'none' : 'block';
+      var wpu = document.getElementById('weight_per_unit');
+      wpu.required = !isG;
+      if (isG) wpu.value = '1';
+      document.getElementById('wpu-help').textContent = isG
+        ? 'Priced per gram — the weight is entered when billing.'
+        : 'Auto price = weight × metal rate.';
+    }
+    document.addEventListener('DOMContentLoaded', function () {
+      syncUnit(document.getElementById('unit').value);
+    });
+    </script>
+
+    <div class="field" id="pcs-row">
+      <label for="stock_quantity">Stock (pieces)</label>
+      <input type="number" id="stock_quantity" name="stock_quantity" min="0" value="0">
+    </div>
+    <div class="field" id="g-row" style="display:none">
+      <label for="stock_weight">Stock (grams)</label>
+      <input type="number" id="stock_weight" name="stock_weight" step="0.001" min="0" value="0">
+    </div>
+
+    <div class="field-grid">
+      <div class="field">
+        <label for="cost_price">Cost price (₹, for profit)</label>
+        <input type="number" id="cost_price" name="cost_price" step="0.01" min="0" value="0">
+      </div>
+      <div class="field">
+        <label for="custom_price">Custom sale price (₹)</label>
+        <input type="number" id="custom_price" name="custom_price" step="0.01" min="0" value="0">
+        <div class="help">Leave 0 to price from the live metal rate.</div>
+      </div>
+    </div>
+
+    <fieldset class="existing-qr-section">
+      <legend>Existing QR label <span class="mini">· optional</span></legend>
+      <p class="help">Already have a QR tag for this item? Scan it with the camera or upload its image to link it to this product. Leave blank to generate a new code.</p>
+      <div class="field">
+        <label for="existing-qr-upload">Upload QR image</label>
+        <button type="button" id="existing-qr-take-photo" class="btn btn-primary" style="margin-bottom:10px">Scan existing QR</button>
+        <input type="file" id="existing-qr-capture" accept="image/jpeg,image/png,image/webp" capture="environment" hidden>
+        <input type="file" id="existing-qr-upload" accept="image/png,image/jpeg,image/webp">
+        <div id="existing-qr-status" class="help" role="status" aria-live="polite">JPG, PNG or WebP · up to 15 MB. Only the QR code is saved with the product. The photo is processed on this device and discarded afterward.</div>
+      </div>
+      <div class="field">
+        <label for="existing_code">Linked tag code</label>
+        <input type="text" id="existing_code" name="existing_code" maxlength="100" autocomplete="off" placeholder="Filled from the QR image, or enter the code">
+        <div class="help">Each code can belong to only one product.</div>
+      </div>
+      <button type="button" class="btn btn-ghost btn-sm" id="clear-existing-qr">Remove linked code</button>
+    </fieldset>
+
+    <div class="field">
+      <label for="description">Description</label>
+      <textarea id="description" name="description" rows="2" placeholder="optional"></textarea>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-success">Save product</button>
+      <a href="{{ url_for('products') }}" class="btn btn-ghost">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
+{% block scripts %}
+<dialog id="product-qr-camera" class="scan-dialog" aria-labelledby="product-camera-title">
+  <div class="scanner-heading"><h2 id="product-camera-title">Scan the existing QR</h2><button type="button" id="product-camera-close" class="scanner-close" aria-label="Close camera">×</button></div>
+  <p class="scanner-help">Scanning starts automatically. Keep the entire QR sharp and well lit. Only its code will be saved.</p>
+  <div class="scanner-viewfinder"><video id="product-camera-video" autoplay playsinline muted></video></div>
+  <p id="product-camera-status" role="status" aria-live="polite" class="scanner-status">Opening camera…</p>
+  <div class="scanner-camera-actions"><button type="button" class="btn btn-gold" id="product-camera-capture" disabled>Read photo instead</button><button type="button" class="btn btn-ghost" id="product-camera-upload">Choose an image instead</button></div>
+</dialog>
+
+<script>
+  window.productFormValues = {{ request.form.to_dict()|tojson }};
+</script>
+<script src="{{ url_for('static', filename='js/product-qr.js', v='workflow-1') }}" defer></script>
+{% endblock %}

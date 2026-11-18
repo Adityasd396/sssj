@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+{% block title %}{{ invoice.invoice_number }}{% endblock %}
+
+{% block content %}
+{% include "paper_css.html" %}
+{% set completed_key = session.pop('completed_bill_key', '') %}
+{% if completed_key %}<div class="saved-confirmation no-print" role="status"><b>Bill {{ invoice.invoice_number }} saved</b><span>You can now share or print it.</span></div>{% endif %}
+<div id="saved-bill" hidden data-user="{{ session.get('user_id') }}" data-key="{{ completed_key }}"></div>
+<div class="page-head no-print">
+  <div>
+    <h1>{{ invoice.invoice_number }}</h1>
+    <div class="sub">
+      {{ invoice.date_created.strftime('%d %b %Y') }} ·
+      {{ invoice.client.name if invoice.client else '—' }} ·
+      <span class="badge badge-{{ invoice.status }}">{{ invoice.status }}</span>
+    </div>
+  </div>
+  <div class="page-actions">
+    <a href="{{ url_for('create_invoice') }}" class="btn btn-gold">+ New bill</a>
+    <button onclick="window.print()" class="btn btn-primary">Print</button>
+    <a href="{{ url_for('invoice_pdf', invoice_id=invoice.id) }}" target="_blank" rel="noopener" class="btn btn-ghost">Download PDF</a>
+    <a href="{{ url_for('invoice_receipt', invoice_id=invoice.id) }}" target="_blank" rel="noopener" class="btn btn-ghost">Thermal receipt</a>
+    {% if invoice.status != 'cancelled' %}
+    {% if facts.balance_paise > 0 %}<a href="{{ url_for('add_payment', invoice_id=invoice.id) }}" class="btn btn-gold">Collect ₹{{ facts.balance_paise|inr }}</a>{% endif %}
+    {% if session.get('is_admin') %}<form method="POST" class="inline" action="{{ url_for('update_invoice_status', invoice_id=invoice.id) }}"
+          data-confirm="Cancel {{ invoice.invoice_number }}? Stock goes back and its payments are removed.">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="status" value="cancelled">
+      <button type="submit" class="btn btn-ghost">Cancel bill</button>
+    </form>{% endif %}
+    {% endif %}
+    {% if session.get('is_admin') %}<form method="POST" class="inline" action="{{ url_for('delete_invoice', invoice_id=invoice.id) }}"
+          data-confirm="Delete {{ invoice.invoice_number }}? It stays recorded in Deleted bills."
+>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="reason" value="">
+      <button type="submit" class="btn btn-danger">Delete</button>
+    </form>
+    {% endif %}<a href="{{ url_for('invoices') }}" data-record-back="/invoices" class="btn btn-ghost">Back</a>
+  </div>
+</div>
+
+<section id="bill-sharing" class="card no-print bill-sharing" data-phone="{{ share_phone }}" data-pdf="{{ url_for('invoice_pdf', invoice_id=invoice.id) }}" data-filename="{{ invoice.invoice_number }}.pdf">
+  <div class="row-actions">{% if wa_link %}<a href="{{ wa_link }}" id="wa-link" target="_blank" rel="noopener noreferrer" class="btn btn-success">WhatsApp customer · {{ invoice.client.phone }}</a>{% else %}<a class="btn btn-ghost" href="{{ url_for('edit_client', client_id=invoice.client_id) }}">Add a valid customer phone</a>{% endif %}<button type="button" class="btn btn-ghost" id="share-pdf">Prepare PDF attachment</button></div>
+  <details class="share-edit"><summary>Edit WhatsApp message</summary><label class="sr-only" for="share-message">Message to the customer</label><textarea id="share-message" rows="7">{{ share_message }}</textarea></details>
+  <p id="share-status" role="status" aria-live="polite"></p>
+</section>
+<div class="invoice-container">
+    <div class="inv-head">
+        <div>
+            <div class="inv-firm">{{ facts.firm_name or 'Your Firm Name' }}</div>
+            <div class="inv-sub">Gold &amp; Silver Jewelry</div>
+            <div class="inv-addr">{{ settings.firm_address if settings else '' }}{% if settings and settings.firm_phone %} · {{ settings.firm_phone }}{% endif %}{% if settings and settings.firm_email %} · {{ settings.firm_email }}{% endif %}</div>
+            {% if facts.show_gstin and facts.firm_gst %}<div class="inv-addr">GSTIN: {{ facts.firm_gst }}</div>{% endif %}
+        </div>
+        <div class="inv-meta">
+            <div class="inv-no">{{ facts.number }}</div>
+            <div class="inv-date">{{ facts.date.strftime('%d %B %Y') }}</div>
+            <span class="inv-status status-{{ facts.status }}">{{ facts.status|capitalize }}</span>
+        </div>
+    </div>
+
+    <div class="inv-billto">
+        <div class="inv-cap">Bill To</div>
+        <div class="inv-client">{{ facts.client_name }} &nbsp;<span class="inv-phone">{{ facts.client_phone }}</span></div>
+        {% if invoice.client.email %}<div class="inv-muted">{{ invoice.client.email }}</div>{% endif %}
+        {% if invoice.client.address %}<div class="inv-muted">{{ invoice.client.address }}</div>{% endif %}
+        {% if facts.show_gstin and facts.client_gstin %}
+        <div class="inv-muted">Customer GSTIN: {{ facts.client_gstin }}</div>
+        {% endif %}
+    </div>
+
+    {# Every number below comes from `facts`, the same source the PDF and the
+       WhatsApp message read. Only the formatting is decided here. Change what a
+       bill says in bill_facts(), once — not in three places. #}
+    <div class="invoice-table-scroll" role="region" aria-label="Invoice items" tabindex="0"><table class="invoice-table">
+        <thead>
+            <tr><th>#</th><th>Item</th><th>Qty</th><th>Weight</th>{% if facts.show_making %}<th>Making</th>{% endif %}<th>Metal Rate</th><th class="num">Amount (₹)</th></tr>
+        </thead>
+        <tbody>
+            {% for ln in facts.lines %}
+            <tr>
+                <td>{{ ln.n }}</td>
+                <td><strong>{{ ln.description }}</strong> {% if ln.item_type != 'general' %}<span class="item-badge">{{ ln.item_type|capitalize }}</span>{% endif %}</td>
+                {# Weighed goods: the quantity IS the grams, so the unit rides on
+                   Qty and the Weight column stays blank rather than repeating it
+                   or printing the placeholder 1 g. #}
+                <td>{{ ln.quantity }}{% if ln.weighed %} g{% endif %}</td>
+                <td>{% if ln.weight_g %}{{ ln.weight_g }} g{% else %}–{% endif %}</td>
+                {% if facts.show_making %}<td>{{ ln.making }}</td>{% endif %}
+                <td>{% if ln.metal_rate_paise %}₹{{ ln.metal_rate_paise|inr }}/g{% else %}–{% endif %}</td>
+                <td class="num">{{ ln.line_total_paise|inr }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table></div>
+
+    <!--<div class="inv-rates">Gold ₹{{ facts.gold_rate_paise|inr }}/g · Silver ₹{{ facts.silver_rate_paise|inr }}/g on this bill</div>-->
+
+    <div class="totals-section">
+        <div class="total-row"><span>Subtotal</span><span>₹{{ facts.subtotal_paise|inr }}</span></div>
+        {% if facts.discount_paise %}
+        <div class="total-row"><span>Discount{% if facts.discount_type == 'percent' %} ({{ facts.discount_value }}%){% endif %}</span><span class="disc">− ₹{{ facts.discount_paise|inr }}</span></div>
+        {% endif %}
+        {% if facts.gst_rate %}
+        <div class="total-row"><span>GST ({{ facts.gst_rate }}%)</span><span>₹{{ facts.gst_paise|inr }}</span></div>
+        {% endif %}
+        {% if facts.exchange_paise %}
+        <div class="total-row"><span>Old {{ facts.exchange_metal|capitalize }} Exchange{% if facts.exchange_weight %} ({{ facts.exchange_weight }}g){% endif %}</span><span class="disc">− ₹{{ facts.exchange_paise|inr }}</span></div>
+        {% endif %}
+        <div class="total-row grand"><span>Total</span><span>₹{{ facts.total_paise|inr }}</span></div>
+        <div class="total-row paidline"><span>Paid</span><span>₹{{ facts.paid_paise|inr }}</span></div>
+        <div class="total-row paidline"><span>Balance Due</span><span>₹{{ facts.balance_paise|inr }}</span></div>
+    </div>
+
+    {% if invoice.invoice_payments %}
+    <div class="inv-cap" style="margin-top: 22px;">Payments Received</div>
+    <div class="invoice-table-scroll" role="region" aria-label="Payments received" tabindex="0"><table class="mini-table">
+        <thead><tr><th>Date</th><th>Amount (₹)</th><th>Method</th><th>Notes</th></tr></thead>
+        <tbody>
+            {% for payment in invoice.invoice_payments %}
+            <tr><td>{{ payment.payment_date.strftime('%d %b %Y') }}</td><td>{{ (payment.amount)|inr }}</td><td>{{ payment.payment_method|capitalize }}</td><td>{{ payment.notes or '–' }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table></div>
+    {% endif %}
+
+    <div class="inv-foot">Thank you for shopping with us · Please mention your bill number for payments</div>
+</div>
+
+<style>
+.invoice-container { max-width: 820px; margin: 0 auto; background: var(--paper); border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(120, 90, 20, .10); font-family: Arial, sans-serif; padding-bottom: 8px; }
+.inv-head { background: linear-gradient(180deg, var(--paper-letterhead), var(--paper)); border: 2px solid var(--paper-ink);
+    border-bottom: 3px solid var(--paper-ink); border-radius: 12px 12px 0 0;
+    padding: 24px 28px; display: flex; justify-content: space-between; gap: 16px; }
+.inv-firm { font-size: 26px; color: var(--paper-letter); font-weight:700; font-family: Georgia, serif; }
+.inv-sub { font-size: 14px; letter-spacing: 2px; text-transform: uppercase; color: var(--paper-caps); margin-top: 2px; }
+.inv-addr { font-size: 14px; color: var(--paper-ink); margin-top: 6px; font-family: Arial, sans-serif; }
+.inv-meta { text-align: right; }
+.inv-no { font-size: 20px; font-weight:700; color: var(--paper-ink); }
+.inv-date { font-size: 14px; color: var(--paper-ink); margin: 2px 0 8px; font-family: Arial, sans-serif; }
+.inv-status { display: inline-block; padding: 3px 12px; border-radius: 20px; font-size: 12px;
+    font-family: Arial, sans-serif; font-weight:700; text-transform: uppercase; }
+.status-pending { background: var(--gold-soft); color: var(--amber); }
+.status-paid { background: var(--green-soft); color: var(--green); }
+.status-cancelled { background: var(--red-soft); color: var(--red); }
+.inv-billto { padding: 18px 28px 0; }
+.inv-cap { font-size: 14px; letter-spacing: 2px; text-transform: uppercase; color: var(--paper-caps); font-weight:700; margin-bottom: 6px; }
+.inv-client { font-size: 18px; font-weight:700; color: var(--paper-ink); }
+.inv-phone { font-size: 16px; font-weight:400; color: var(--paper-ink); }
+.inv-muted { font-size: 14px; color: var(--paper-ink); }
+.invoice-table { width: calc(100% - 56px); margin: 16px 28px 0; border-collapse: collapse; }
+.invoice-table th { font-size: 14px; letter-spacing: 1px; text-transform: uppercase; color: var(--paper);
+    background: var(--paper-ink); padding: 10px 8px; text-align: left; }
+.invoice-table th:first-child { border-radius: 8px 0 0 0; }
+.invoice-table th:last-child { border-radius: 0 8px 0 0; }
+.invoice-table td { padding: 12px 8px; border-bottom: 1px solid var(--paper-rule-soft); font-size: 16px; }
+.invoice-table .num { text-align: right; font-weight:700; }
+.item-badge { display: inline-block; background: var(--gold-soft); color: var(--amber); border: 1px solid var(--paper-badge);
+    padding: 1px 8px; border-radius: 12px; font-size: 11px; margin-left: 6px; }
+.inv-rates { margin: 10px 28px 0; font-size: 14px; color: var(--paper-ink); }
+.totals-section { margin: 12px 28px 0 40%; border: 2px solid var(--paper-ink); border-radius: 10px;
+    background: var(--paper-letterhead); padding: 12px 18px; }
+.total-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 16px; }
+.disc { color: var(--green); font-weight:700; }
+.grand { border-top: 2px solid var(--paper-ink); margin-top: 6px; padding-top: 8px; font-size: 20px; font-weight:700; color: var(--paper-ink); }
+.paidline { color: var(--green); font-weight:700; }
+.mini-table { width: calc(100% - 56px); margin: 8px 28px 0; border-collapse: collapse; }
+.mini-table th { font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: var(--paper-ink);
+    text-align: left; padding: 8px; border-bottom: 1px solid var(--paper-ink); }
+.mini-table td { font-size: 14px; color: var(--paper-ink); padding: 8px; border-bottom: 1px solid var(--paper-rule-2); }
+.inv-foot { text-align: center; font-size: 14px; color: var(--paper-soft); padding: 20px 28px 24px; }
+@media (max-width: 640px) {
+    .invoice-container { overflow: hidden; }
+    .inv-head { flex-direction: column; padding: 18px; gap: 10px; }
+    .inv-meta { text-align: left; }
+    .inv-firm { font-size: 22px; }
+    .inv-billto { padding: 14px 18px 0; }
+    .invoice-table { width: calc(100% - 36px); margin: 14px 18px 0; min-width: 620px; }
+    .mini-table { width: calc(100% - 36px); margin: 8px 18px 0; min-width: 480px; }
+    .inv-rates { margin: 10px 18px 0; font-size: 13px; }
+    .totals-section { margin: 12px 18px 0 18px; }
+    .inv-foot { padding: 16px 18px 20px; }
+}
+@media print {
+    header, footer, .toasts, .no-print { display: none !important; }
+    main { padding: 0; }
+    .invoice-container { box-shadow: none; max-width: none; }
+    .inv-head { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+</style>
+
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/invoice-share.js', v='workflow-1') }}" defer></script>{% endblock %}

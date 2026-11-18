@@ -1,0 +1,328 @@
+[
+  {
+    "name": "missing-tag-design",
+    "method": "POST",
+    "url": "/tags/save",
+    "status": 500,
+    "error": "AttributeError: 'NoneType' object has no attribute 'name' and no __dict__ for setting new attributes",
+    "invoice": {
+      "status": "pending",
+      "total": 10815,
+      "payments": 0,
+      "customer_balance": 10815
+    }
+  },
+  {
+    "name": "huge-customer-page",
+    "method": "GET",
+    "url": "/clients?page=999999999999999999999999999999999999",
+    "status": 500,
+    "error": "OverflowError: Python int too large to convert to SQLite INTEGER",
+    "invoice": {
+      "status": "pending",
+      "total": 10815,
+      "payments": 0,
+      "customer_balance": 10815
+    }
+  },
+  {
+    "name": "huge-stock-page",
+    "method": "GET",
+    "url": "/products?page=999999999999999999999999999999999999",
+    "status": 500,
+    "error": "OverflowError: Python int too large to convert to SQLite INTEGER",
+    "invoice": {
+      "status": "pending",
+      "total": 10815,
+      "payments": 0,
+      "customer_balance": 10815
+    }
+  },
+  {
+    "name": "huge-bill-page",
+    "method": "GET",
+    "url": "/invoices?page=999999999999999999999999999999999999",
+    "status": 500,
+    "error": "OverflowError: Python int too large to convert to SQLite INTEGER",
+    "invoice": {
+      "status": "pending",
+      "total": 10815,
+      "payments": 0,
+      "customer_balance": 10815
+    }
+  },
+  {
+    "name": "max-report-date",
+    "method": "GET",
+    "url": "/reports?to=9999-12-31",
+    "status": 500,
+    "error": "OverflowError: date value out of range",
+    "invoice": {
+      "status": "pending",
+      "total": 10815,
+      "payments": 0,
+      "customer_balance": 10815
+    }
+  },
+  {
+    "name": "bad-report-date",
+    "method": "GET",
+    "url": "/reports?from=wrong&to=wrong",
+    "status": 200,
+    "location": null,
+    "invoice": {
+      "status": "pending",
+      "total": 10815,
+      "payments": 0,
+      "customer_balance": 10815
+    }
+  },
+  {
+    "name": "bad-weight-range",
+    "method": "GET",
+    "url": "/products?min_weight=nan&max_weight=1",
+    "status": 200,
+    "location": null,
+    "invoice": {
+      "status": "pending",
+      "total": 10815,
+      "payments": 0,
+      "customer_balance": 10815
+    }
+  },
+  {
+    "name": "huge-tag-id",
+    "method": "GET",
+    "url": "/tags/print?ids=99999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999",
+    "status": 500,
+    "error": "OverflowError: Python int too large to convert to SQLite INTEGER",
+    "invoice": {
+      "status": "pending",
+      "total": 10815,
+      "payments": 0,
+      "customer_balance": 10815
+    }
+  },
+  {
+    "name": "huge-product-id",
+    "method": "GET",
+    "url": "/products/9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999",
+    "status": 500,
+    "error": "OverflowError: Python int too large to convert to SQLite INTEGER",
+    "invoice": {
+      "status": "pending",
+      "total": 10815,
+      "payments": 0,
+      "customer_balance": 10815
+    }
+  },
+  {
+    "name": "invalid-quick-json",
+    "method": "POST",
+    "url": "/clients/quick",
+    "status": 400,
+    "location": null,
+    "invoice": {
+      "status": "pending",
+      "total": 10815,
+      "payments": 0,
+      "customer_balance": 10815
+    }
+  },
+  {
+    "name": "invalid-passkey-json",
+    "method": "POST",
+    "url": "/passkeys/register/options",
+    "status": 500,
+    "error": "AttributeError: 'list' object has no attribute 'get'",
+    "invoice": {
+      "status": "pending",
+      "total": 10815,
+      "payments": 0,
+      "customer_balance": 10815
+    }
+  },
+  {
+    "name": "duplicate-customer-phone",
+    "method": "POST",
+    "url": "/clients/1/edit",
+    "status": 302,
+    "location": "/clients/1",
+    "invoice": {
+      "status": "pending",
+      "total": 10815,
+      "payments": 0,
+      "customer_balance": 10815
+    }
+  },
+  {
+    "name": "mark-unpaid-bill-paid",
+    "method": "POST",
+    "url": "/invoices/1/update_status",
+    "status": 302,
+    "location": "/invoices/1",
+    "invoice": {
+      "status": "paid",
+      "total": 10815,
+      "payments": 0,
+      "customer_balance": 10815
+    }
+  },
+  {
+    "name": "negative-customer-credit",
+    "method": "POST",
+    "url": "/clients/1/edit",
+    "status": 302,
+    "location": "/clients/1/edit",
+    "invoice": {
+      "status": "pending",
+      "total": 10815,
+      "payments": 0,
+      "customer_balance": 10815
+    }
+  },
+  {
+    "name": "missing-record",
+    "method": "POST",
+    "url": "/users/999999/reset-password",
+    "status": 404
+  },
+  {
+    "name": "missing-record",
+    "method": "POST",
+    "url": "/users/999999/delete",
+    "status": 404
+  },
+  {
+    "name": "missing-record",
+    "method": "GET",
+    "url": "/clients/999999",
+    "status": 404
+  },
+  {
+    "name": "missing-record",
+    "method": "GET",
+    "url": "/clients/999999/statement",
+    "status": 404
+  },
+  {
+    "name": "missing-record",
+    "method": "GET",
+    "url": "/clients/999999/edit",
+    "status": 404
+  },
+  {
+    "name": "missing-record",
+    "method": "POST",
+    "url": "/clients/999999/edit",
+    "status": 404
+  },
+  {
+    "name": "missing-record",
+    "method": "POST",
+    "url": "/clients/999999/delete",
+    "status": 404
+  },
+  {
+    "name": "missing-record",
+    "method": "GET",
+    "url": "/clients/999999/pay-remaining",
+    "status": 404
+  },
+  {
+    "name": "missing-record",
+    "method": "POST",
+    "url": "/clients/999999/pay-remaining",
+    "status": 404
+  },
+  {
+    "name": "missing-record",
+    "method": "GET",
+    "url": "/invoices/999999",
+    "status": 404
+  },
+  {
+    "name": "missing-record",
+    "method": "GET",
+    "url": "/invoices/999999/pdf",
+    "status": 404
+  },
+  {
+    "name": "missing-record",
+    "method": "GET",
+    "url": "/invoices/999999/receipt",
+    "status": 404
+  },
+  {
+    "name": "missing-record",
+    "method": "POST",
+    "url": "/invoices/999999/delete",
+    "status": 404
+  },
+  {
+    "name": "missing-record",
+    "method": "POST",
+    "url": "/invoices/999999/update_status",
+    "status": 404
+  },
+  {
+    "name": "missing-record",
+    "method": "GET",
+    "url": "/invoices/999999/payment",
+    "status": 404
+  },
+  {
+    "name": "missing-record",
+    "method": "POST",
+    "url": "/invoices/999999/payment",
+    "status": 404
+  },
+  {
+    "name": "missing-record",
+    "method": "GET",
+    "url": "/products/999999",
+    "status": 404
+  },
+  {
+    "name": "missing-record",
+    "method": "GET",
+    "url": "/products/999999/tag",
+    "status": 404
+  },
+  {
+    "name": "missing-record",
+    "method": "GET",
+    "url": "/products/999999/edit",
+    "status": 404
+  },
+  {
+    "name": "missing-record",
+    "method": "POST",
+    "url": "/products/999999/edit",
+    "status": 404
+  },
+  {
+    "name": "missing-record",
+    "method": "POST",
+    "url": "/products/999999/delete",
+    "status": 404
+  },
+  {
+    "name": "missing-record",
+    "method": "POST",
+    "url": "/tags/999999/delete",
+    "status": 404
+  },
+  {
+    "name": "missing-record",
+    "method": "GET",
+    "url": "/deleted-bills/999999",
+    "status": 404
+  },
+  {
+    "name": "missing-record",
+    "method": "POST",
+    "url": "/account/passkeys/999999/delete",
+    "status": 403
+  }
+]

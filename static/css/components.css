@@ -1,0 +1,435 @@
+
+/* ============================================================================
+   TOKENS — the only place a colour is allowed to be written down.
+   Contrast fixes from DESIGN.md are applied: --muted darkened, --gold-ink
+   added for small gold text, deep/bright gold split so white text on gold
+   stops failing AA.
+   ============================================================================ */
+:root{
+  --bg:#f6f4ef; --card:#ffffff; --ink:#1d1a15; --muted:#766f65; --line:#e8e2d6;
+  --row-hover:#fcfaf6; --sunken:#faf7f0; --line-soft:#f2eee5;
+  --gold:#b4811d; --gold-ink:#8f6616; --gold-2:#d9b34a; --gold-soft:#fdf6e3;
+  --gold-deep:linear-gradient(150deg,#96690f,#7d5a0d);
+  --gold-edge:#7d5a0d;
+  --gold-bright:linear-gradient(150deg,#e5c558,#c9962c);
+  --on-gold-deep:#ffffff; --on-gold-bright:#2a1f06;
+  --green:#15803d; --green-soft:#e9f7ee;
+  --red:#b42318; --red-soft:#fdeceb;
+  --amber:#b45309; --amber-soft:#fdf3e3; --amber-line:#f0d9a8;
+  --blue:#1d4ed8; --blue-soft:#eaf0ff;
+  --radius:14px; --radius-sm:9px; --radius-xs:4px; --radius-full:999px;
+  --shadow-sm:0 1px 2px rgba(28,25,20,.06);
+  --shadow:0 1px 2px rgba(28,25,20,.05), 0 8px 24px rgba(28,25,20,.07);
+  --shadow-lg:0 10px 30px rgba(28,25,20,.18);
+  --fs-xs:11.5px; --fs-sm:12.5px; --fs-base:14px; --fs-md:15px;
+  --fs-lg:17px; --fs-xl:20px; --fs-2xl:24px; --fs-3xl:30px;
+  --ink-deep:#17130f; --ink-mid:#2b231a; --ink-warm:#5c430e;
+  --header:linear-gradient(150deg,var(--ink-deep) 0%,var(--ink-mid) 60%,var(--ink-warm) 100%);
+  --on-dark:#ffffff; --on-dark-muted:#cdbf9d; --on-dark-link:#e8dfcb;
+  --video:#000000;
+  --ink-strong:#26221c;   /* primary button, the darkest ink on a surface */
+  --label:#4a443a;        /* form label */
+  --th-ink:#57503f;       /* table header text */
+  --neutral-ink:#5f5749; --neutral-soft:#f1eee7;
+  --line-strong:#d9d2c4;  /* hover border */
+  --line-input:#ddd6c8;   /* input border */
+  --tabbar-h:62px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{font-family:'Inter','Segoe UI',system-ui,-apple-system,'Noto Sans',Tahoma,sans-serif;
+  background:var(--bg);color:var(--ink);font-size:var(--fs-base);line-height:1.55;
+  min-height:100vh;display:flex;flex-direction:column}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+h1,h2,h3{letter-spacing:-.015em;line-height:1.25}
+.num,.stat-value,td.r,th.r{font-variant-numeric:tabular-nums}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+  clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* ---- focus: one treatment everywhere, visible on every background ---- */
+:where(a,button,input,select,textarea,[tabindex]):focus-visible{
+  outline:0;box-shadow:0 0 0 3px rgba(217,179,74,.55);border-radius:var(--radius-xs)}
+header :where(a,button):focus-visible{box-shadow:0 0 0 3px rgba(255,255,255,.65)}
+
+/* ============================================================================
+   SHELL — dark app bar, then a bottom tab bar on phones and a horizontal
+   nav on desktop. One set of links, two presentations.
+   ============================================================================ */
+header{background:var(--header);color:var(--on-dark);position:sticky;top:0;z-index:600;
+  box-shadow:0 2px 16px rgba(0,0,0,.28)}
+.topbar{max-width:1200px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:14px}
+.brand{display:flex;align-items:center;gap:10px;color:var(--on-dark);text-decoration:none;flex-shrink:0;min-width:0}
+.brand:hover{text-decoration:none}
+.brand-mark{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;flex-shrink:0;
+  background:var(--gold-bright);color:var(--on-gold-bright);font-weight:700;font-size:16px}
+.brand-text{line-height:1.15;min-width:0}
+.brand-text b{display:block;font-size:var(--fs-md);font-weight:700;letter-spacing:.01em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:46vw}
+.brand-text span{display:block;font-size:10.5px;color:var(--on-dark-muted);letter-spacing:.09em;text-transform:uppercase}
+nav{margin-left:auto;display:flex;gap:2px;align-items:center;flex-wrap:wrap}
+nav a{color:var(--on-dark-link);text-decoration:none;font-size:13.5px;font-weight:500;padding:8px 11px;
+  border-radius:var(--radius-sm);white-space:nowrap;min-height:36px;display:inline-flex;align-items:center}
+nav a:hover{background:rgba(255,255,255,.10);color:var(--on-dark);text-decoration:none}
+nav a.active{background:rgba(255,255,255,.17);color:var(--on-dark)}
+nav .nav-sep{width:1px;height:20px;background:rgba(255,255,255,.16);margin:0 6px}
+.user-chip{display:flex;align-items:center;gap:8px;margin-left:8px;padding-left:12px;
+  border-left:1px solid rgba(255,255,255,.16)}
+.user-chip .who{font-size:12.5px;color:var(--on-dark-muted);white-space:nowrap}
+.user-chip a{font-size:12.5px;color:var(--on-dark);background:rgba(255,255,255,.12);padding:7px 11px;border-radius:var(--radius-sm)}
+.user-chip a:hover{background:rgba(255,255,255,.22);text-decoration:none}
+.nav-toggle{display:none;background:rgba(255,255,255,.12);border:0;color:var(--on-dark);font-size:18px;
+  padding:8px 13px;border-radius:var(--radius-sm);cursor:pointer;margin-left:auto;min-height:44px;min-width:44px}
+
+/* the phone tab bar. Hidden on desktop. */
+.tabbar{display:none}
+
+main{flex:1;width:100%;max-width:1200px;margin:0 auto;padding:22px 20px 56px}
+footer{color:var(--muted);font-size:var(--fs-sm);text-align:center;padding:18px 20px 26px}
+
+/* ============================================================================
+   LAYOUT
+   ============================================================================ */
+.page-head{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;
+  flex-wrap:wrap;margin-bottom:18px}
+.page-head h1{font-size:var(--fs-xl);font-weight:700}
+.page-head .sub{color:var(--muted);font-size:var(--fs-sm);margin-top:2px}
+.page-actions{display:flex;gap:8px;flex-wrap:wrap}
+.section{margin-bottom:18px}
+.section-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:10px}
+.section-head h2,.section-head h3{font-size:var(--fs-md);font-weight:700}
+.section-head .hint{font-size:var(--fs-sm);color:var(--muted)}
+.section-head a{font-size:var(--fs-sm);color:var(--gold-ink);font-weight:600}
+
+/* ============================================================================
+   CARDS
+   ============================================================================ */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow-sm);padding:20px;margin-bottom:18px}
+.card-head{display:flex;justify-content:space-between;align-items:center;gap:12px;
+  flex-wrap:wrap;margin-bottom:14px}
+.card-head h2,.card-head h3{font-size:var(--fs-md);font-weight:700}
+.card-head .hint{font-size:var(--fs-sm);color:var(--muted)}
+.card.tight{padding:14px 16px}
+.grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
+
+/* ============================================================================
+   BUTTONS — 48px tall so they are usable one-handed on a shop floor phone.
+   ============================================================================ */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  font:inherit;font-size:var(--fs-base);font-weight:600;padding:0 17px;min-height:44px;
+  border-radius:var(--radius-sm);border:1px solid transparent;cursor:pointer;
+  text-decoration:none;white-space:nowrap;transition:filter .12s ease,transform .05s ease}
+.btn:hover{text-decoration:none;filter:brightness(1.05)}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--ink-strong);color:var(--on-dark);border-color:var(--ink-strong)}
+.btn-success{background:var(--green);color:var(--on-dark);border-color:var(--green)}
+.btn-danger{background:var(--red);color:var(--on-dark);border-color:var(--red)}
+.btn-gold{background:var(--gold-deep);color:var(--on-gold-deep);border-color:var(--gold-edge)}
+.btn-ghost{background:var(--card);color:var(--ink);border-color:var(--line)}
+.btn-ghost:hover{background:var(--sunken);border-color:var(--line-strong)}
+.btn-sm{padding:0 11px;min-height:36px;font-size:var(--fs-sm)}
+.btn-lg{padding:0 22px;min-height:52px;font-size:var(--fs-md)}
+.btn-block{width:100%}
+.btn:disabled,.btn.is-busy{opacity:.62;cursor:progress;pointer-events:none}
+.btn .spin{width:15px;height:15px;border:2px solid rgba(255,255,255,.45);
+  border-top-color:currentColor;border-radius:50%;animation:sp .7s linear infinite;flex:0 0 auto}
+.btn-ghost .spin{border-color:rgba(29,26,21,.25);border-top-color:var(--ink)}
+@keyframes sp{to{transform:rotate(360deg)}}
+form.inline{display:inline}
+
+/* ============================================================================
+   TABLES
+   ============================================================================ */
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);
+  border-radius:var(--radius);background:var(--card);box-shadow:var(--shadow-sm)}
+table{width:100%;border-collapse:collapse;font-size:var(--fs-base)}
+thead th{background:var(--sunken);color:var(--th-ink);font-size:var(--fs-xs);letter-spacing:.06em;
+  text-transform:uppercase;text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);
+  white-space:nowrap}
+tbody td{padding:12px 14px;border-bottom:1px solid var(--line-soft);vertical-align:middle}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--row-hover)}
+td.r,th.r{text-align:right}
+.row-actions{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+.mini{color:var(--muted);font-size:var(--fs-sm)}
+
+/* ============================================================================
+   BADGES
+   ============================================================================ */
+.badge{display:inline-block;padding:3px 10px;border-radius:var(--radius-full);font-size:var(--fs-xs);
+  font-weight:700;letter-spacing:.02em;text-transform:capitalize;white-space:nowrap}
+.badge-paid{background:var(--green-soft);color:var(--green)}
+.badge-pending{background:var(--amber-soft);color:var(--amber)}
+.badge-cancelled{background:var(--red-soft);color:var(--red)}
+.badge-neutral{background:var(--neutral-soft);color:var(--neutral-ink)}
+.badge-gold{background:var(--gold-soft);color:var(--gold-ink)}
+.badge-line{text-decoration:line-through}
+
+/* ============================================================================
+   STATS and MONEY TILES
+   ============================================================================ */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:14px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  padding:16px 18px;box-shadow:var(--shadow-sm);position:relative;overflow:hidden}
+.stat::after{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--gold-2)}
+.stat.warn::after{background:var(--amber)}
+.stat.good::after{background:var(--green)}
+.stat-label{font-size:var(--fs-xs);letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.stat-value{font-size:var(--fs-2xl);font-weight:700;margin-top:6px;letter-spacing:-.02em}
+.stat-hint{font-size:var(--fs-sm);color:var(--muted);margin-top:2px}
+
+/* a tile is a stat you can tap. Used on the counter. */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.tile{display:block;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  padding:15px 16px;box-shadow:var(--shadow-sm);position:relative;overflow:hidden;color:inherit}
+.tile:hover{text-decoration:none;border-color:var(--line-strong)}
+.tile::after{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--gold-2)}
+.tile.due::after{background:var(--amber)}
+.tile.good::after{background:var(--green)}
+.tile-label{font-size:var(--fs-xs);letter-spacing:.06em;text-transform:uppercase;
+  color:var(--muted);font-weight:600}
+.tile-value{font-size:var(--fs-2xl);font-weight:700;letter-spacing:-.03em;margin-top:5px;
+  font-variant-numeric:tabular-nums}
+.tile-hint{font-size:var(--fs-sm);color:var(--muted);margin-top:2px}
+
+/* the two things the counter does most, given the most space */
+.hero{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.hero a,.hero button{border-radius:var(--radius);padding:18px 16px 16px;text-align:left;
+  min-height:112px;display:flex;flex-direction:column;justify-content:space-between;
+  border:1px solid transparent;color:inherit}
+.hero a:hover,.hero button:hover{text-decoration:none;filter:brightness(1.04)}
+.hero .glabel{font-size:var(--fs-sm);font-weight:600;opacity:.92;display:block}
+.hero .gbig{font-size:var(--fs-2xl);font-weight:700;letter-spacing:-.03em;display:block}
+.hero .gicon{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;
+  background:rgba(255,255,255,.20);margin-bottom:12px}
+.hero .gicon svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.9;
+  stroke-linecap:round;stroke-linejoin:round}
+.hero .bill{background:var(--gold-deep);color:var(--on-gold-deep);
+  box-shadow:0 8px 20px rgba(125,90,13,.28)}
+.hero .scan{background:var(--card);border-color:var(--line);box-shadow:var(--shadow-sm)}
+.hero .scan .gicon{background:var(--gold-soft)}
+.hero .scan .gicon svg{stroke:var(--gold-ink)}
+
+/* search — the most used control in the shop */
+.search{display:flex;align-items:center;gap:10px;background:var(--card);
+  border:1px solid var(--line);border-radius:var(--radius-sm);padding:0 13px;min-height:48px;
+  box-shadow:var(--shadow-sm)}
+.search svg{width:18px;height:18px;stroke:var(--muted);fill:none;stroke-width:1.9;stroke-linecap:round}
+.search input{border:0;outline:0;background:none;font:inherit;font-size:var(--fs-md);width:100%;
+  color:var(--ink);min-height:46px}
+.search input:focus-visible{box-shadow:none}
+.search input::placeholder{color:var(--muted)}
+
+/* ============================================================================
+   LIST ROWS — for anything that is a list of things
+   ============================================================================ */
+.rows{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  overflow:hidden;box-shadow:var(--shadow-sm)}
+.rows .row:last-child{border-bottom:0}
+.row{display:flex;align-items:center;gap:13px;padding:13px 15px;min-height:64px;
+  border-bottom:1px solid var(--line-soft);width:100%;text-align:left;background:none;
+  color:inherit;font:inherit}
+.row:hover{background:var(--row-hover);text-decoration:none}
+.avatar{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;
+  font-weight:700;font-size:var(--fs-base);flex:0 0 auto;background:var(--gold-soft);
+  color:var(--gold-ink);font-variant-numeric:tabular-nums}
+.avatar.s{background:var(--blue-soft);color:var(--blue)}
+.avatar.g{background:var(--green-soft);color:var(--green)}
+.avatar.r{background:var(--red-soft);color:var(--red)}
+.row .body{flex:1 1 auto;min-width:0}
+.row .name{font-weight:600;font-size:var(--fs-md);white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis;display:block}
+.row .meta{font-size:var(--fs-sm);color:var(--muted);display:block}
+.row .amt{font-weight:700;font-size:var(--fs-md);text-align:right;flex:0 0 auto;
+  font-variant-numeric:tabular-nums}
+.row .amt small{display:block;font-weight:500;font-size:var(--fs-xs);color:var(--muted)}
+
+/* ============================================================================
+   FORMS
+   ============================================================================ */
+.field{margin-bottom:14px}
+.field label{display:block;font-size:var(--fs-sm);font-weight:600;color:var(--label);margin-bottom:5px}
+.field .help{font-size:var(--fs-sm);color:var(--muted);margin-top:4px}
+input[type=text],input[type=number],input[type=email],input[type=password],
+input[type=date],input[type=file],select,textarea{
+  width:100%;font:inherit;font-size:var(--fs-base);color:var(--ink);background:var(--card);
+  border:1px solid var(--line-input);border-radius:var(--radius-sm);padding:10px 11px;min-height:44px;
+  transition:border-color .12s,box-shadow .12s}
+input:focus,select:focus,textarea:focus{outline:0;border-color:var(--gold-2);
+  box-shadow:0 0 0 3px rgba(217,179,74,.22)}
+textarea{resize:vertical;min-height:64px}
+.field-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:0 16px}
+.check{display:flex;align-items:flex-start;gap:9px;padding:10px 12px;border:1px solid var(--line);
+  border-radius:var(--radius-sm);background:var(--sunken);margin-bottom:12px;font-size:13.5px}
+.check input{margin-top:3px;accent-color:var(--gold)}
+.form-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px;
+  padding-top:16px;border-top:1px solid var(--line)}
+.field-error input,.field-error select,.field-error textarea{border-color:var(--red)}
+.field-error .help{color:var(--red)}
+
+/* ============================================================================
+   TOOLBAR / CHIPS / PAGER / EMPTY
+   ============================================================================ */
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.toolbar input[type=text],.toolbar select{width:auto;min-width:150px;flex:1 1 190px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.chip{font-size:var(--fs-sm);padding:6px 12px;border-radius:var(--radius-full);
+  border:1px solid var(--line);background:var(--card);color:var(--neutral-ink);text-decoration:none}
+.chip:hover{background:var(--sunken);text-decoration:none}
+.chip.on{background:var(--ink-strong);color:var(--on-dark);border-color:var(--ink-strong)}
+.pager{display:flex;gap:14px;align-items:center;justify-content:center;margin-top:14px;
+  font-size:13.5px;color:var(--muted)}
+.pager a{font-weight:600}
+.empty{text-align:center;padding:44px 20px;color:var(--muted)}
+.empty .big{font-size:30px;display:block;margin-bottom:8px;opacity:.6}
+
+/* ============================================================================
+   TOASTS
+   ============================================================================ */
+.toasts{position:fixed;top:14px;right:14px;z-index:900;display:flex;flex-direction:column;
+  gap:8px;max-width:min(380px,92vw)}
+.toast{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--gold);
+  border-radius:10px;box-shadow:var(--shadow-lg);padding:12px 14px;font-size:13.5px;
+  display:flex;gap:10px;align-items:flex-start;animation:slidein .18s ease-out}
+.toast.success{border-left-color:var(--green)}
+.toast.danger{border-left-color:var(--red)}
+.toast.warning{border-left-color:var(--amber)}
+.toast.info{border-left-color:var(--blue)}
+.toast .x{margin-left:auto;cursor:pointer;color:var(--muted);font-weight:700;padding:0 4px;
+  background:none;border:0;font-size:16px;line-height:1}
+@keyframes slidein{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+
+/* ============================================================================
+   STICKY TOTAL — money must not scroll away while billing
+   ============================================================================ */
+.totalbar{position:sticky;bottom:0;z-index:500;background:var(--card);
+  border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-lg);
+  padding:13px 16px;margin-top:18px}
+.totalbar .sum{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:11px}
+.totalbar .sum .l{font-size:var(--fs-sm);color:var(--muted)}
+.totalbar .sum .v{font-size:var(--fs-2xl);font-weight:700;letter-spacing:-.03em;
+  font-variant-numeric:tabular-nums;line-height:1}
+.totalbar .acts{display:grid;grid-template-columns:1fr 1.5fr;gap:9px}
+
+/* ============================================================================
+   BILLING ROWS (create invoice) — markup and grid owned by that template
+   ============================================================================ */
+.item-row { grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr auto;
+  display: grid; gap: 8px; margin-bottom: 10px; align-items: center; }
+.item-row input,.item-row select{font-size:13.5px;padding:8px 9px;min-height:40px}
+.item-row .line-total{background:var(--sunken);font-weight:600}
+.item-row .line-note{grid-column:1/-1;font-size:var(--fs-xs);color:var(--muted);margin-top:-6px}
+.item-row .line-note:empty{display:none}
+.item-row input.computed{background:var(--sunken);color:var(--th-ink);cursor:default}
+.rate-hint{font-size:var(--fs-xs);color:var(--muted);grid-column:1/-1;margin-top:-4px}
+.making-label{font-size:var(--fs-xs);color:var(--muted)}
+
+/* ============================================================================
+   RESPONSIVE — phone first for the counter, desktop for the office
+   ============================================================================ */
+@media (max-width: 1130px){
+  /* ---- touch sizes ----
+     A mouse is precise; a thumb is not. The compact sizes above are deliberate
+     for the desktop density (36px row buttons, 40px billing inputs), but on any
+     touch-capable width everything a finger has to hit goes to 44px. */
+  .btn-sm{min-height:44px;padding:0 14px}
+  .item-row input,.item-row select{min-height:44px;font-size:14px}
+  nav a{min-height:44px}
+  .brand{min-height:44px}
+  .pager a{min-height:44px;display:inline-flex;align-items:center;padding:0 8px}
+
+  .nav-toggle{display:block}
+  /* The ☰ extends the primary nav, so it belongs at the END of it. Without
+     these orders it lands between the brand and the nav, which reads as a
+     mistake. The nav's own margin-left:auto carries the group to the right. */
+  .brand{order:1}
+  nav{order:2}
+  .nav-toggle{order:3;margin-left:0}
+  /* the long tail is reachable from ☰ rather than pushing the bar to two rows */
+  nav:not(.open) .nav-secondary,
+  nav:not(.open) .nav-sep{display:none}
+  nav.open{position:absolute;left:0;right:0;top:100%;margin:0;
+    padding:10px 20px calc(14px + env(safe-area-inset-bottom));
+    flex-direction:column;align-items:stretch;gap:0;
+    background:var(--header);box-shadow:0 14px 30px rgba(0,0,0,.35);
+    border-top:1px solid rgba(255,255,255,.14)}
+  nav.open a{min-height:48px;padding:12px 14px}
+  nav.open .nav-sep{display:block;width:auto;height:1px;margin:6px 0;
+    background:rgba(255,255,255,.14)}
+  nav.open .user-chip{margin:8px 0 0;padding:8px 0 0;border-left:0;
+    justify-content:space-between;border-top:1px solid rgba(255,255,255,.14)}
+  /* keep the brand from eating the row it now shares with the primary nav */
+  .brand-text b{max-width:32vw}
+  .brand-text span{display:none}
+}
+
+@media (max-width: 900px){
+  /* the bar now shares its row with the primary nav, so the username goes.
+     "Log out" stays - it is the thing you actually press. */
+  .user-chip .who{display:none}
+  .user-chip{padding-left:8px;margin-left:4px}
+  .brand-text b{max-width:24vw}
+  nav a{padding:8px 8px;font-size:13px}
+}
+
+@media (max-width: 768px){
+  main{padding:16px 14px 28px}
+  .card{padding:16px 14px}
+  .page-head h1{font-size:var(--fs-lg)}
+  .item-row{grid-template-columns:1fr 1fr !important;row-gap:8px}
+  .item-row .line-total{grid-column:span 2;width:100% !important}
+  .hero{grid-template-columns:1fr 1fr}
+}
+
+/* the phone tier: no inline nav at all, and a thumb bar at the bottom */
+@media (max-width: 640px){
+  nav{display:none}
+  nav.open{display:flex}
+  /* the inline nav is gone here, so the ☰ is the only thing on the right */
+  .nav-toggle{margin-left:auto}
+  .brand-text b{max-width:52vw}
+  main{padding-bottom:calc(var(--tabbar-h) + 28px)}
+  footer{display:none}
+  .totalbar{position:fixed;left:0;right:0;bottom:var(--tabbar-h);margin:0;border-radius:0;
+    border-left:0;border-right:0;
+    padding-bottom:calc(13px + env(safe-area-inset-bottom))}
+  body.has-totalbar main{padding-bottom:calc(var(--tabbar-h) + 132px)}
+
+  .tabbar{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:0;right:0;bottom:0;
+    z-index:700;background:rgba(255,255,255,.97);backdrop-filter:blur(12px);
+    border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+  .tab{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;
+    border-radius:var(--radius-sm);color:var(--muted);font-size:10.5px;font-weight:600;
+    text-decoration:none;min-height:48px;justify-content:center}
+  .tab:hover{text-decoration:none}
+  .tab svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.75;
+    stroke-linecap:round;stroke-linejoin:round}
+  .tab.active{color:var(--gold-ink)}
+  .tab.active svg{stroke-width:2.1}
+  .tab.center{position:relative;top:-14px}
+  .tab.center .disc{width:50px;height:50px;border-radius:50%;display:grid;place-items:center;
+    background:var(--gold-deep);color:var(--on-gold-deep);
+    box-shadow:0 8px 18px rgba(125,90,13,.36)}
+  .tab.center .disc svg{width:23px;height:23px;stroke-width:2}
+}
+
+@media (max-width: 520px){
+  .item-row{grid-template-columns:1fr !important;row-gap:8px}
+  .item-row .line-total{grid-column:span 1}
+  .hero{grid-template-columns:1fr}
+}
+
+/* ============================================================================
+   PRINT
+   ============================================================================ */
+@media print{
+  header,.tabbar,footer,.toasts,.no-print{display:none !important}
+  main{max-width:none;padding:0}
+  body{background:var(--on-dark)}
+  .card,.table-wrap,.totalbar{box-shadow:none}
+  .totalbar{position:static}
+}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms !important;transition-duration:.001ms !important}
+}

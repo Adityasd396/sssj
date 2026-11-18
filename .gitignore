@@ -1,0 +1,69 @@
+# Things that must never be committed.
+#
+# This file did not exist. Without it, `git add .` commits the live database,
+# customer data, and the backup_*.db files - which is how a copy of the shop's
+# books ended up inside a source zip once already.
+
+# ---- the database and its backups ----
+# instance/ holds billing.db: every bill, client, price and payment.
+instance/
+*.db
+*.sqlite
+*.sqlite3
+backup_*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# ---- secrets ----
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# ---- python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+.python-version
+
+# ---- tooling caches ----
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+.tox/
+.cache/
+
+# ---- editors / os ----
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---- scratch ----
+# Working files from debugging sessions; never part of the app.
+_*.py
+_*.txt
+_*.log
+_*.html
+_*.pdf
+_orig/
+_zipcheck/
+_v4check/
+probe/
+extracted/
+*.zip
+*.patch
