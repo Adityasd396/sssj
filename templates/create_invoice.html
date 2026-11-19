@@ -62,6 +62,11 @@
     <div class="section-next"><button type="button" class="btn btn-primary" data-bill-continue="items">Continue to items</button></div>
     </fieldset>
     <fieldset class="billing-section" id="bill-items" data-bill-section="items"><legend tabindex="-1">Items</legend>
+    {% if session.get('is_admin') %}<div class="bill-rate-controls"><h3>Rates for this bill</h3><div class="field-grid">
+      <div class="field"><label for="bill_gold_rate">Gold rate (₹/g)</label><input id="bill_gold_rate" name="bill_gold_rate" type="number" step="0.01" min="0.01" max="1000000000" inputmode="decimal" value="{{ request.form.get('bill_gold_rate', (settings.gold_manual_price / 100) if settings.gold_manual_price else '') }}"></div>
+      <div class="field"><label for="bill_silver_rate">Silver rate (₹/g)</label><input id="bill_silver_rate" name="bill_silver_rate" type="number" step="0.01" min="0.01" max="1000000000" inputmode="decimal" value="{{ request.form.get('bill_silver_rate', (settings.silver_manual_price / 100) if settings.silver_manual_price else '') }}"></div>
+    </div><p class="help">Applies to this bill only. Shop prices and previous bills stay unchanged.</p></div>{% endif %}
+
 
 
         <div class="scan-entry"><button type="button" class="btn scan-trigger" data-open-scanner><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5M7 9v6m3-7v8m4-8v8m3-7v6"/></svg>Scan tag</button><span class="scan-entry-copy"><strong>Scan or enter a product code.</strong><small>Camera · photo · USB scanner</small></span><div class="scan-code-entry"><input id="product-code" type="text" aria-label="Enter or scan tag number" placeholder="Or enter a tag number…" autocomplete="off"><button type="button" class="btn btn-ghost" onclick="addProductByCode()">Add</button></div></div><p id="scan-msg" role="status" class="mini" style="margin-bottom:12px"></p>
@@ -177,9 +182,9 @@ var SHOW_MAKING = {{ 'true' if settings is none or settings.show_making_charges 
 var INVOICE_PREVIEW_URL = {{ url_for('invoice_preview')|tojson }};
 </script>
 <script src="{{ url_for('static', filename='js/shop-request.js', v='workflow-1') }}"></script>
-<script src="{{ url_for('static', filename='js/client-search.js', v='routes-1') }}"></script>
-<script src="{{ url_for('static', filename='js/mobile-billing.js', v='routes-1') }}"></script>
-<script src="{{ url_for('static', filename='js/billing.js', v='routes-1') }}"></script>
-<script src="{{ url_for('static', filename='js/invoice-pricing.js', v='routes-1') }}"></script>
-<script src="{{ url_for('static', filename='js/bill-draft.js', v='routes-1') }}"></script>
+<script src="{{ url_for('static', filename='js/client-search.js', v='inventory-rates-1') }}"></script>
+<script src="{{ url_for('static', filename='js/mobile-billing.js', v='inventory-rates-1') }}"></script>
+<script src="{{ url_for('static', filename='js/billing.js', v='inventory-rates-1') }}"></script>
+<script src="{{ url_for('static', filename='js/invoice-pricing.js', v='inventory-rates-1') }}"></script>
+<script src="{{ url_for('static', filename='js/bill-draft.js', v='inventory-rates-1') }}"></script>
 {% endblock %}

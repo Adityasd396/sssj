@@ -126,6 +126,7 @@
     {% endif %}
 
     <div class="inv-foot">Thank you for shopping with us · Please mention your bill number for payments</div>
+    <div class="inv-foot no-print"><a class="btn btn-gold" href="{{ url_for('invoice_pdf', invoice_id=invoice.id, download=1) }}">Download bill (PDF)</a></div>
 </div>
 
 <style>

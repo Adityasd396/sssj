@@ -10,7 +10,7 @@
 <title>{% block title %}Billing{% endblock %} · {{ (shop_settings.firm_name if shop_settings and shop_settings.firm_name else 'Jewellery Billing') }}</title>
 
 {% block head %}{% endblock %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/app.css', v='mobile-1') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/app.css', v='inventory-rates-1') }}">
 </head>
 <body data-user="{{ session.get('user_id', '') }}" data-page="{{ request.endpoint }}" class="{{ 'app-auth' if session.get('user_id') else 'app-guest' }} {% block bodyclass %}{% endblock %}">
 <a class="skip-link" href="#main-content">Skip to content</a>

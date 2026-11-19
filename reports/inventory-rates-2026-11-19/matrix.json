@@ -1,0 +1,2081 @@
+[
+  {
+    "route": "/",
+    "endpoint": "index",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/",
+    "endpoint": "index",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/",
+    "endpoint": "index",
+    "method": "GET",
+    "role": "owner",
+    "url": "/",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/account/passkeys",
+    "endpoint": "passkeys",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/account/passkeys",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/account/passkeys",
+    "endpoint": "passkeys",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/account/passkeys",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/account/passkeys",
+    "endpoint": "passkeys",
+    "method": "GET",
+    "role": "owner",
+    "url": "/account/passkeys",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/account/passkeys/<int:key_id>/delete",
+    "endpoint": "passkey_delete",
+    "method": "POST",
+    "role": "anonymous",
+    "url": "/account/passkeys/1/delete",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/account/passkeys/<int:key_id>/delete",
+    "endpoint": "passkey_delete",
+    "method": "POST",
+    "role": "cashier",
+    "url": "/account/passkeys/1/delete",
+    "status": 403,
+    "location": null
+  },
+  {
+    "route": "/account/passkeys/<int:key_id>/delete",
+    "endpoint": "passkey_delete",
+    "method": "POST",
+    "role": "owner",
+    "url": "/account/passkeys/1/delete",
+    "status": 403,
+    "location": null
+  },
+  {
+    "route": "/account/password",
+    "endpoint": "change_password",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/account/password",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/account/password",
+    "endpoint": "change_password",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/account/password",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/account/password",
+    "endpoint": "change_password",
+    "method": "GET",
+    "role": "owner",
+    "url": "/account/password",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/account/password",
+    "endpoint": "change_password",
+    "method": "POST",
+    "role": "anonymous",
+    "url": "/account/password",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/account/password",
+    "endpoint": "change_password",
+    "method": "POST",
+    "role": "cashier",
+    "url": "/account/password",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/account/password",
+    "endpoint": "change_password",
+    "method": "POST",
+    "role": "owner",
+    "url": "/account/password",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/api/clients",
+    "endpoint": "search_clients",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/api/clients",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/api/clients",
+    "endpoint": "search_clients",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/api/clients",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/api/clients",
+    "endpoint": "search_clients",
+    "method": "GET",
+    "role": "owner",
+    "url": "/api/clients",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/api/invoices/preview",
+    "endpoint": "invoice_preview",
+    "method": "POST",
+    "role": "anonymous",
+    "url": "/api/invoices/preview",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/api/invoices/preview",
+    "endpoint": "invoice_preview",
+    "method": "POST",
+    "role": "cashier",
+    "url": "/api/invoices/preview",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/api/invoices/preview",
+    "endpoint": "invoice_preview",
+    "method": "POST",
+    "role": "owner",
+    "url": "/api/invoices/preview",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/api/prices",
+    "endpoint": "get_prices",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/api/prices",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/api/prices",
+    "endpoint": "get_prices",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/api/prices",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/api/prices",
+    "endpoint": "get_prices",
+    "method": "GET",
+    "role": "owner",
+    "url": "/api/prices",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/api/session",
+    "endpoint": "current_session",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/api/session",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/api/session",
+    "endpoint": "current_session",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/api/session",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/api/session",
+    "endpoint": "current_session",
+    "method": "GET",
+    "role": "owner",
+    "url": "/api/session",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/audit-logs",
+    "endpoint": "audit_logs",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/audit-logs",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/audit-logs",
+    "endpoint": "audit_logs",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/audit-logs",
+    "status": 403,
+    "location": null
+  },
+  {
+    "route": "/audit-logs",
+    "endpoint": "audit_logs",
+    "method": "GET",
+    "role": "owner",
+    "url": "/audit-logs",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/backup/database",
+    "endpoint": "backup_database",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/backup/database",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/backup/database",
+    "endpoint": "backup_database",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/backup/database",
+    "status": 403,
+    "location": null
+  },
+  {
+    "route": "/backup/database",
+    "endpoint": "backup_database",
+    "method": "GET",
+    "role": "owner",
+    "url": "/backup/database",
+    "status": 302,
+    "location": "/settings#backup"
+  },
+  {
+    "route": "/backup/database",
+    "endpoint": "backup_database",
+    "method": "POST",
+    "role": "anonymous",
+    "url": "/backup/database",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/backup/database",
+    "endpoint": "backup_database",
+    "method": "POST",
+    "role": "cashier",
+    "url": "/backup/database",
+    "status": 403,
+    "location": null
+  },
+  {
+    "route": "/backup/database",
+    "endpoint": "backup_database",
+    "method": "POST",
+    "role": "owner",
+    "url": "/backup/database",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/backup/download",
+    "endpoint": "backup_download",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/backup/download",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/backup/download",
+    "endpoint": "backup_download",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/backup/download",
+    "status": 403,
+    "location": null
+  },
+  {
+    "route": "/backup/download",
+    "endpoint": "backup_download",
+    "method": "GET",
+    "role": "owner",
+    "url": "/backup/download",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/backup/restore",
+    "endpoint": "backup_restore",
+    "method": "POST",
+    "role": "anonymous",
+    "url": "/backup/restore",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/backup/restore",
+    "endpoint": "backup_restore",
+    "method": "POST",
+    "role": "cashier",
+    "url": "/backup/restore",
+    "status": 403,
+    "location": null
+  },
+  {
+    "route": "/backup/restore",
+    "endpoint": "backup_restore",
+    "method": "POST",
+    "role": "owner",
+    "url": "/backup/restore",
+    "status": 302,
+    "location": "/settings"
+  },
+  {
+    "route": "/clients",
+    "endpoint": "clients",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/clients",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/clients",
+    "endpoint": "clients",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/clients",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/clients",
+    "endpoint": "clients",
+    "method": "GET",
+    "role": "owner",
+    "url": "/clients",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/clients/<int:client_id>",
+    "endpoint": "view_client",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/clients/1",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/clients/<int:client_id>",
+    "endpoint": "view_client",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/clients/1",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/clients/<int:client_id>",
+    "endpoint": "view_client",
+    "method": "GET",
+    "role": "owner",
+    "url": "/clients/1",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/clients/<int:client_id>/delete",
+    "endpoint": "delete_client",
+    "method": "POST",
+    "role": "anonymous",
+    "url": "/clients/1/delete",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/clients/<int:client_id>/delete",
+    "endpoint": "delete_client",
+    "method": "POST",
+    "role": "cashier",
+    "url": "/clients/1/delete",
+    "status": 403,
+    "location": null
+  },
+  {
+    "route": "/clients/<int:client_id>/delete",
+    "endpoint": "delete_client",
+    "method": "POST",
+    "role": "owner",
+    "url": "/clients/1/delete",
+    "status": 302,
+    "location": "/clients/1"
+  },
+  {
+    "route": "/clients/<int:client_id>/edit",
+    "endpoint": "edit_client",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/clients/1/edit",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/clients/<int:client_id>/edit",
+    "endpoint": "edit_client",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/clients/1/edit",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/clients/<int:client_id>/edit",
+    "endpoint": "edit_client",
+    "method": "GET",
+    "role": "owner",
+    "url": "/clients/1/edit",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/clients/<int:client_id>/edit",
+    "endpoint": "edit_client",
+    "method": "POST",
+    "role": "anonymous",
+    "url": "/clients/1/edit",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/clients/<int:client_id>/edit",
+    "endpoint": "edit_client",
+    "method": "POST",
+    "role": "cashier",
+    "url": "/clients/1/edit",
+    "status": 302,
+    "location": "/clients/1"
+  },
+  {
+    "route": "/clients/<int:client_id>/edit",
+    "endpoint": "edit_client",
+    "method": "POST",
+    "role": "owner",
+    "url": "/clients/1/edit",
+    "status": 302,
+    "location": "/clients/1"
+  },
+  {
+    "route": "/clients/<int:client_id>/pay-remaining",
+    "endpoint": "pay_remaining",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/clients/1/pay-remaining",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/clients/<int:client_id>/pay-remaining",
+    "endpoint": "pay_remaining",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/clients/1/pay-remaining",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/clients/<int:client_id>/pay-remaining",
+    "endpoint": "pay_remaining",
+    "method": "GET",
+    "role": "owner",
+    "url": "/clients/1/pay-remaining",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/clients/<int:client_id>/pay-remaining",
+    "endpoint": "pay_remaining",
+    "method": "POST",
+    "role": "anonymous",
+    "url": "/clients/1/pay-remaining",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/clients/<int:client_id>/pay-remaining",
+    "endpoint": "pay_remaining",
+    "method": "POST",
+    "role": "cashier",
+    "url": "/clients/1/pay-remaining",
+    "status": 422,
+    "location": null
+  },
+  {
+    "route": "/clients/<int:client_id>/pay-remaining",
+    "endpoint": "pay_remaining",
+    "method": "POST",
+    "role": "owner",
+    "url": "/clients/1/pay-remaining",
+    "status": 422,
+    "location": null
+  },
+  {
+    "route": "/clients/<int:client_id>/statement",
+    "endpoint": "client_statement",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/clients/1/statement",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/clients/<int:client_id>/statement",
+    "endpoint": "client_statement",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/clients/1/statement",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/clients/<int:client_id>/statement",
+    "endpoint": "client_statement",
+    "method": "GET",
+    "role": "owner",
+    "url": "/clients/1/statement",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/clients/add",
+    "endpoint": "add_client",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/clients/add",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/clients/add",
+    "endpoint": "add_client",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/clients/add",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/clients/add",
+    "endpoint": "add_client",
+    "method": "GET",
+    "role": "owner",
+    "url": "/clients/add",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/clients/add",
+    "endpoint": "add_client",
+    "method": "POST",
+    "role": "anonymous",
+    "url": "/clients/add",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/clients/add",
+    "endpoint": "add_client",
+    "method": "POST",
+    "role": "cashier",
+    "url": "/clients/add",
+    "status": 302,
+    "location": "/clients/add"
+  },
+  {
+    "route": "/clients/add",
+    "endpoint": "add_client",
+    "method": "POST",
+    "role": "owner",
+    "url": "/clients/add",
+    "status": 302,
+    "location": "/clients/add"
+  },
+  {
+    "route": "/clients/quick",
+    "endpoint": "quick_client",
+    "method": "POST",
+    "role": "anonymous",
+    "url": "/clients/quick",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/clients/quick",
+    "endpoint": "quick_client",
+    "method": "POST",
+    "role": "cashier",
+    "url": "/clients/quick",
+    "status": 422,
+    "location": null
+  },
+  {
+    "route": "/clients/quick",
+    "endpoint": "quick_client",
+    "method": "POST",
+    "role": "owner",
+    "url": "/clients/quick",
+    "status": 422,
+    "location": null
+  },
+  {
+    "route": "/collect",
+    "endpoint": "collect",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/collect",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/collect",
+    "endpoint": "collect",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/collect",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/collect",
+    "endpoint": "collect",
+    "method": "GET",
+    "role": "owner",
+    "url": "/collect",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/deleted-bills",
+    "endpoint": "deleted_bills",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/deleted-bills",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/deleted-bills",
+    "endpoint": "deleted_bills",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/deleted-bills",
+    "status": 403,
+    "location": null
+  },
+  {
+    "route": "/deleted-bills",
+    "endpoint": "deleted_bills",
+    "method": "GET",
+    "role": "owner",
+    "url": "/deleted-bills",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/deleted-bills.csv",
+    "endpoint": "deleted_bills_csv",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/deleted-bills.csv",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/deleted-bills.csv",
+    "endpoint": "deleted_bills_csv",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/deleted-bills.csv",
+    "status": 403,
+    "location": null
+  },
+  {
+    "route": "/deleted-bills.csv",
+    "endpoint": "deleted_bills_csv",
+    "method": "GET",
+    "role": "owner",
+    "url": "/deleted-bills.csv",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/deleted-bills/<int:row_id>",
+    "endpoint": "view_deleted_bill",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/deleted-bills/1",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/deleted-bills/<int:row_id>",
+    "endpoint": "view_deleted_bill",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/deleted-bills/1",
+    "status": 403,
+    "location": null
+  },
+  {
+    "route": "/deleted-bills/<int:row_id>",
+    "endpoint": "view_deleted_bill",
+    "method": "GET",
+    "role": "owner",
+    "url": "/deleted-bills/1",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/export/data",
+    "endpoint": "export_data",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/export/data",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/export/data",
+    "endpoint": "export_data",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/export/data",
+    "status": 403,
+    "location": null
+  },
+  {
+    "route": "/export/data",
+    "endpoint": "export_data",
+    "method": "GET",
+    "role": "owner",
+    "url": "/export/data",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/export/gstr1.csv",
+    "endpoint": "export_gstr1",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/export/gstr1.csv",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/export/gstr1.csv",
+    "endpoint": "export_gstr1",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/export/gstr1.csv",
+    "status": 403,
+    "location": null
+  },
+  {
+    "route": "/export/gstr1.csv",
+    "endpoint": "export_gstr1",
+    "method": "GET",
+    "role": "owner",
+    "url": "/export/gstr1.csv",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/export/invoices.csv",
+    "endpoint": "export_invoices_csv",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/export/invoices.csv",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/export/invoices.csv",
+    "endpoint": "export_invoices_csv",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/export/invoices.csv",
+    "status": 403,
+    "location": null
+  },
+  {
+    "route": "/export/invoices.csv",
+    "endpoint": "export_invoices_csv",
+    "method": "GET",
+    "role": "owner",
+    "url": "/export/invoices.csv",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/healthz",
+    "endpoint": "healthz",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/healthz",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/healthz",
+    "endpoint": "healthz",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/healthz",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/healthz",
+    "endpoint": "healthz",
+    "method": "GET",
+    "role": "owner",
+    "url": "/healthz",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/invoices",
+    "endpoint": "invoices",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/invoices",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/invoices",
+    "endpoint": "invoices",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/invoices",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/invoices",
+    "endpoint": "invoices",
+    "method": "GET",
+    "role": "owner",
+    "url": "/invoices",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/invoices/<int:invoice_id>",
+    "endpoint": "view_invoice",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/invoices/1",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/invoices/<int:invoice_id>",
+    "endpoint": "view_invoice",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/invoices/1",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/invoices/<int:invoice_id>",
+    "endpoint": "view_invoice",
+    "method": "GET",
+    "role": "owner",
+    "url": "/invoices/1",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/invoices/<int:invoice_id>/delete",
+    "endpoint": "delete_invoice",
+    "method": "POST",
+    "role": "anonymous",
+    "url": "/invoices/1/delete",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/invoices/<int:invoice_id>/delete",
+    "endpoint": "delete_invoice",
+    "method": "POST",
+    "role": "cashier",
+    "url": "/invoices/1/delete",
+    "status": 403,
+    "location": null
+  },
+  {
+    "route": "/invoices/<int:invoice_id>/delete",
+    "endpoint": "delete_invoice",
+    "method": "POST",
+    "role": "owner",
+    "url": "/invoices/1/delete",
+    "status": 302,
+    "location": "/invoices"
+  },
+  {
+    "route": "/invoices/<int:invoice_id>/payment",
+    "endpoint": "add_payment",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/invoices/1/payment",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/invoices/<int:invoice_id>/payment",
+    "endpoint": "add_payment",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/invoices/1/payment",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/invoices/<int:invoice_id>/payment",
+    "endpoint": "add_payment",
+    "method": "GET",
+    "role": "owner",
+    "url": "/invoices/1/payment",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/invoices/<int:invoice_id>/payment",
+    "endpoint": "add_payment",
+    "method": "POST",
+    "role": "anonymous",
+    "url": "/invoices/1/payment",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/invoices/<int:invoice_id>/payment",
+    "endpoint": "add_payment",
+    "method": "POST",
+    "role": "cashier",
+    "url": "/invoices/1/payment",
+    "status": 422,
+    "location": null
+  },
+  {
+    "route": "/invoices/<int:invoice_id>/payment",
+    "endpoint": "add_payment",
+    "method": "POST",
+    "role": "owner",
+    "url": "/invoices/1/payment",
+    "status": 422,
+    "location": null
+  },
+  {
+    "route": "/invoices/<int:invoice_id>/pdf",
+    "endpoint": "invoice_pdf",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/invoices/1/pdf",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/invoices/<int:invoice_id>/pdf",
+    "endpoint": "invoice_pdf",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/invoices/1/pdf",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/invoices/<int:invoice_id>/pdf",
+    "endpoint": "invoice_pdf",
+    "method": "GET",
+    "role": "owner",
+    "url": "/invoices/1/pdf",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/invoices/<int:invoice_id>/receipt",
+    "endpoint": "invoice_receipt",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/invoices/1/receipt",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/invoices/<int:invoice_id>/receipt",
+    "endpoint": "invoice_receipt",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/invoices/1/receipt",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/invoices/<int:invoice_id>/receipt",
+    "endpoint": "invoice_receipt",
+    "method": "GET",
+    "role": "owner",
+    "url": "/invoices/1/receipt",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/invoices/<int:invoice_id>/update_status",
+    "endpoint": "update_invoice_status",
+    "method": "POST",
+    "role": "anonymous",
+    "url": "/invoices/1/update_status",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/invoices/<int:invoice_id>/update_status",
+    "endpoint": "update_invoice_status",
+    "method": "POST",
+    "role": "cashier",
+    "url": "/invoices/1/update_status",
+    "status": 403,
+    "location": null
+  },
+  {
+    "route": "/invoices/<int:invoice_id>/update_status",
+    "endpoint": "update_invoice_status",
+    "method": "POST",
+    "role": "owner",
+    "url": "/invoices/1/update_status",
+    "status": 302,
+    "location": "/invoices/1"
+  },
+  {
+    "route": "/invoices/create",
+    "endpoint": "create_invoice",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/invoices/create",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/invoices/create",
+    "endpoint": "create_invoice",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/invoices/create",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/invoices/create",
+    "endpoint": "create_invoice",
+    "method": "GET",
+    "role": "owner",
+    "url": "/invoices/create",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/invoices/create",
+    "endpoint": "create_invoice",
+    "method": "POST",
+    "role": "anonymous",
+    "url": "/invoices/create",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/invoices/create",
+    "endpoint": "create_invoice",
+    "method": "POST",
+    "role": "cashier",
+    "url": "/invoices/create",
+    "status": 302,
+    "location": "/invoices/create"
+  },
+  {
+    "route": "/invoices/create",
+    "endpoint": "create_invoice",
+    "method": "POST",
+    "role": "owner",
+    "url": "/invoices/create",
+    "status": 302,
+    "location": "/invoices/create"
+  },
+  {
+    "route": "/login",
+    "endpoint": "login",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/login",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/login",
+    "endpoint": "login",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/login",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/login",
+    "endpoint": "login",
+    "method": "GET",
+    "role": "owner",
+    "url": "/login",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/login",
+    "endpoint": "login",
+    "method": "POST",
+    "role": "anonymous",
+    "url": "/login",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/login",
+    "endpoint": "login",
+    "method": "POST",
+    "role": "cashier",
+    "url": "/login",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/login",
+    "endpoint": "login",
+    "method": "POST",
+    "role": "owner",
+    "url": "/login",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/logout",
+    "endpoint": "logout",
+    "method": "POST",
+    "role": "anonymous",
+    "url": "/logout",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/logout",
+    "endpoint": "logout",
+    "method": "POST",
+    "role": "cashier",
+    "url": "/logout",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/logout",
+    "endpoint": "logout",
+    "method": "POST",
+    "role": "owner",
+    "url": "/logout",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/passkeys/login/options",
+    "endpoint": "passkey_login_options",
+    "method": "POST",
+    "role": "anonymous",
+    "url": "/passkeys/login/options",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/passkeys/login/options",
+    "endpoint": "passkey_login_options",
+    "method": "POST",
+    "role": "cashier",
+    "url": "/passkeys/login/options",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/passkeys/login/options",
+    "endpoint": "passkey_login_options",
+    "method": "POST",
+    "role": "owner",
+    "url": "/passkeys/login/options",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/passkeys/login/verify",
+    "endpoint": "passkey_login_verify",
+    "method": "POST",
+    "role": "anonymous",
+    "url": "/passkeys/login/verify",
+    "status": 400,
+    "location": null
+  },
+  {
+    "route": "/passkeys/login/verify",
+    "endpoint": "passkey_login_verify",
+    "method": "POST",
+    "role": "cashier",
+    "url": "/passkeys/login/verify",
+    "status": 400,
+    "location": null
+  },
+  {
+    "route": "/passkeys/login/verify",
+    "endpoint": "passkey_login_verify",
+    "method": "POST",
+    "role": "owner",
+    "url": "/passkeys/login/verify",
+    "status": 400,
+    "location": null
+  },
+  {
+    "route": "/passkeys/register/options",
+    "endpoint": "passkey_register_options",
+    "method": "POST",
+    "role": "anonymous",
+    "url": "/passkeys/register/options",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/passkeys/register/options",
+    "endpoint": "passkey_register_options",
+    "method": "POST",
+    "role": "cashier",
+    "url": "/passkeys/register/options",
+    "status": 403,
+    "location": null
+  },
+  {
+    "route": "/passkeys/register/options",
+    "endpoint": "passkey_register_options",
+    "method": "POST",
+    "role": "owner",
+    "url": "/passkeys/register/options",
+    "status": 403,
+    "location": null
+  },
+  {
+    "route": "/passkeys/register/verify",
+    "endpoint": "passkey_register_verify",
+    "method": "POST",
+    "role": "anonymous",
+    "url": "/passkeys/register/verify",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/passkeys/register/verify",
+    "endpoint": "passkey_register_verify",
+    "method": "POST",
+    "role": "cashier",
+    "url": "/passkeys/register/verify",
+    "status": 400,
+    "location": null
+  },
+  {
+    "route": "/passkeys/register/verify",
+    "endpoint": "passkey_register_verify",
+    "method": "POST",
+    "role": "owner",
+    "url": "/passkeys/register/verify",
+    "status": 400,
+    "location": null
+  },
+  {
+    "route": "/prices/quick",
+    "endpoint": "quick_prices",
+    "method": "POST",
+    "role": "anonymous",
+    "url": "/prices/quick",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/prices/quick",
+    "endpoint": "quick_prices",
+    "method": "POST",
+    "role": "cashier",
+    "url": "/prices/quick",
+    "status": 403,
+    "location": null
+  },
+  {
+    "route": "/prices/quick",
+    "endpoint": "quick_prices",
+    "method": "POST",
+    "role": "owner",
+    "url": "/prices/quick",
+    "status": 302,
+    "location": "/"
+  },
+  {
+    "route": "/printers",
+    "endpoint": "printer_setup",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/printers",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/printers",
+    "endpoint": "printer_setup",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/printers",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/printers",
+    "endpoint": "printer_setup",
+    "method": "GET",
+    "role": "owner",
+    "url": "/printers",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/products",
+    "endpoint": "products",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/products",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/products",
+    "endpoint": "products",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/products",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/products",
+    "endpoint": "products",
+    "method": "GET",
+    "role": "owner",
+    "url": "/products",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/products/<int:product_id>",
+    "endpoint": "view_product",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/products/1",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/products/<int:product_id>",
+    "endpoint": "view_product",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/products/1",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/products/<int:product_id>",
+    "endpoint": "view_product",
+    "method": "GET",
+    "role": "owner",
+    "url": "/products/1",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/products/<int:product_id>/delete",
+    "endpoint": "delete_product",
+    "method": "POST",
+    "role": "anonymous",
+    "url": "/products/1/delete",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/products/<int:product_id>/delete",
+    "endpoint": "delete_product",
+    "method": "POST",
+    "role": "cashier",
+    "url": "/products/1/delete",
+    "status": 403,
+    "location": null
+  },
+  {
+    "route": "/products/<int:product_id>/delete",
+    "endpoint": "delete_product",
+    "method": "POST",
+    "role": "owner",
+    "url": "/products/1/delete",
+    "status": 302,
+    "location": "/products/1"
+  },
+  {
+    "route": "/products/<int:product_id>/edit",
+    "endpoint": "edit_product",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/products/1/edit",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/products/<int:product_id>/edit",
+    "endpoint": "edit_product",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/products/1/edit",
+    "status": 403,
+    "location": null
+  },
+  {
+    "route": "/products/<int:product_id>/edit",
+    "endpoint": "edit_product",
+    "method": "GET",
+    "role": "owner",
+    "url": "/products/1/edit",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/products/<int:product_id>/edit",
+    "endpoint": "edit_product",
+    "method": "POST",
+    "role": "anonymous",
+    "url": "/products/1/edit",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/products/<int:product_id>/edit",
+    "endpoint": "edit_product",
+    "method": "POST",
+    "role": "cashier",
+    "url": "/products/1/edit",
+    "status": 403,
+    "location": null
+  },
+  {
+    "route": "/products/<int:product_id>/edit",
+    "endpoint": "edit_product",
+    "method": "POST",
+    "role": "owner",
+    "url": "/products/1/edit",
+    "status": 409,
+    "location": null
+  },
+  {
+    "route": "/products/<int:product_id>/tag",
+    "endpoint": "print_product_tag",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/products/1/tag",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/products/<int:product_id>/tag",
+    "endpoint": "print_product_tag",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/products/1/tag",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/products/<int:product_id>/tag",
+    "endpoint": "print_product_tag",
+    "method": "GET",
+    "role": "owner",
+    "url": "/products/1/tag",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/products/add",
+    "endpoint": "add_product",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/products/add",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/products/add",
+    "endpoint": "add_product",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/products/add",
+    "status": 403,
+    "location": null
+  },
+  {
+    "route": "/products/add",
+    "endpoint": "add_product",
+    "method": "GET",
+    "role": "owner",
+    "url": "/products/add",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/products/add",
+    "endpoint": "add_product",
+    "method": "POST",
+    "role": "anonymous",
+    "url": "/products/add",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/products/add",
+    "endpoint": "add_product",
+    "method": "POST",
+    "role": "cashier",
+    "url": "/products/add",
+    "status": 403,
+    "location": null
+  },
+  {
+    "route": "/products/add",
+    "endpoint": "add_product",
+    "method": "POST",
+    "role": "owner",
+    "url": "/products/add",
+    "status": 400,
+    "location": null
+  },
+  {
+    "route": "/products/scan/<path:barcode>",
+    "endpoint": "scan_product",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/products/scan/TEST-CODE",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/products/scan/<path:barcode>",
+    "endpoint": "scan_product",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/products/scan/TEST-CODE",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/products/scan/<path:barcode>",
+    "endpoint": "scan_product",
+    "method": "GET",
+    "role": "owner",
+    "url": "/products/scan/TEST-CODE",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/register",
+    "endpoint": "register",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/register",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/register",
+    "endpoint": "register",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/register",
+    "status": 403,
+    "location": null
+  },
+  {
+    "route": "/register",
+    "endpoint": "register",
+    "method": "GET",
+    "role": "owner",
+    "url": "/register",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/register",
+    "endpoint": "register",
+    "method": "POST",
+    "role": "anonymous",
+    "url": "/register",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/register",
+    "endpoint": "register",
+    "method": "POST",
+    "role": "cashier",
+    "url": "/register",
+    "status": 403,
+    "location": null
+  },
+  {
+    "route": "/register",
+    "endpoint": "register",
+    "method": "POST",
+    "role": "owner",
+    "url": "/register",
+    "status": 302,
+    "location": "/register"
+  },
+  {
+    "route": "/reports",
+    "endpoint": "reports",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/reports",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/reports",
+    "endpoint": "reports",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/reports",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/reports",
+    "endpoint": "reports",
+    "method": "GET",
+    "role": "owner",
+    "url": "/reports",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/reports.csv",
+    "endpoint": "reports_csv",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/reports.csv",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/reports.csv",
+    "endpoint": "reports_csv",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/reports.csv",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/reports.csv",
+    "endpoint": "reports_csv",
+    "method": "GET",
+    "role": "owner",
+    "url": "/reports.csv",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/reports/products.csv",
+    "endpoint": "reports_products_csv",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/reports/products.csv",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/reports/products.csv",
+    "endpoint": "reports_products_csv",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/reports/products.csv",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/reports/products.csv",
+    "endpoint": "reports_products_csv",
+    "method": "GET",
+    "role": "owner",
+    "url": "/reports/products.csv",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/settings",
+    "endpoint": "settings",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/settings",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/settings",
+    "endpoint": "settings",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/settings",
+    "status": 403,
+    "location": null
+  },
+  {
+    "route": "/settings",
+    "endpoint": "settings",
+    "method": "GET",
+    "role": "owner",
+    "url": "/settings",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/settings",
+    "endpoint": "settings",
+    "method": "POST",
+    "role": "anonymous",
+    "url": "/settings",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/settings",
+    "endpoint": "settings",
+    "method": "POST",
+    "role": "cashier",
+    "url": "/settings",
+    "status": 403,
+    "location": null
+  },
+  {
+    "route": "/settings",
+    "endpoint": "settings",
+    "method": "POST",
+    "role": "owner",
+    "url": "/settings",
+    "status": 302,
+    "location": "/settings"
+  },
+  {
+    "route": "/shared/bill/<token>.pdf",
+    "endpoint": "shared_invoice_pdf",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/shared/bill/invalid.pdf",
+    "status": 410,
+    "location": null
+  },
+  {
+    "route": "/shared/bill/<token>.pdf",
+    "endpoint": "shared_invoice_pdf",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/shared/bill/invalid.pdf",
+    "status": 410,
+    "location": null
+  },
+  {
+    "route": "/shared/bill/<token>.pdf",
+    "endpoint": "shared_invoice_pdf",
+    "method": "GET",
+    "role": "owner",
+    "url": "/shared/bill/invalid.pdf",
+    "status": 410,
+    "location": null
+  },
+  {
+    "route": "/tags",
+    "endpoint": "tag_designer",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/tags",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/tags",
+    "endpoint": "tag_designer",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/tags",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/tags",
+    "endpoint": "tag_designer",
+    "method": "GET",
+    "role": "owner",
+    "url": "/tags",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/tags/<int:tpl_id>/delete",
+    "endpoint": "delete_tag_template",
+    "method": "POST",
+    "role": "anonymous",
+    "url": "/tags/1/delete",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/tags/<int:tpl_id>/delete",
+    "endpoint": "delete_tag_template",
+    "method": "POST",
+    "role": "cashier",
+    "url": "/tags/1/delete",
+    "status": 403,
+    "location": null
+  },
+  {
+    "route": "/tags/<int:tpl_id>/delete",
+    "endpoint": "delete_tag_template",
+    "method": "POST",
+    "role": "owner",
+    "url": "/tags/1/delete",
+    "status": 404,
+    "location": null
+  },
+  {
+    "route": "/tags/calibrate",
+    "endpoint": "tag_calibration",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/tags/calibrate",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/tags/calibrate",
+    "endpoint": "tag_calibration",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/tags/calibrate",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/tags/calibrate",
+    "endpoint": "tag_calibration",
+    "method": "GET",
+    "role": "owner",
+    "url": "/tags/calibrate",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/tags/print",
+    "endpoint": "print_tags",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/tags/print",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/tags/print",
+    "endpoint": "print_tags",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/tags/print",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/tags/print",
+    "endpoint": "print_tags",
+    "method": "GET",
+    "role": "owner",
+    "url": "/tags/print",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/tags/save",
+    "endpoint": "save_tag_template",
+    "method": "POST",
+    "role": "anonymous",
+    "url": "/tags/save",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/tags/save",
+    "endpoint": "save_tag_template",
+    "method": "POST",
+    "role": "cashier",
+    "url": "/tags/save",
+    "status": 403,
+    "location": null
+  },
+  {
+    "route": "/tags/save",
+    "endpoint": "save_tag_template",
+    "method": "POST",
+    "role": "owner",
+    "url": "/tags/save",
+    "status": 302,
+    "location": "/tags?tpl=1"
+  },
+  {
+    "route": "/users",
+    "endpoint": "users",
+    "method": "GET",
+    "role": "anonymous",
+    "url": "/users",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/users",
+    "endpoint": "users",
+    "method": "GET",
+    "role": "cashier",
+    "url": "/users",
+    "status": 403,
+    "location": null
+  },
+  {
+    "route": "/users",
+    "endpoint": "users",
+    "method": "GET",
+    "role": "owner",
+    "url": "/users",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/users/<int:user_id>/delete",
+    "endpoint": "delete_user",
+    "method": "POST",
+    "role": "anonymous",
+    "url": "/users/1/delete",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/users/<int:user_id>/delete",
+    "endpoint": "delete_user",
+    "method": "POST",
+    "role": "cashier",
+    "url": "/users/1/delete",
+    "status": 403,
+    "location": null
+  },
+  {
+    "route": "/users/<int:user_id>/delete",
+    "endpoint": "delete_user",
+    "method": "POST",
+    "role": "owner",
+    "url": "/users/1/delete",
+    "status": 302,
+    "location": "/users"
+  },
+  {
+    "route": "/users/<int:user_id>/reset-password",
+    "endpoint": "reset_password",
+    "method": "POST",
+    "role": "anonymous",
+    "url": "/users/1/reset-password",
+    "status": 302,
+    "location": "/login"
+  },
+  {
+    "route": "/users/<int:user_id>/reset-password",
+    "endpoint": "reset_password",
+    "method": "POST",
+    "role": "cashier",
+    "url": "/users/1/reset-password",
+    "status": 403,
+    "location": null
+  },
+  {
+    "route": "/users/<int:user_id>/reset-password",
+    "endpoint": "reset_password",
+    "method": "POST",
+    "role": "owner",
+    "url": "/users/1/reset-password",
+    "status": 302,
+    "location": "/users"
+  }
+]

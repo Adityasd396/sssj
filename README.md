@@ -120,3 +120,26 @@ needed. Reload the hosted application and refresh browser tabs.
 Customer lookup and tag selection now use bounded searches/pages. New retained
 server backups use a protected POST action and keep the latest five snapshots;
 ordinary downloads leave no retained copy, and recovery/legacy copies are preserved.
+
+
+## Inventory and per-bill rates — 19 November 2026
+
+See [the latest release report](reports/inventory-rates-2026-11-19/RELEASE-REPORT.md).
+This update adds stock-level filters, whole-inventory metal totals, saved category
+suggestions and owner-only bill-specific rates using existing invoice fields.
+QR review sorting is based on code format because historical scan provenance is
+not stored. No schema change or migration is required; preserve the current
+database, instance folder and .env, then reload the app and refresh browser tabs.
+
+
+## Short permanent customer bill links — 19 November 2026
+
+New WhatsApp messages use short signed `/b/<code>` links. They open a responsive
+customer bill page with a **Download bill (PDF)** button at the bottom. The shop's
+own bill page also has a bottom download action. Existing long PDF links remain
+supported and no longer have a 48-hour limit.
+
+Links have no time-based expiry. Preserve the same public domain, SECRET_KEY and
+bill records for continued access. Deleting a bill or changing the signing key
+makes its link unavailable. No URL-shortening service, new database field or
+migration is required. See [the sharing release report](reports/permanent-sharing-2026-11-19/RELEASE-REPORT.md).

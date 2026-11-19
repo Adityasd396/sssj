@@ -18,7 +18,8 @@
       </div>
       <div class="field">
         <label for="category">Category</label>
-        <input type="text" id="category" name="category" value="{{ product.category or '' }}" placeholder="e.g. Handring">
+        <input type="text" id="category" name="category" list="cat-list" value="{{ product.category or '' }}" placeholder="e.g. Handring">
+        {% include 'product_categories.html' %}
       </div>
     </div>
 

@@ -369,6 +369,11 @@ _REFERENCE = None
         "rounding",
         "zero-discount",
         "full-discount",
+        "override-gold-percent",
+        "override-gold-flat",
+        "override-silver-percent",
+        "override-silver-flat",
+        "override-weighted",
     ],
 )
 def test_original_checkout_and_server_preview_agree(shop, case):
@@ -386,9 +391,9 @@ def test_original_checkout_and_server_preview_agree(shop, case):
         data["making_charges"] = [""]
     if case == "gold-custom":
         data["making_charges"] = ["7.25"]
-    if case == "gold-flat":
+    if case in ("gold-flat", "override-gold-flat"):
         data.update(making_mode=["flat"], making_charges=["2.35"])
-    if case.startswith("silver"):
+    if case.startswith(("silver", "override-silver")):
         product.item_type = "silver"
         data.update(
             item_type=["silver"],
@@ -402,7 +407,7 @@ def test_original_checkout_and_server_preview_agree(shop, case):
             unit_price=["1.06"],
             quantity=["0.25" if case.startswith("fractional") else "2"],
         )
-    if case == "weighted":
+    if case in ("weighted", "override-weighted"):
         product.unit = "g"
         product.stock_weight = 50
         data.update(quantity=["2.375"], weight=["1"])
@@ -439,6 +444,17 @@ def test_original_checkout_and_server_preview_agree(shop, case):
     if case == "full-discount":
         data.update(discount_type="percent", discount_value="100")
     billing.db.session.commit()
+    if case.startswith("override-"):
+        data.update(
+            bill_gold_rate="123.45",
+            bill_silver_rate="71.23",
+            discount_type="percent",
+            discount_value="1.25",
+            exchange_metal="gold",
+            exchange_amount="1.11",
+            payment_type="partial",
+            partial_amount="5.75",
+        )
     customer_values = {"id": customer.id, "name": customer.name, "phone": customer.phone}
     product_values = {
         column.name: getattr(product, column.name) for column in reference.Product.__table__.columns
@@ -447,6 +463,10 @@ def test_original_checkout_and_server_preview_agree(shop, case):
         column.name: getattr(settings, column.name)
         for column in reference.Settings.__table__.columns
     }
+    if case.startswith("override-"):
+        # The frozen application receives the same rate inputs through Settings.
+        # Its unchanged checkout is the independent expected result.
+        setting_values.update(gold_manual_price=12345, silver_manual_price=7123)
     with reference.app.app_context():
         reference.db.session.remove()
         reference.db.drop_all()

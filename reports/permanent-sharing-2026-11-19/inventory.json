@@ -1,0 +1,812 @@
+[
+  {
+    "route": "/",
+    "endpoint": "index",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS"
+    ],
+    "access": "signed-in",
+    "file": "app.py",
+    "line": 1927
+  },
+  {
+    "route": "/account/passkeys",
+    "endpoint": "passkeys",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS"
+    ],
+    "access": "signed-in",
+    "file": "passkeys.py",
+    "line": 106
+  },
+  {
+    "route": "/account/passkeys/<int:key_id>/delete",
+    "endpoint": "passkey_delete",
+    "methods": [
+      "OPTIONS",
+      "POST"
+    ],
+    "access": "signed-in",
+    "file": "passkeys.py",
+    "line": 240
+  },
+  {
+    "route": "/account/password",
+    "endpoint": "change_password",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS",
+      "POST"
+    ],
+    "access": "signed-in",
+    "file": "app.py",
+    "line": 1523
+  },
+  {
+    "route": "/api/clients",
+    "endpoint": "search_clients",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS"
+    ],
+    "access": "signed-in",
+    "file": "app.py",
+    "line": 2272
+  },
+  {
+    "route": "/api/invoices/preview",
+    "endpoint": "invoice_preview",
+    "methods": [
+      "OPTIONS",
+      "POST"
+    ],
+    "access": "signed-in",
+    "file": "app.py",
+    "line": 2815
+  },
+  {
+    "route": "/api/prices",
+    "endpoint": "get_prices",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS"
+    ],
+    "access": "signed-in",
+    "file": "app.py",
+    "line": 2001
+  },
+  {
+    "route": "/api/session",
+    "endpoint": "current_session",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS"
+    ],
+    "access": "signed-in",
+    "file": "app.py",
+    "line": 2299
+  },
+  {
+    "route": "/audit-logs",
+    "endpoint": "audit_logs",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS"
+    ],
+    "access": "owner",
+    "file": "app.py",
+    "line": 1645
+  },
+  {
+    "route": "/b/<token>",
+    "endpoint": "shared_invoice_page",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS"
+    ],
+    "access": "signed token",
+    "file": "app.py",
+    "line": 3248
+  },
+  {
+    "route": "/b/<token>/pdf",
+    "endpoint": "shared_short_invoice_pdf",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS"
+    ],
+    "access": "signed token",
+    "file": "app.py",
+    "line": 3254
+  },
+  {
+    "route": "/backup/database",
+    "endpoint": "backup_database",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS",
+      "POST"
+    ],
+    "access": "owner",
+    "file": "database_recovery.py",
+    "line": 76
+  },
+  {
+    "route": "/backup/download",
+    "endpoint": "backup_download",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS"
+    ],
+    "access": "owner",
+    "file": "database_recovery.py",
+    "line": 60
+  },
+  {
+    "route": "/backup/restore",
+    "endpoint": "backup_restore",
+    "methods": [
+      "OPTIONS",
+      "POST"
+    ],
+    "access": "owner",
+    "file": "database_recovery.py",
+    "line": 92
+  },
+  {
+    "route": "/clients",
+    "endpoint": "clients",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS"
+    ],
+    "access": "signed-in",
+    "file": "app.py",
+    "line": 2189
+  },
+  {
+    "route": "/clients/<int:client_id>",
+    "endpoint": "view_client",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS"
+    ],
+    "access": "signed-in",
+    "file": "app.py",
+    "line": 2367
+  },
+  {
+    "route": "/clients/<int:client_id>/delete",
+    "endpoint": "delete_client",
+    "methods": [
+      "OPTIONS",
+      "POST"
+    ],
+    "access": "owner",
+    "file": "app.py",
+    "line": 2475
+  },
+  {
+    "route": "/clients/<int:client_id>/edit",
+    "endpoint": "edit_client",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS",
+      "POST"
+    ],
+    "access": "signed-in",
+    "file": "app.py",
+    "line": 2437
+  },
+  {
+    "route": "/clients/<int:client_id>/pay-remaining",
+    "endpoint": "pay_remaining",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS",
+      "POST"
+    ],
+    "access": "signed-in",
+    "file": "app.py",
+    "line": 2490
+  },
+  {
+    "route": "/clients/<int:client_id>/statement",
+    "endpoint": "client_statement",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS"
+    ],
+    "access": "signed-in",
+    "file": "app.py",
+    "line": 2418
+  },
+  {
+    "route": "/clients/add",
+    "endpoint": "add_client",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS",
+      "POST"
+    ],
+    "access": "signed-in",
+    "file": "app.py",
+    "line": 2236
+  },
+  {
+    "route": "/clients/quick",
+    "endpoint": "quick_client",
+    "methods": [
+      "OPTIONS",
+      "POST"
+    ],
+    "access": "signed-in",
+    "file": "app.py",
+    "line": 2305
+  },
+  {
+    "route": "/collect",
+    "endpoint": "collect",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS"
+    ],
+    "access": "signed-in",
+    "file": "app.py",
+    "line": 2135
+  },
+  {
+    "route": "/deleted-bills",
+    "endpoint": "deleted_bills",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS"
+    ],
+    "access": "owner",
+    "file": "app.py",
+    "line": 5030
+  },
+  {
+    "route": "/deleted-bills.csv",
+    "endpoint": "deleted_bills_csv",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS"
+    ],
+    "access": "owner",
+    "file": "app.py",
+    "line": 5069
+  },
+  {
+    "route": "/deleted-bills/<int:row_id>",
+    "endpoint": "view_deleted_bill",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS"
+    ],
+    "access": "owner",
+    "file": "app.py",
+    "line": 5058
+  },
+  {
+    "route": "/export/data",
+    "endpoint": "export_data",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS"
+    ],
+    "access": "owner",
+    "file": "app.py",
+    "line": 1734
+  },
+  {
+    "route": "/export/gstr1.csv",
+    "endpoint": "export_gstr1",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS"
+    ],
+    "access": "owner",
+    "file": "app.py",
+    "line": 1855
+  },
+  {
+    "route": "/export/invoices.csv",
+    "endpoint": "export_invoices_csv",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS"
+    ],
+    "access": "owner",
+    "file": "app.py",
+    "line": 1746
+  },
+  {
+    "route": "/healthz",
+    "endpoint": "healthz",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS"
+    ],
+    "access": "public",
+    "file": "app.py",
+    "line": 1458
+  },
+  {
+    "route": "/invoices",
+    "endpoint": "invoices",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS"
+    ],
+    "access": "signed-in",
+    "file": "app.py",
+    "line": 2584
+  },
+  {
+    "route": "/invoices/<int:invoice_id>",
+    "endpoint": "view_invoice",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS"
+    ],
+    "access": "signed-in",
+    "file": "app.py",
+    "line": 3162
+  },
+  {
+    "route": "/invoices/<int:invoice_id>/delete",
+    "endpoint": "delete_invoice",
+    "methods": [
+      "OPTIONS",
+      "POST"
+    ],
+    "access": "owner",
+    "file": "app.py",
+    "line": 3481
+  },
+  {
+    "route": "/invoices/<int:invoice_id>/payment",
+    "endpoint": "add_payment",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS",
+      "POST"
+    ],
+    "access": "signed-in",
+    "file": "app.py",
+    "line": 3604
+  },
+  {
+    "route": "/invoices/<int:invoice_id>/pdf",
+    "endpoint": "invoice_pdf",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS"
+    ],
+    "access": "signed-in",
+    "file": "app.py",
+    "line": 3223
+  },
+  {
+    "route": "/invoices/<int:invoice_id>/receipt",
+    "endpoint": "invoice_receipt",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS"
+    ],
+    "access": "signed-in",
+    "file": "app.py",
+    "line": 3461
+  },
+  {
+    "route": "/invoices/<int:invoice_id>/update_status",
+    "endpoint": "update_invoice_status",
+    "methods": [
+      "OPTIONS",
+      "POST"
+    ],
+    "access": "owner",
+    "file": "app.py",
+    "line": 3544
+  },
+  {
+    "route": "/invoices/create",
+    "endpoint": "create_invoice",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS",
+      "POST"
+    ],
+    "access": "signed-in",
+    "file": "app.py",
+    "line": 2830
+  },
+  {
+    "route": "/login",
+    "endpoint": "login",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS",
+      "POST"
+    ],
+    "access": "public",
+    "file": "app.py",
+    "line": 1489
+  },
+  {
+    "route": "/logout",
+    "endpoint": "logout",
+    "methods": [
+      "OPTIONS",
+      "POST"
+    ],
+    "access": "public",
+    "file": "app.py",
+    "line": 1561
+  },
+  {
+    "route": "/passkeys/login/options",
+    "endpoint": "passkey_login_options",
+    "methods": [
+      "OPTIONS",
+      "POST"
+    ],
+    "access": "public",
+    "file": "passkeys.py",
+    "line": 178
+  },
+  {
+    "route": "/passkeys/login/verify",
+    "endpoint": "passkey_login_verify",
+    "methods": [
+      "OPTIONS",
+      "POST"
+    ],
+    "access": "public",
+    "file": "passkeys.py",
+    "line": 191
+  },
+  {
+    "route": "/passkeys/register/options",
+    "endpoint": "passkey_register_options",
+    "methods": [
+      "OPTIONS",
+      "POST"
+    ],
+    "access": "signed-in",
+    "file": "passkeys.py",
+    "line": 113
+  },
+  {
+    "route": "/passkeys/register/verify",
+    "endpoint": "passkey_register_verify",
+    "methods": [
+      "OPTIONS",
+      "POST"
+    ],
+    "access": "signed-in",
+    "file": "passkeys.py",
+    "line": 143
+  },
+  {
+    "route": "/prices/quick",
+    "endpoint": "quick_prices",
+    "methods": [
+      "OPTIONS",
+      "POST"
+    ],
+    "access": "owner",
+    "file": "app.py",
+    "line": 2018
+  },
+  {
+    "route": "/printers",
+    "endpoint": "printer_setup",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS"
+    ],
+    "access": "signed-in",
+    "file": "app.py",
+    "line": 3475
+  },
+  {
+    "route": "/products",
+    "endpoint": "products",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS"
+    ],
+    "access": "signed-in",
+    "file": "app.py",
+    "line": 3685
+  },
+  {
+    "route": "/products/<int:product_id>",
+    "endpoint": "view_product",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS"
+    ],
+    "access": "signed-in",
+    "file": "app.py",
+    "line": 3941
+  },
+  {
+    "route": "/products/<int:product_id>/delete",
+    "endpoint": "delete_product",
+    "methods": [
+      "OPTIONS",
+      "POST"
+    ],
+    "access": "owner",
+    "file": "app.py",
+    "line": 4069
+  },
+  {
+    "route": "/products/<int:product_id>/edit",
+    "endpoint": "edit_product",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS",
+      "POST"
+    ],
+    "access": "owner",
+    "file": "app.py",
+    "line": 4009
+  },
+  {
+    "route": "/products/<int:product_id>/tag",
+    "endpoint": "print_product_tag",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS"
+    ],
+    "access": "signed-in",
+    "file": "app.py",
+    "line": 3954
+  },
+  {
+    "route": "/products/add",
+    "endpoint": "add_product",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS",
+      "POST"
+    ],
+    "access": "owner",
+    "file": "app.py",
+    "line": 3844
+  },
+  {
+    "route": "/products/scan/<path:barcode>",
+    "endpoint": "scan_product",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS"
+    ],
+    "access": "signed-in",
+    "file": "app.py",
+    "line": 4083
+  },
+  {
+    "route": "/register",
+    "endpoint": "register",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS",
+      "POST"
+    ],
+    "access": "owner",
+    "file": "app.py",
+    "line": 1571
+  },
+  {
+    "route": "/reports",
+    "endpoint": "reports",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS"
+    ],
+    "access": "signed-in",
+    "file": "app.py",
+    "line": 4650
+  },
+  {
+    "route": "/reports.csv",
+    "endpoint": "reports_csv",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS"
+    ],
+    "access": "signed-in",
+    "file": "app.py",
+    "line": 4940
+  },
+  {
+    "route": "/reports/products.csv",
+    "endpoint": "reports_products_csv",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS"
+    ],
+    "access": "signed-in",
+    "file": "app.py",
+    "line": 4983
+  },
+  {
+    "route": "/settings",
+    "endpoint": "settings",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS",
+      "POST"
+    ],
+    "access": "owner",
+    "file": "app.py",
+    "line": 2046
+  },
+  {
+    "route": "/shared/bill/<token>.pdf",
+    "endpoint": "shared_invoice_pdf",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS"
+    ],
+    "access": "signed token",
+    "file": "app.py",
+    "line": 3262
+  },
+  {
+    "route": "/static/<path:filename>",
+    "endpoint": "static",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS"
+    ],
+    "access": "public",
+    "file": "app.py",
+    "line": 278
+  },
+  {
+    "route": "/tags",
+    "endpoint": "tag_designer",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS"
+    ],
+    "access": "signed-in",
+    "file": "app.py",
+    "line": 4435
+  },
+  {
+    "route": "/tags/<int:tpl_id>/delete",
+    "endpoint": "delete_tag_template",
+    "methods": [
+      "OPTIONS",
+      "POST"
+    ],
+    "access": "owner",
+    "file": "app.py",
+    "line": 4513
+  },
+  {
+    "route": "/tags/calibrate",
+    "endpoint": "tag_calibration",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS"
+    ],
+    "access": "signed-in",
+    "file": "app.py",
+    "line": 4583
+  },
+  {
+    "route": "/tags/print",
+    "endpoint": "print_tags",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS"
+    ],
+    "access": "signed-in",
+    "file": "app.py",
+    "line": 4527
+  },
+  {
+    "route": "/tags/save",
+    "endpoint": "save_tag_template",
+    "methods": [
+      "OPTIONS",
+      "POST"
+    ],
+    "access": "owner",
+    "file": "app.py",
+    "line": 4493
+  },
+  {
+    "route": "/users",
+    "endpoint": "users",
+    "methods": [
+      "GET",
+      "HEAD",
+      "OPTIONS"
+    ],
+    "access": "owner",
+    "file": "app.py",
+    "line": 1602
+  },
+  {
+    "route": "/users/<int:user_id>/delete",
+    "endpoint": "delete_user",
+    "methods": [
+      "OPTIONS",
+      "POST"
+    ],
+    "access": "owner",
+    "file": "app.py",
+    "line": 1627
+  },
+  {
+    "route": "/users/<int:user_id>/reset-password",
+    "endpoint": "reset_password",
+    "methods": [
+      "OPTIONS",
+      "POST"
+    ],
+    "access": "owner",
+    "file": "app.py",
+    "line": 1608
+  }
+]

@@ -102,6 +102,8 @@ def install_gate(app, db):
                     abort(400, "Customer details exceed their supported limits.")
             return None
         numeric = {
+            "bill_gold_rate",
+            "bill_silver_rate",
             "quantity",
             "unit_price",
             "weight",

@@ -26,16 +26,7 @@
       <div class="field">
         <label for="category">Category</label>
         <input type="text" id="category" name="category" list="cat-list" placeholder="e.g. Handring">
-        <datalist id="cat-list">
-          <option value="Ring"></option>
-          <option value="Handring"></option>
-          <option value="Chain"></option>
-          <option value="Bangle"></option>
-          <option value="Earring"></option>
-          <option value="Pendant"></option>
-          <option value="Coin"></option>
-          <option value="Pearls"></option>
-        </datalist>
+        {% include 'product_categories.html' %}
       </div>
     </div>
 
@@ -49,7 +40,7 @@
       </div>
       <div class="field" id="wpu-field">
         <label for="weight_per_unit">Weight per unit (g) *</label>
-        <input type="number" id="weight_per_unit" name="weight_per_unit" step="0.001" min="0.001" required required>
+        <input type="number" id="weight_per_unit" name="weight_per_unit" step="0.001" min="0.001" required>
         <div class="help" id="wpu-help">Auto price = weight × metal rate.</div>
       </div>
     </div>

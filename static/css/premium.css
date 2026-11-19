@@ -321,3 +321,11 @@ input:focus,select:focus,textarea:focus{border-color:#b79c68;box-shadow:0 0 0 3p
 #invoice-form legend{width:auto;max-inline-size:100%;white-space:normal}
 
 .billing-section{scroll-margin-top:65px}
+
+/* Inventory counts and bill-only rate controls remain readable on phones. */
+.inventory-page #inventory-summary .stat-label{font-size:14px;letter-spacing:0;text-transform:none}
+.inventory-page #inventory-summary .mini{font-size:14px;line-height:1.6;color:var(--muted)}
+.bill-rate-controls{padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--gold-soft);margin:0 0 18px}
+.bill-rate-controls h3{font-size:16px;margin:0 0 12px}
+.bill-rate-controls .help{margin:6px 0 0}
+@media(max-width:640px){.inventory-page .toolbar input,.inventory-page .toolbar select{font-size:16px}.bill-rate-controls input{font-size:16px}}

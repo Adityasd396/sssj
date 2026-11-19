@@ -1,0 +1,29 @@
+{
+  "unchanged_models_schema_and_v1_functions": [
+    "AuditLog",
+    "AuthThrottle",
+    "Client",
+    "DeletedInvoice",
+    "Invoice",
+    "InvoiceItem",
+    "Payment",
+    "Product",
+    "Settings",
+    "TagTemplate",
+    "User",
+    "_rebuild_table",
+    "calc_discount",
+    "calc_exchange",
+    "calc_line_total",
+    "default_making",
+    "effective_metal_price",
+    "ensure_schema",
+    "making_basis",
+    "metal_unit_paise",
+    "preview_original_invoice",
+    "rs",
+    "validate_rs"
+  ],
+  "schema_migration_required": false,
+  "production_database_used_for_tests": false
+}

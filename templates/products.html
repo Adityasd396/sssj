@@ -1,15 +1,16 @@
 {% extends "base.html" %}
 {% block title %}Stock{% endblock %}
+{% block bodyclass %}inventory-page{% endblock %}
 
 {% macro stockrow(p) %}
 <tr class="stock-record">
     <td>
       <a href="{{ url_for('view_product', product_id=p.id) }}"><strong>{{ p.name }}</strong></a>
       {% if p.category %}<div class="mini">{{ p.category }}</div>{% endif %}{% if p.unit != "g" %}<div class="mini">{{ "%.3f"|format(p.weight_per_unit or 0) }} g / piece</div>{% endif %}
-      <div class="mini product-code">{{ p.barcode }}</div>
+      <div class="mini product-code">{{ p.barcode or 'No tag code' }}</div>
     </td>
     <td><span class="badge badge-{{ 'gold' if p.item_type == 'gold' else 'neutral' }}">{{ p.item_type|capitalize }}</span></td>
-    <td class="r">{% if (p.unit or 'pcs') == 'g' %}{{ p.stock_weight or 0 }} g{% else %}{{ p.stock_quantity }} pcs{% endif %}</td>
+    <td class="r">{% if (p.unit or 'pcs') == 'g' %}{{ "%.3f"|format(p.stock_weight or 0) }} g{% else %}{{ p.stock_quantity or 0 }} pcs{% endif %}{% if ((p.unit or 'pcs') == 'g' and (p.stock_weight or 0) <= 0) or ((p.unit or 'pcs') != 'g' and (p.stock_quantity or 0) <= 0) %}<div><span class="badge badge-cancelled">Out of stock</span></div>{% endif %}</td>
     <td class="r">₹{{ (p.unit_price)|inr }}{% if p.custom_price %}<div class="mini">custom</div>{% endif %}</td>
     <td>
         <div class="row-actions">
@@ -29,21 +30,25 @@
   </div>
 </div>
 
-<div class="stat-grid" style="margin-bottom:18px">
+<p class="mini">Whole inventory totals · includes out-of-stock products · unaffected by filters</p>
+<div class="stat-grid" id="inventory-summary" aria-label="Whole inventory totals" style="margin-bottom:18px">
     <div class="stat">
-        <div class="stat-label">Gold · {{ gold_stats.count }} items</div>
-        <div class="stat-value">{{ gold_stats.pieces }} pcs</div>
-        <div class="mini">{{ "%.1f"|format(gold_stats.weight) }} g in stock</div>
+        <div class="stat-label">Gold products</div>
+        <div class="stat-value">{{ gold_stats.count }}</div>
+        <div class="mini">{{ gold_stats.pieces }} available pieces</div>
+        <div class="mini">{{ "%.3f"|format(gold_stats.weight) }} g in stock</div>
     </div>
     <div class="stat">
-        <div class="stat-label">Silver · {{ silver_stats.count }} items</div>
-        <div class="stat-value">{{ silver_stats.pieces }} pcs</div>
-        <div class="mini">{{ "%.1f"|format(silver_stats.weight) }} g in stock</div>
+        <div class="stat-label">Silver products</div>
+        <div class="stat-value">{{ silver_stats.count }}</div>
+        <div class="mini">{{ silver_stats.pieces }} available pieces</div>
+        <div class="mini">{{ "%.3f"|format(silver_stats.weight) }} g in stock</div>
     </div>
     <div class="stat">
-        <div class="stat-label">Total · {{ all_stats.count }} items</div>
-        <div class="stat-value">{{ all_stats.pieces }} pcs</div>
-        <div class="mini">{{ "%.1f"|format(all_stats.weight) }} g in stock</div>
+        <div class="stat-label">Total products</div>
+        <div class="stat-value">{{ all_stats.count }}</div>
+        <div class="mini">{{ all_stats.pieces }} available pieces</div>
+        <div class="mini">{{ "%.3f"|format(all_stats.weight) }} g in stock</div>
     </div>
 </div>
 
@@ -56,49 +61,27 @@
         <option value="{{ c }}" {% if cat == c %}selected{% endif %}>{{ c }}</option>
         {% endfor %}
     </select>
+    <select name="stock" aria-label="Stock availability"><option value="all" {% if stock_filter == 'all' %}selected{% endif %}>All stock levels</option><option value="in" {% if stock_filter == 'in' %}selected{% endif %}>In stock</option><option value="out" {% if stock_filter == 'out' %}selected{% endif %}>Out of stock</option></select>
+    <select name="code" aria-label="Tag code filter"><option value="all" {% if code_filter == 'all' %}selected{% endif %}>All tag codes</option><option value="generated" {% if code_filter == 'generated' %}selected{% endif %}>Generated-style codes</option><option value="other" {% if code_filter == 'other' %}selected{% endif %}>Other tag codes</option><option value="missing" {% if code_filter == 'missing' %}selected{% endif %}>Missing code</option></select>
+    <select name="sort" aria-label="Sort products"><option value="name" {% if sort == 'name' %}selected{% endif %}>Name</option><option value="generated_first" {% if sort == 'generated_first' %}selected{% endif %}>Generated-style codes first</option><option value="stock_asc" {% if sort == 'stock_asc' %}selected{% endif %}>Lowest stock first</option><option value="recent" {% if sort == 'recent' %}selected{% endif %}>Newest products first</option></select>
     <label class="weight-filter">Weight from (g)<input type="number" step="0.001" min="0" name="min_weight" value="{{ min_weight }}" placeholder="Min"></label>
     <label class="weight-filter">Weight to (g)<input type="number" step="0.001" min="0" name="max_weight" value="{{ max_weight }}" placeholder="Max"></label>
     <button type="submit" class="btn btn-primary">Search</button>
-    {% if q or cat or min_weight or max_weight %}<a href="{{ url_for('products') }}" class="btn btn-ghost">Clear</a>{% endif %}
+    {% if q or cat or min_weight or max_weight or stock_filter != 'all' or code_filter != 'all' or sort != 'name' %}<a href="{{ url_for('products') }}" class="btn btn-ghost">Clear</a>{% endif %}
   </form>
 
   {% if weight_error %}<p class="bill-error" role="alert">{{ weight_error }}</p>{% endif %}
   <div class="mini" style="margin-bottom:14px">{{ pagination.total }} matches · weight filters use grams per piece</div>
-  <div class="card-head"><h3>Gold ({{ gold_products|length }})</h3></div>
-  {% if gold_products %}
-  <div class="table-wrap">
-    <table>
-      <thead><tr><th>Item</th><th>Metal</th><th>Stock</th><th class="r">Price</th><th class="r">Actions</th></tr></thead>
-      <tbody>{% for p in gold_products %}{{ stockrow(p) }}{% endfor %}</tbody>
-    </table>
-  </div>
-  {% else %}<div class="empty"><span class="big">◈</span>No gold items.</div>{% endif %}
-
-  <div class="card-head" style="margin-top:22px"><h3>Silver ({{ silver_products|length }})</h3></div>
-  {% if silver_products %}
-  <div class="table-wrap">
-    <table>
-      <thead><tr><th>Item</th><th>Metal</th><th>Stock</th><th class="r">Price</th><th class="r">Actions</th></tr></thead>
-      <tbody>{% for p in silver_products %}{{ stockrow(p) }}{% endfor %}</tbody>
-    </table>
-  </div>
-  {% else %}<div class="empty"><span class="big">◈</span>No silver items.</div>{% endif %}
-
-  <div class="card-head" style="margin-top:22px"><h3>Out of stock ({{ out_products|length }})</h3></div>
-  {% if out_products %}
-  <div class="table-wrap">
-    <table>
-      <thead><tr><th>Item</th><th>Metal</th><th>Stock</th><th class="r">Price</th><th class="r">Actions</th></tr></thead>
-      <tbody>{% for p in out_products %}{{ stockrow(p) }}{% endfor %}</tbody>
-    </table>
-  </div>
-  {% else %}<div class="empty"><span class="big">✓</span>Nothing out of stock.</div>{% endif %}
+  {% if code_filter != 'all' or sort == 'generated_first' %}<p class="help">Generated-style means JWL- followed by at least six digits. Scan history is not recorded; code format does not prove whether a QR was scanned.</p>{% endif %}
+  <div class="card-head"><h3>Products · {{ pagination.total }} matches</h3></div>
+  {% if products %}<div class="table-wrap"><table><thead><tr><th>Item</th><th>Metal</th><th>Stock</th><th class="r">Price</th><th class="r">Actions</th></tr></thead><tbody>{% for p in products %}{{ stockrow(p) }}{% endfor %}</tbody></table></div>
+  {% else %}<div class="empty">No products match these filters. Clear the filters to see the whole inventory.</div>{% endif %}
 
   {% if pagination and pagination.pages > 1 %}
   <div class="pager">
-    {% if pagination.page > 1 %}<a href="{{ url_for('products', q=q, cat=cat, min_weight=min_weight, max_weight=max_weight, page=pagination.page-1) }}">← Prev</a>{% endif %}
+    {% if pagination.page > 1 %}<a href="{{ url_for('products', q=q, cat=cat, min_weight=min_weight, max_weight=max_weight, stock=stock_filter, code=code_filter, sort=sort, page=pagination.page-1) }}">← Prev</a>{% endif %}
     <span>Page {{ pagination.page }} of {{ pagination.pages }}</span>
-    {% if pagination.page < pagination.pages %}<a href="{{ url_for('products', q=q, cat=cat, min_weight=min_weight, max_weight=max_weight, page=pagination.page+1) }}">Next →</a>{% endif %}
+    {% if pagination.page < pagination.pages %}<a href="{{ url_for('products', q=q, cat=cat, min_weight=min_weight, max_weight=max_weight, stock=stock_filter, code=code_filter, sort=sort, page=pagination.page+1) }}">Next →</a>{% endif %}
   </div>
   {% endif %}
 </div>

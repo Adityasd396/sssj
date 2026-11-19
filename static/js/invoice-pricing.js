@@ -3,7 +3,7 @@ function initInvoicePricing() {
   var form = document.getElementById('invoice-form');
   var status = document.getElementById('pricing-status');
   var button = form.querySelector('button[type=submit]');
-  var timer, controller, revision = 0, valid = false, approved = false, saving = false;
+  var timer, controller, revision = 0, valid = false, approved = false, saving = false, suspended = false;
   function setSaveDisabled(disabled) {
     disabled = disabled || form.dataset.completed === 'true';
     Array.from(form.elements).forEach(function(element) { if(element.tagName === 'BUTTON' && element.type === 'submit') element.disabled = disabled; });
@@ -12,6 +12,7 @@ function initInvoicePricing() {
   function money(id, paise) { var node = document.getElementById(id); if (node) node.textContent = fmt(paise / 100); }
   async function request() {
     clearTimeout(timer);
+    if (suspended) return false;
     if (!document.getElementById('draft-notice').hidden || form.dataset.completed === 'true') { setSaveDisabled(true); return false; }
     var version = ++revision;
     if (controller) controller.abort();
@@ -35,7 +36,7 @@ function initInvoicePricing() {
       document.getElementById('gst-rate-display').textContent = data.gst_rate;
       var count = filled(); document.getElementById('bill-lines').textContent = count + (count === 1 ? ' item' : ' items');
       var rows = form.querySelectorAll('.item-row');
-      rows.forEach(function (row) { row.querySelector('.line-total').value = '0.00'; });
+      rows.forEach(function (row) { row.querySelector('.line-total').value = '0.00'; var hint=row.querySelector('.rate-hint'),type=row.querySelector('[name=item_type]').value;if(hint)hint.textContent=type==='gold'?'· Au ₹'+fmt(GOLD_RATE)+'/g':type==='silver'?'· Ag ₹'+fmt(SILVER_RATE)+'/g':''; });
       data.lines.forEach(function (line) {
         var row = rows[line.index]; if (!row) return;
         row.querySelector('.line-total').value = (line.total / 100).toFixed(2);
@@ -55,6 +56,7 @@ function initInvoicePricing() {
     } finally { clearTimeout(timeout); }
   }
   function schedule() {
+    if (suspended) return Promise.resolve(false);
     revision++; if (controller) controller.abort();
     valid = false; approved = false;
     status.textContent = 'Updating bill total…';
@@ -75,7 +77,10 @@ function initInvoicePricing() {
     if (ready) { approved = true; form.requestSubmit(button); }
     else status.scrollIntoView({block:'center', behavior:'smooth'});
   });
-  document.addEventListener('visibilitychange', function () { if (!document.hidden && form.dataset.completed !== 'true') schedule(); });
-  window.addEventListener('pageshow', function (event) { if (event.persisted && form.dataset.completed !== 'true') schedule(); });
+  function pause(){suspended=true;revision++;clearTimeout(timer);if(controller)controller.abort();}
+  document.addEventListener('visibilitychange', function () { if(document.hidden)pause();else{suspended=false;if(form.dataset.completed !== 'true')schedule();} });
+  window.addEventListener('pagehide',pause);
+  document.addEventListener('submit',function(event){if(event.target.matches('form')&&new URL(event.target.action,location.href).pathname==='/logout')pause();},true);
+  window.addEventListener('pageshow', function (event) { suspended=false;if (event.persisted && form.dataset.completed !== 'true') schedule(); });
   schedule();
 }

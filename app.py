@@ -45,7 +45,14 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from config import Config
-from invoice_sharing import invoice_identity, read_share_token, share_token, whatsapp_number
+from invoice_sharing import (
+    invoice_identity,
+    read_share_token,
+    short_share_id,
+    short_share_token,
+    valid_short_share,
+    whatsapp_number,
+)
 from security_controls import install_gate, safe_csv_writer
 
 logging.basicConfig(level=logging.INFO)
@@ -94,6 +101,8 @@ if not _LOCAL_RUN and os.environ.get("TRUST_PROXY", "0") not in ("0", "false", "
 db = SQLAlchemy(app)
 csrf = CSRFProtect(app)
 install_gate(app, db)
+
+SHARED_INVOICE_ENDPOINTS = {"shared_invoice_pdf", "shared_invoice_page", "shared_short_invoice_pdf"}
 
 
 # Windows ships no IANA tz database, so ZoneInfo("Asia/Kolkata") can raise
@@ -1352,7 +1361,7 @@ def _ensure_schema_once():
 
 @app.before_request
 def validate_account_session():
-    if request.endpoint in {"shared_invoice_pdf", "static"}:
+    if request.endpoint in SHARED_INVOICE_ENDPOINTS or request.endpoint == "static":
         return None
     if "user_id" in session:
         user = db.session.get(User, session["user_id"])
@@ -1400,6 +1409,10 @@ def _headers(resp):
         or request.endpoint == "login"
     ):
         resp.headers["Cache-Control"] = "no-store"
+    if request.endpoint in SHARED_INVOICE_ENDPOINTS:
+        resp.headers["Cache-Control"] = "no-store"
+        resp.headers["Referrer-Policy"] = "no-referrer"
+        resp.headers["X-Robots-Tag"] = "noindex, nofollow, noarchive"
     if request.is_secure and os.environ.get("FLASK_ENV", "").lower() == "production":
         resp.headers["Strict-Transport-Security"] = "max-age=31536000"
     if resp.status_code == 503:
@@ -2775,11 +2788,35 @@ def preview_original_invoice(form, settings):
     }
 
 
+def settings_for_bill(form, settings):
+    from types import SimpleNamespace
+
+    overrides = {}
+    for field, attribute in (
+        ("bill_gold_rate", "gold_manual_price"),
+        ("bill_silver_rate", "silver_manual_price"),
+    ):
+        raw = form.get(field, "")
+        if not raw.strip():
+            continue
+        if not session.get("is_admin"):
+            raise ValueError("Only the shop owner can override bill metal rates.")
+        amount = validate_rs(raw, "Bill metal rate")
+        if amount <= 0 or amount > 100_000_000_000:
+            raise ValueError("Bill metal rates must be positive and within the supported range.")
+        overrides[attribute] = amount
+    if not overrides:
+        return settings
+    values = {column.key: getattr(settings, column.key) for column in Settings.__table__.columns}
+    values.update(overrides)
+    return SimpleNamespace(**values)
+
+
 @app.route("/api/invoices/preview", methods=["POST"])
 @login_required
 def invoice_preview():
     try:
-        settings = get_settings()
+        settings = settings_for_bill(request.form, get_settings())
         return jsonify(
             success=True,
             gold_rate=settings.gold_manual_price or 0,
@@ -2824,6 +2861,7 @@ def create_invoice():
 
     if request.method == "POST":
         try:
+            settings = settings_for_bill(request.form, settings)
             previous = Invoice.query.filter_by(submission_key=submission_key).first()
             if previous:
                 session["completed_bill_key"] = submission_key
@@ -3159,12 +3197,12 @@ def view_invoice(invoice_id):
     )
     lines.append("Thank you for your business.")
     public_pdf_url = url_for(
-        "shared_invoice_pdf",
-        token=share_token(app, invoice),
+        "shared_invoice_page",
+        token=short_share_token(app, invoice),
         _external=True,
         _scheme="https" if request.is_secure or _PRODUCTION else request.scheme,
     )
-    lines.append("Bill PDF (valid for 48 hours): " + public_pdf_url)
+    lines.append("View or download your bill: " + public_pdf_url)
     share_message = "\n".join(lines)
     wa_text = quote(share_message)
     digits = whatsapp_number(facts["client_phone"])
@@ -3189,14 +3227,43 @@ def invoice_pdf(invoice_id):
     invoice = load_invoice_document(invoice_id)
     if invoice is None:
         abort(404)
-    return render_invoice_pdf(invoice)
+    response = render_invoice_pdf(invoice)
+    if request.args.get("download") == "1":
+        response.headers["Content-Disposition"] = (
+            f'attachment; filename="{invoice.invoice_number}.pdf"'
+        )
+    return response
+
+
+def load_short_shared_invoice(token):
+    invoice_id = short_share_id(token)
+    invoice = load_invoice_document(invoice_id) if invoice_id is not None else None
+    if not invoice or not valid_short_share(app, invoice, token):
+        abort(
+            410, "This bill link is invalid or the bill is no longer available. Contact the shop."
+        )
+    return invoice
+
+
+@app.route("/b/<token>")
+def shared_invoice_page(token):
+    invoice = load_short_shared_invoice(token)
+    return render_template("shared_invoice.html", facts=bill_facts(invoice), token=token)
+
+
+@app.route("/b/<token>/pdf")
+def shared_short_invoice_pdf(token):
+    invoice = load_short_shared_invoice(token)
+    response = render_invoice_pdf(invoice)
+    response.headers["Content-Disposition"] = f'attachment; filename="{invoice.invoice_number}.pdf"'
+    return response
 
 
 @app.route("/shared/bill/<token>.pdf")
 def shared_invoice_pdf(token):
     payload = read_share_token(app, token)
     if not isinstance(payload, dict):
-        abort(410, "This bill link expired or is invalid. Ask the shop for a new copy.")
+        abort(410, "This bill link is invalid. Ask the shop for a new copy.")
     invoice = load_invoice_document(payload.get("id"))
     if not invoice or invoice_identity(invoice) != payload:
         abort(410, "This bill is no longer available. Contact the shop.")
@@ -3603,6 +3670,18 @@ def add_payment(invoice_id):
 
 
 # ---------------------------------------------------------------- products
+def generated_code_condition():
+    # Match a literal JWL- prefix followed by at least six ASCII digits.
+    code = db.func.coalesce(Product.barcode, "")
+    tail = db.func.substr(code, 5)
+    digits_removed = tail
+    for digit in "0123456789":
+        digits_removed = db.func.replace(digits_removed, digit, "")
+    return db.and_(
+        db.func.substr(code, 1, 4) == "JWL-", db.func.length(tail) >= 6, digits_removed == ""
+    )
+
+
 @app.route("/products")
 @login_required
 def products():
@@ -3616,6 +3695,31 @@ def products():
     minimum = request.args.get("min_weight", "").strip()
     maximum = request.args.get("max_weight", "").strip()
     query = Product.query
+    stock_filter = request.args.get("stock", "all")
+    if stock_filter not in {"all", "in", "out"}:
+        stock_filter = "all"
+    code_filter = request.args.get("code", "all")
+    if code_filter not in {"all", "generated", "other", "missing"}:
+        code_filter = "all"
+    sort = request.args.get("sort", "name")
+    if sort not in {"name", "generated_first", "stock_asc", "recent"}:
+        sort = "name"
+    available = case(
+        (Product.unit == "g", db.func.coalesce(Product.stock_weight, 0)),
+        else_=db.func.coalesce(Product.stock_quantity, 0),
+    )
+    generated = generated_code_condition()
+    missing = db.func.trim(db.func.coalesce(Product.barcode, "")) == ""
+    if stock_filter == "in":
+        query = query.filter(available > 0)
+    elif stock_filter == "out":
+        query = query.filter(available <= 0)
+    if code_filter == "generated":
+        query = query.filter(generated)
+    elif code_filter == "missing":
+        query = query.filter(missing)
+    elif code_filter == "other":
+        query = query.filter(~generated, ~missing)
     weight_error = None
     if q:
         like = f"%{q}%"
@@ -3663,7 +3767,7 @@ def products():
         * db.func.coalesce(Product.stock_quantity, 0),
     )
     rows = (
-        query.with_entities(
+        Product.query.with_entities(
             Product.item_type, db.func.count(Product.id), db.func.sum(pieces), db.func.sum(grams)
         )
         .group_by(Product.item_type)
@@ -3675,9 +3779,13 @@ def products():
     }
     zero = {"count": 0, "pieces": 0, "weight": 0}
     all_stats = {key: sum(values[key] for values in stats.values()) for key in zero}
-    items, pg = paginate(
-        query.order_by(Product.name, Product.id), request.args.get("page", type=int) or 1
-    )
+    ordering = {
+        "name": (Product.name, Product.id),
+        "generated_first": (case((generated, 0), else_=1), Product.name, Product.id),
+        "stock_asc": (available, Product.name, Product.id),
+        "recent": (Product.id.desc(),),
+    }
+    items, pg = paginate(query.order_by(*ordering[sort]), request.args.get("page", type=int) or 1)
 
     def empty(product):
         return (
@@ -3695,6 +3803,9 @@ def products():
         min_weight=minimum,
         max_weight=maximum,
         weight_error=weight_error,
+        stock_filter=stock_filter,
+        code_filter=code_filter,
+        sort=sort,
         categories=[
             value
             for (value,) in db.session.query(Product.category)
@@ -3709,6 +3820,25 @@ def products():
         silver_stats=stats.get("silver", zero),
         all_stats=all_stats,
     )
+
+
+@app.context_processor
+def product_category_options():
+    if request.endpoint not in {"add_product", "edit_product"}:
+        return {}
+    rows = (
+        db.session.query(Product.category)
+        .filter(Product.category.isnot(None), Product.category != "")
+        .distinct()
+        .order_by(Product.category)
+        .all()
+    )
+    choices = {}
+    for (value,) in rows:
+        value = value.strip()
+        if value:
+            choices.setdefault(value.casefold(), value)
+    return {"category_options": sorted(choices.values(), key=str.casefold)}
 
 
 @app.route("/products/add", methods=["GET", "POST"])

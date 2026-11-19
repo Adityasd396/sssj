@@ -23,6 +23,8 @@ public = {
     "login",
     "healthz",
     "shared_invoice_pdf",
+    "shared_invoice_page",
+    "shared_short_invoice_pdf",
     "passkey_login_options",
     "passkey_login_verify",
     "logout",
@@ -82,7 +84,13 @@ def test_routes(shop, rule, endpoint, method, role):
     if (
         role == "owner"
         and method == "GET"
-        and endpoint not in {"shared_invoice_pdf", "scan_product"}
+        and endpoint
+        not in {
+            "shared_invoice_pdf",
+            "shared_invoice_page",
+            "shared_short_invoice_pdf",
+            "scan_product",
+        }
     ):
         assert row["status"] in (200, 302), row
 

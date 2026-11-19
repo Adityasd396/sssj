@@ -4,7 +4,7 @@ function initBillDraft() {
   var form=document.getElementById('invoice-form'), user=form.dataset.user, store=window.BillDraftStorage;
   var notice=document.getElementById('draft-notice'), state=document.getElementById('draft-state');
   var restoring=false, pending=store.read(user), timer;
-  var names=['client_id','client_gstin','payment_type','payment_method','partial_amount','discount_type','discount_value','exchange_metal','exchange_amount','submission_key'];
+  var names=['bill_gold_rate','bill_silver_rate','client_id','client_gstin','payment_type','payment_method','partial_amount','discount_type','discount_value','exchange_metal','exchange_amount','submission_key'];
   var rowNames=['description','item_type','quantity','weight','making_charges','making_mode','unit_price','product_code'];
   function setMessage(text){if(state.textContent!==text)state.textContent=text;}
   function buttons(disabled){Array.from(form.elements).forEach(function(input){if(input.tagName==='BUTTON'&&input.type==='submit')input.disabled=disabled;});}
@@ -19,7 +19,7 @@ function initBillDraft() {
   }
   function snapshot(){
     var data={savedAt:Date.now(),fields:{},rows:[],section:form.dataset.activeSection||'customer',optionsOpen:document.getElementById('billing-options').open};
-    names.forEach(function(name){data.fields[name]=form.elements[name].value;});
+    names.forEach(function(name){if(form.elements[name])data.fields[name]=form.elements[name].value;});
     form.querySelectorAll('.item-row').forEach(function(row){var item={weighed:row.dataset.weighed==='1',detailsOpen:row.querySelector('.item-more').open};rowNames.forEach(function(name){item[name]=row.querySelector('[name="'+name+'"]').value;});data.rows.push(item);});
     var quick=document.getElementById('quick-customer-form');data.customerDraft={};['name','phone','gstin'].forEach(function(name){data.customerDraft[name]=quick.elements[name].value;});
     return data;
@@ -39,7 +39,7 @@ function initBillDraft() {
     restoring=true;form.inert=true;
     try{if(window.ClientLookup)await ClientLookup.ensure(data.fields.client_id);}catch(error){restoring=false;setMessage('Customer could not be loaded. Check your connection, then resume the draft again.');return;}
     form.inert=false;
-    names.forEach(function(name){if(data.fields[name]!==undefined)form.elements[name].value=data.fields[name];});
+    names.forEach(function(name){if(data.fields[name]!==undefined&&form.elements[name])form.elements[name].value=data.fields[name];});
     form.elements.client_id.dispatchEvent(new Event('change',{bubbles:true}));
     if(data.fields.client_gstin!==undefined)form.elements.client_gstin.value=data.fields.client_gstin;
     document.getElementById('items-container').replaceChildren();

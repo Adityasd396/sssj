@@ -22,7 +22,7 @@ const base='http://127.0.0.1:56837';
  await page.locator('#dock-save-bill').click();await page.waitForURL(/\/invoices\/\d+$/);const billId=page.url().split('/').pop();
  const wa=new URL(await page.locator('#wa-link').getAttribute('href'));assert.equal(wa.pathname,'/919666600017');
  const quote=wa.searchParams.get('text');assert.match(quote,/Slow phone customer/);assert.match(quote,/Thank you/);
- const publicPdf=quote.match(/https?:\/\/\S+\/shared\/bill\/\S+\.pdf/)[0];
+ const publicBill=quote.match(/https?:\/\/[^\s]+\/b\/[0-9a-z]+\.[A-Za-z0-9_-]{22}/)[0];const publicPdf=publicBill+'/pdf';
  const visitor=await browser.newContext();const pdfResponse=await visitor.request.get(publicPdf);assert.equal(pdfResponse.status(),200);assert((await pdfResponse.body()).subarray(0,4).equals(Buffer.from('%PDF')));await visitor.close();
  await page.evaluate(()=>{Object.defineProperty(navigator,'canShare',{configurable:true,value:()=>true});Object.defineProperty(navigator,'share',{configurable:true,value:async data=>{window.sharedPdf={name:data.files[0].name,type:data.files[0].type,text:data.text,activation:navigator.userActivation.isActive};}});});
  await page.locator('#share-pdf').click();await page.waitForFunction(()=>document.getElementById('share-pdf').textContent==='Share prepared PDF');

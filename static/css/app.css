@@ -923,6 +923,14 @@ input:focus,select:focus,textarea:focus{border-color:#b79c68;box-shadow:0 0 0 3p
 
 .billing-section{scroll-margin-top:65px}
 
+/* Inventory counts and bill-only rate controls remain readable on phones. */
+.inventory-page #inventory-summary .stat-label{font-size:14px;letter-spacing:0;text-transform:none}
+.inventory-page #inventory-summary .mini{font-size:14px;line-height:1.6;color:var(--muted)}
+.bill-rate-controls{padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--gold-soft);margin:0 0 18px}
+.bill-rate-controls h3{font-size:16px;margin:0 0 12px}
+.bill-rate-controls .help{margin:6px 0 0}
+@media(max-width:640px){.inventory-page .toolbar input,.inventory-page .toolbar select{font-size:16px}.bill-rate-controls input{font-size:16px}}
+
 /* ===== scanner.css ===== */
 .scan-dialog{width:min(540px,calc(100% - 28px));padding:26px;border:1px solid #e2e6da;border-radius:20px;max-height:calc(100dvh - 28px);background:#fff;box-shadow:0 30px 100px rgba(17,34,21,.25)}
 .scan-dialog::backdrop{background:rgba(12,27,17,.58);backdrop-filter:blur(5px)}

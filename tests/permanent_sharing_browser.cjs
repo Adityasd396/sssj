@@ -1,0 +1,17 @@
+/* Public customer bill/download checks; synthetic shop and no WhatsApp sends. */
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const pw=require(process.env.PLAYWRIGHT_PATH||'playwright'),base='http://127.0.0.1:56837';
+const output=path.resolve('.cache/permanent-sharing');fs.mkdirSync(output,{recursive:true});
+(async()=>{for(const engine of ['chromium','webkit']){
+ const browser=await pw[engine].launch({headless:true,...(engine==='chromium'?{executablePath:process.env.CHROME_PATH}:{})});
+ try{
+  const owner=await browser.newContext(),page=await owner.newPage();await page.goto(base+'/login');await page.locator('#username').fill('ui-owner');await page.locator('#password').fill('preview-password');await Promise.all([page.waitForURL(base+'/'),page.locator('.login-card [type=submit]').click()]);
+  await page.goto(base+'/invoices/create');await page.locator('#client_id').selectOption('1');await page.locator('#product-code').fill('GOLD-01');await page.locator('#product-code').press('Enter');await page.waitForFunction(()=>document.getElementById('pricing-status').textContent==='Bill total is up to date.');await page.locator('#invoice-form').evaluate(f=>f.requestSubmit());await page.waitForURL(/\/invoices\/\d+$/);
+  const message=new URL(await page.locator('#wa-link').getAttribute('href')).searchParams.get('text');assert(!message.includes('48 hours'));const url=message.match(/https?:\/\/[^\s]+\/b\/[0-9a-z]+\.[A-Za-z0-9_-]{22}/)[0];assert(url.length<80);assert(await page.locator('a[href$="?download=1"]').count());
+  const visitor=await browser.newContext({...pw.devices[engine==='webkit'?'iPhone 13':'Pixel 5'],viewport:{width:390,height:844},deviceScaleFactor:1,acceptDownloads:true}),customer=await visitor.newPage(),errors=[];customer.on('pageerror',e=>errors.push(e.message));
+  let response=await customer.goto(url);assert.equal(response.status(),200);assert.equal(response.headers()['cache-control'],'no-store');assert.equal(response.headers()['referrer-policy'],'no-referrer');assert.equal(await customer.locator('#main-nav').count(),0);assert.match(await customer.locator('body').innerText(),/Meera Sharma/);assert.equal(await customer.locator('script').count(),0);
+  for(const width of [320,390,768,1440]){await customer.setViewportSize({width,height:844});assert(await customer.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+2),'Customer bill overflow '+width);}
+  await customer.setViewportSize({width:390,height:844});await customer.screenshot({path:path.join(output,engine+'-bill.png'),fullPage:true});await customer.locator('#download-bill').scrollIntoViewIfNeeded();const downloading=customer.waitForEvent('download');await customer.locator('#download-bill').click();const download=await downloading;assert(download.suggestedFilename().endsWith('.pdf'));const file=path.join(output,engine+'-bill.pdf');await download.saveAs(file);assert(fs.readFileSync(file).subarray(0,4).equals(Buffer.from('%PDF')));
+  assert.equal((await visitor.request.get(url+'x')).status(),410);assert.equal((await visitor.request.get(base+new URL(page.url()).pathname+'/pdf',{maxRedirects:0})).status(),302);assert.deepEqual(errors,[]);await visitor.close();await owner.close();console.log('PASS '+engine+': short public WhatsApp URL, standalone responsive bill, bottom PDF download, no login needed, tamper rejection and private PDF protection.');
+ }finally{await browser.close();}
+}})().catch(error=>{console.error(error);process.exit(1)});

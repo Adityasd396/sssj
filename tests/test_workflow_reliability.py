@@ -94,22 +94,26 @@ def test_inventory_is_paged_and_searches_weight_without_altering_records(shop):
     }
 
 
-def test_whatsapp_contains_recipient_message_and_anonymous_expiring_pdf(shop):
+def test_whatsapp_contains_recipient_message_and_permanent_customer_bill(shop):
     client, customer, _ = shop
     client.post("/invoices/create", data=sale(customer, description=["Ring <unclosed> & chain"]))
     invoice = billing.Invoice.query.first()
     text = unescape(client.get(f"/invoices/{invoice.id}").data.decode())
     assert "https://wa.me/919000000000?text=" in text
-    shared = urlsplit(re.search(r"http://localhost/shared/bill/[^\s<]+\.pdf", text)[0]).path
+    shared = urlsplit(re.search(r"http://localhost/b/[0-9a-z]+\.[A-Za-z0-9_-]{22}", text)[0]).path
     visitor = billing.app.test_client()
     assert visitor.get(f"/invoices/{invoice.id}/pdf").status_code == 302
     response = visitor.get(shared)
-    assert response.status_code == 200 and response.data.startswith(b"%PDF")
+    assert response.status_code == 200 and b"Download bill (PDF)" in response.data
     assert response.headers["Cache-Control"] == "no-store"
-    assert visitor.get(shared.replace(".pdf", "x.pdf")).status_code == 410
+    assert response.headers["Referrer-Policy"] == "no-referrer"
+    pdf = visitor.get(shared + "/pdf")
+    assert pdf.status_code == 200 and pdf.data.startswith(b"%PDF")
+    assert pdf.headers["Content-Disposition"].startswith("attachment;")
+    assert visitor.get(shared + "x").status_code == 410
     with patch("itsdangerous.timed.TimestampSigner.get_timestamp", return_value=1000):
         expired = share_token(billing.app, invoice)
-    assert visitor.get("/shared/bill/" + expired + ".pdf").status_code == 410
+    assert visitor.get("/shared/bill/" + expired + ".pdf").status_code == 200
     iid = invoice.id
     client.post(f"/invoices/{iid}/delete")
     client.post("/invoices/create", data=sale(customer))
@@ -168,4 +172,4 @@ def test_production_message_uses_https_for_the_customer_pdf(shop, monkeypatch):
     inv = billing.Invoice.query.first()
     monkeypatch.setattr(billing, "_PRODUCTION", True)
     response = client.get(f"/invoices/{inv.id}")
-    assert b"https://localhost/shared/bill/" in response.data
+    assert b"https://localhost/b/" in response.data

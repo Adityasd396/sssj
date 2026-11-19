@@ -32,7 +32,7 @@ def test_inventory(shop):
             if "@login_required" in source
             else "public"
         )
-        if rule.endpoint == "shared_invoice_pdf":
+        if rule.endpoint in billing.SHARED_INVOICE_ENDPOINTS:
             access = "signed token"
         rows.append(
             {
