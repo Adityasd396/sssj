@@ -5,13 +5,14 @@
   var pdfButton=document.getElementById('share-pdf'), status=document.getElementById('share-status'), file, busy=false, objectUrl;
   function update(){if(link)link.href='https://wa.me/'+root.dataset.phone+'?text='+encodeURIComponent(text.value);}
   text.addEventListener('input',update);update();
-  function download(){objectUrl=URL.createObjectURL(file);var a=document.createElement('a');a.href=objectUrl;a.download=root.dataset.filename;a.click();setTimeout(function(){URL.revokeObjectURL(objectUrl);objectUrl=null;},10000);status.textContent='PDF downloaded. You can attach it in the customer’s WhatsApp chat.';}
+  if(link)link.addEventListener('click',function(){status.textContent='Opening WhatsApp. Review the message and tap Send there.';});
+  function download(){objectUrl=URL.createObjectURL(file);var a=document.createElement('a');a.href=objectUrl;a.download=root.dataset.filename;a.click();setTimeout(function(){URL.revokeObjectURL(objectUrl);objectUrl=null;},10000);status.textContent='PDF download started. Attach it in the customer’s WhatsApp chat.';}
   pdfButton.addEventListener('click',function(){
     if(busy)return;
     if(file){
       if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
         // Call directly from this click, preserving user activation even on a slow server.
-        navigator.share({files:[file],title:root.dataset.filename,text:text.value}).then(function(){status.textContent='Shared through your selected app.';}).catch(function(error){status.textContent=error.name==='AbortError'?'Sharing cancelled.':'Could not share. Use Download PDF or the customer’s WhatsApp button.';});
+        navigator.share({files:[file],title:root.dataset.filename,text:text.value}).then(function(){status.textContent='Share completed in the selected app. Delivery to the customer is not confirmed.';}).catch(function(error){status.textContent=error.name==='AbortError'?'Sharing cancelled.':'Could not share. Use Download PDF or the customer’s WhatsApp button.';});
       }else download();
       return;
     }

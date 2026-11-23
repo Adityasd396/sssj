@@ -102,6 +102,10 @@ db = SQLAlchemy(app)
 csrf = CSRFProtect(app)
 install_gate(app, db)
 
+from asset_delivery import install as install_asset_delivery
+
+install_asset_delivery(app)
+
 SHARED_INVOICE_ENDPOINTS = {"shared_invoice_pdf", "shared_invoice_page", "shared_short_invoice_pdf"}
 
 
@@ -863,6 +867,17 @@ def bill_facts(invoice, settings=None) -> dict:
         "show_making": bool(settings is None or settings.show_making_charges),
         "show_gstin": bool(settings is None or settings.show_gstin),
     }
+
+
+def payment_totals_for_ids(ids):
+    if not ids:
+        return {}
+    return dict(
+        db.session.query(Payment.invoice_id, db.func.sum(Payment.amount))
+        .filter(Payment.invoice_id.in_(ids))
+        .group_by(Payment.invoice_id)
+        .all()
+    )
 
 
 def invoices_with_due(client_id: int):
@@ -1935,17 +1950,24 @@ def index():
         m = (now.month - 1 - back) % 12 + 1
         start = datetime(y, m, 1)
         end = datetime(y + (m // 12), (m % 12) + 1, 1)
-        rev = (
-            db.session.query(db.func.sum(Invoice.total))
-            .filter(
-                Invoice.date_created >= start,
-                Invoice.date_created < end,
-                Invoice.status != "cancelled",
-            )
-            .scalar()
-            or 0
+        monthly.append({"label": start.strftime("%b"), "start": start, "end": end})
+    year, month = (
+        db.extract("year", Invoice.date_created),
+        db.extract("month", Invoice.date_created),
+    )
+    revenues = {
+        (int(y), int(m)): total or 0
+        for y, m, total in db.session.query(year, month, db.func.sum(Invoice.total))
+        .filter(
+            Invoice.date_created >= monthly[0]["start"],
+            Invoice.date_created < monthly[-1]["end"],
+            Invoice.status != "cancelled",
         )
-        monthly.append({"label": start.strftime("%b"), "revenue": rev})
+        .group_by(year, month)
+        .all()
+    }
+    for row in monthly:
+        row["revenue"] = revenues.get((row["start"].year, row["start"].month), 0)
     peak = max([x["revenue"] for x in monthly] + [1])
     live = Invoice.status != "cancelled"
 
@@ -1961,17 +1983,18 @@ def index():
     )
     today_bills = Invoice.query.filter(live, Invoice.date_created >= today_start).count()
 
-    paid_by_invoice = dict(
-        db.session.query(Payment.invoice_id, db.func.sum(Payment.amount))
+    paid = (
+        db.session.query(Payment.invoice_id, db.func.sum(Payment.amount).label("paid"))
         .group_by(Payment.invoice_id)
-        .all()
+        .subquery()
     )
-    collect_due, collect_count = 0, 0
-    for inv in Invoice.query.filter(live).all():
-        due = (inv.total or 0) - paid_by_invoice.get(inv.id, 0)
-        if due > 0:
-            collect_due += due
-            collect_count += 1
+    due = Invoice.total - db.func.coalesce(paid.c.paid, 0)
+    collect_due, collect_count = (
+        db.session.query(db.func.coalesce(db.func.sum(due), 0), db.func.count(Invoice.id))
+        .outerjoin(paid, paid.c.invoice_id == Invoice.id)
+        .filter(live, due > 0)
+        .one()
+    )
 
     return render_template(
         "index.html",
@@ -1990,7 +2013,10 @@ def index():
         metal_prices=metal_prices(settings),
         monthly=monthly,
         peak=peak,
-        recent_invoices=Invoice.query.order_by(Invoice.date_created.desc()).limit(5).all(),
+        recent_invoices=Invoice.query.options(joinedload(Invoice.client))
+        .order_by(Invoice.date_created.desc())
+        .limit(5)
+        .all(),
         today_revenue=today_revenue,
         today_bills=today_bills,
         collect_due=collect_due,
@@ -2104,7 +2130,7 @@ def settings():
 
 
 # ---------------------------------------------------------------- collect
-def _reminder_link(client, amount_paise: int, days: int, invoice) -> str:
+def _reminder_link(client, amount_paise: int, days: int, invoice, settings=None) -> str:
     """A pre-written WhatsApp reminder. The shopkeeper should only have to tap.
 
     Deliberately polite and specific: the amount, the bill and the age of the
@@ -2112,7 +2138,8 @@ def _reminder_link(client, amount_paise: int, days: int, invoice) -> str:
     """
     from urllib.parse import quote
 
-    firm = (get_settings().firm_name if get_settings() else "") or "our shop"
+    settings = settings if settings is not None else get_settings()
+    firm = (settings.firm_name if settings else "") or "our shop"
     text = (
         f"Namaste {client.name},\n"
         f"A gentle reminder from {firm}.\n"
@@ -2145,14 +2172,32 @@ def collect():
     with date_due = today + 30), so "overdue" means the same thing here as it
     does on the bill.
     """
+    settings = get_settings()
     today = utcnow()
     rows, total_due, overdue_due = [], 0, 0
     buckets = {"0-30": 0, "31-60": 0, "61-90": 0, "90+": 0}
 
-    for client in Client.query.order_by(Client.name).all():
-        owed = invoices_with_due(client.id)
-        if not owed:
+    paid_query = (
+        db.session.query(Payment.invoice_id, db.func.sum(Payment.amount).label("paid"))
+        .group_by(Payment.invoice_id)
+        .subquery()
+    )
+    due = Invoice.total - db.func.coalesce(paid_query.c.paid, 0)
+    grouped = {}
+    for invoice, amount_due in (
+        db.session.query(Invoice, due)
+        .options(joinedload(Invoice.client))
+        .outerjoin(paid_query, paid_query.c.invoice_id == Invoice.id)
+        .filter(Invoice.status != "cancelled", due > 0)
+        .order_by(Invoice.date_created)
+        .all()
+    ):
+        if invoice.client is None:
             continue
+        invoice.remaining_amount = amount_due
+        invoice.paid_amount = invoice.total - amount_due
+        grouped.setdefault(invoice.client_id, (invoice.client, []))[1].append(invoice)
+    for client, owed in sorted(grouped.values(), key=lambda pair: pair[0].name):
         amount = sum(inv.remaining_amount for inv in owed)
         oldest = owed[0]
         days = max(0, (today - oldest.date_created).days)
@@ -2170,7 +2215,7 @@ def collect():
                 "overdue": overdue,
                 "bills": len(owed),
                 "oldest": oldest,
-                "wa": _reminder_link(client, amount, days, oldest),
+                "wa": _reminder_link(client, amount, days, oldest, settings),
             }
         )
 
@@ -2181,7 +2226,7 @@ def collect():
         buckets=buckets,
         total_due=total_due,
         overdue_due=overdue_due,
-        settings=get_settings(),
+        settings=settings,
     )
 
 
@@ -2374,8 +2419,11 @@ def view_client(client_id):
     payments = (
         Payment.query.filter_by(client_id=client_id).order_by(Payment.payment_date.desc()).all()
     )
+    paid = {}
+    for payment in payments:
+        paid[payment.invoice_id] = paid.get(payment.invoice_id, 0) + (payment.amount or 0)
     for inv in invoices:
-        inv.paid_amount = invoice_paid_total(inv.id)
+        inv.paid_amount = paid.get(inv.id, 0)
         inv.remaining_amount = inv.total - inv.paid_amount
     # Metal purchase history across all this client's bills
     metal_lines = (
@@ -2404,6 +2452,53 @@ def view_client(client_id):
         pay_by_method[p.payment_method or "cash"] = pay_by_method.get(
             p.payment_method or "cash", 0
         ) + (p.amount or 0)
+    # Presentation-only slices: complete histories above still supply unchanged totals.
+    history_q = (request.args.get("history_q") or "").strip()[:100]
+    needle = history_q.casefold()
+    invoice_numbers = {invoice.id: invoice.invoice_number for invoice in invoices}
+
+    def matches(*values):
+        return not needle or needle in " ".join(str(value or "") for value in values).casefold()
+
+    def page_rows(values, key):
+        total = len(values)
+        pages = max(1, (total + 24) // 25)
+        page = min(max(1, request.args.get(key, type=int) or 1), pages)
+        return values[(page - 1) * 25 : page * 25], {"page": page, "pages": pages, "total": total}
+
+    history_invoices, bill_page = page_rows(
+        [
+            i
+            for i in invoices
+            if matches(
+                i.invoice_number,
+                i.status,
+                i.date_created.strftime("%d %b %Y") if i.date_created else "",
+            )
+        ],
+        "bills_page",
+    )
+    history_payments, payment_page = page_rows(
+        [
+            p
+            for p in payments
+            if matches(
+                invoice_numbers.get(p.invoice_id),
+                p.payment_method,
+                p.notes,
+                p.payment_date.strftime("%d %b %Y") if p.payment_date else "",
+            )
+        ],
+        "payments_page",
+    )
+    history_metal_lines, metal_page = page_rows(
+        [
+            row
+            for row in metal_lines
+            if matches(row[1], row[2], row[3], row[0].strftime("%d %b %Y") if row[0] else "")
+        ],
+        "items_page",
+    )
     return render_template(
         "view_client.html",
         client=client,
@@ -2412,6 +2507,12 @@ def view_client(client_id):
         metal_lines=metal_lines,
         metal_summary=metal_summary,
         pay_by_method=pay_by_method,
+        history_q=history_q,
+        history_invoices=history_invoices,
+        history_payments=history_payments,
+        history_metal_lines=history_metal_lines,
+        history_pages={"bills": bill_page, "payments": payment_page, "items": metal_page},
+        invoice_numbers=invoice_numbers,
     )
 
 
@@ -2421,10 +2522,13 @@ def client_statement(client_id):
     """Printable account statement for the customer."""
     client = Client.query.get_or_404(client_id)
     invoices = Invoice.query.filter_by(client_id=client_id).order_by(Invoice.date_created).all()
-    for inv in invoices:
-        inv.paid_amount = invoice_paid_total(inv.id)
-        inv.remaining_amount = inv.total - inv.paid_amount
     payments = Payment.query.filter_by(client_id=client_id).order_by(Payment.payment_date).all()
+    paid = {}
+    for payment in payments:
+        paid[payment.invoice_id] = paid.get(payment.invoice_id, 0) + (payment.amount or 0)
+    for inv in invoices:
+        inv.paid_amount = paid.get(inv.id, 0)
+        inv.remaining_amount = inv.total - inv.paid_amount
     return render_template(
         "statement.html",
         client=client,
@@ -2590,10 +2694,11 @@ def invoices():
         query = query.join(Client).filter(
             db.or_(Invoice.invoice_number.ilike(f"%{q}%"), Client.name.ilike(f"%{q}%"))
         )
-    query = query.order_by(Invoice.date_created.desc())
+    query = query.options(joinedload(Invoice.client)).order_by(Invoice.date_created.desc())
     items, pg = paginate(query, request.args.get("page", type=int) or 1)
+    paid = payment_totals_for_ids([inv.id for inv in items])
     for inv in items:
-        inv.paid_amount = invoice_paid_total(inv.id)
+        inv.paid_amount = paid.get(inv.id, 0)
     return render_template("invoices.html", invoices=items, pagination=pg, q=q)
 
 
@@ -4957,8 +5062,10 @@ def reports_csv():
             "balance",
         ]
     )
-    for i in q.order_by(Invoice.date_created.desc()).all():
-        paid = invoice_paid_total(i.id)
+    rows = q.options(joinedload(Invoice.client)).order_by(Invoice.date_created.desc()).all()
+    totals = payment_totals_for_ids([i.id for i in rows])
+    for i in rows:
+        paid = totals.get(i.id, 0)
         w.writerow(
             [
                 i.invoice_number,

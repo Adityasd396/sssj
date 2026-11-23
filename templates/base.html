@@ -10,7 +10,7 @@
 <title>{% block title %}Billing{% endblock %} · {{ (shop_settings.firm_name if shop_settings and shop_settings.firm_name else 'Jewellery Billing') }}</title>
 
 {% block head %}{% endblock %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/app.css', v='inventory-rates-1') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/app.css', v='ux-1') }}">
 </head>
 <body data-user="{{ session.get('user_id', '') }}" data-page="{{ request.endpoint }}" class="{{ 'app-auth' if session.get('user_id') else 'app-guest' }} {% block bodyclass %}{% endblock %}">
 <a class="skip-link" href="#main-content">Skip to content</a>
@@ -108,8 +108,8 @@
 {% endif %}
 
 {% if session.get('user_id') %}{% include 'scan_dialog.html' %}
-<script src="{{ url_for('static', filename='js/camera-engine.js', v='workflow-1') }}" data-worker="{{ url_for('static', filename='js/tag-decoder-worker.js', v='workflow-1') }}" data-library="{{ url_for('static', filename='js/vendor/zxing-browser-0.2.1.min.js') }}" defer></script>
-<script src="{{ url_for('static', filename='js/tag-scanner.js', v='workflow-1') }}" defer></script>{% endif %}
+<script src="{{ url_for('static', filename='js/camera-engine.js', v='ux-1') }}" data-worker="{{ url_for('static', filename='js/tag-decoder-worker.js', v='ux-1') }}" data-library="{{ url_for('static', filename='js/vendor/zxing-browser-0.2.1.min.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/tag-scanner.js', v='ux-1') }}" defer></script>{% endif %}
 <button type="button" class="keyboard-done" id="keyboard-done" aria-label="Finish editing">Done</button>
 <script src="{{ url_for('static', filename='js/draft-store.js', v='mobile-1') }}"></script>
 <script src="{{ url_for('static', filename='js/mobile-ux.js', v='mobile-1') }}"></script>

@@ -1,0 +1,102 @@
+{
+  "css/app.css": {
+    "source": "fd8840f74c8275254b201caea7662ee55c6ae3e0a6ad2ee891f0fd7e5c34be83",
+    "gzip": "63e62e5f71c974e8bd12a34b53483e6a612d7c5ee635ae173185a5cd6d4088b3"
+  },
+  "css/components.css": {
+    "source": "9b8a0a8bf4b35334e674982403c41c1c73786d568ee579b295e33685230219c1",
+    "gzip": "5e2bd665f8922a2a7dc28a340a2406750fde2b83f959f44b5982c16bb0250c89"
+  },
+  "css/paper-screen.css": {
+    "source": "4f41b57bcaf97100724ef0505a0a85fffdeeaca7768973a08a6fcdc5333c5886",
+    "gzip": "66e3519925ac73bb7bfd8ebc48dd9205456467a6b4d7c9f6ae4e48e79a884bf9"
+  },
+  "css/premium.css": {
+    "source": "92ebac3000dcf48af60b0e2cc4e076512b2d90fc33ce6edfabbd2f4e2723c2e5",
+    "gzip": "f49cafb0eb82cfd73df545bc2d9b06645ccdadc2f081af73e5f4329efe9d2b2f"
+  },
+  "css/responsive.css": {
+    "source": "f3e67016aeba613f6682a805367eb3e116637bcd1bb9dfc10258766e50781ff1",
+    "gzip": "42b8075a2e1bb972c9d13b6c59dbcb6b5a6d51085300b69bd7a6bd3b32127d5c"
+  },
+  "css/scanner.css": {
+    "source": "0c8dc7fcef6272b86a58ad142b094129fe40af2e8e3c629c7419824b9bf3715b",
+    "gzip": "4928e43ae22b80e4423d8141bb2081e8013ebeb267651fea238b71b5063bcd1c"
+  },
+  "css/shared-bill.css": {
+    "source": "87ac51109daa50646dfbb5e551ece899b789b63d0394ec8f70c9e7ece1e0eeec",
+    "gzip": "a2a792943e26b364e6aa02bc3f9375b260666e414101419f1c08b78e23eaaab4"
+  },
+  "js/app-shell.js": {
+    "source": "cdc6da6a5665367f9ff541d1464c1e23ac063999d986cf0b1a2c508886ca5b99",
+    "gzip": "a821b0ef4858bd8578ef0550d46e6a2ad6c4d7dd0d550eb4007bade64ed77221"
+  },
+  "js/bill-draft.js": {
+    "source": "bba28a3d552b52fe877e7745c1e057351e17891a1f2e922ea2116c4e221182c6",
+    "gzip": "997efaa949b593a2edd49863cb2de28a63dd7e8ca0c202129aafe9ecbf39a295"
+  },
+  "js/billing.js": {
+    "source": "97154f6032775d987b2ac256dab10e6fa073b5c3b7930e8c9f9c5bd16570ae40",
+    "gzip": "8082c712864a89b27934fdc95f068c3d743d210eccfd98424d041cc29fa94273"
+  },
+  "js/camera-engine.js": {
+    "source": "fc7f9d2d827c06b5efb21a790be61880fe9a1b4f46119300692e4e2c6fc55fcb",
+    "gzip": "a0180f8c50220818727943e8ccf7c516dc3109178e80881e4eb6f7db29239a9b"
+  },
+  "js/client-search.js": {
+    "source": "8fb1462b8c2c87d0060b989bdefb09f5ebd2508477146deae41c74a625228101",
+    "gzip": "f1c5b30377f9517894531c725563b38d354455c1727739b012f936990ab4de72"
+  },
+  "js/draft-store.js": {
+    "source": "e572f3fc2f72d5254b1d0de4d8857ccd68ef64ed7281fbde2057a4d549087f75",
+    "gzip": "887e28cd6dca3582c0dc857405300c5d329bc4ad67da8ed642c3fd46abd818ac"
+  },
+  "js/invoice-pricing.js": {
+    "source": "ea4c2e417ce8f6d3333dce54a5e19015f4027b420624be12d809dbb0d632185d",
+    "gzip": "65df7c7951d9e7f3fa2d110858c196f470776caff1fc4ed216537f6c9065eedd"
+  },
+  "js/invoice-share.js": {
+    "source": "6d8f8bb9f398783db2a9a681bc7188fbfecc9bdbe4c8ed57c017b46ea1b752d4",
+    "gzip": "4ff30bc67553cb0212cb2440a05592f1d8799d8d3c4de05c5a14bfc0b3221e24"
+  },
+  "js/jsqr.min.js": {
+    "source": "32214c74ee92d37de6d88276987690d996ce757668e82ca1709dba5e0be9fcce",
+    "gzip": "9c58b46dc629a98d7dab4a64121986412a1c42d0a2c45a6642cd61b5bb9c0099"
+  },
+  "js/mobile-billing.js": {
+    "source": "0b01595699247f225ced75d644020807b479ff01d2b2c8e7199dc6afce7e406d",
+    "gzip": "d692489c7e9cace6dbab89df970a3ffdec19682dc9782640757252fa3fa60a7d"
+  },
+  "js/mobile-ux.js": {
+    "source": "fa1b75365916b124c7dc8bd13ea4909aa868c2bfcb01f8738f1140e18d7097a2",
+    "gzip": "8239e73fcc4a9a48c1042555bb3feaf56ef090f344308a33eea5d897ebb7dd79"
+  },
+  "js/passkeys.js": {
+    "source": "710c0fd3f1e536dad9b94a9327055f212d28a18d9e1433e1da29ff0f10ac8ea1",
+    "gzip": "af7385b7cbdbb7ca556237edc3f51e9eae0d90fe87adeb1f780d28be1b037bf6"
+  },
+  "js/print-preferences.js": {
+    "source": "603b13d4a54d3e00ecb4b0518c450ef0fd45c0e6a569269c74daea2bec9baaf6",
+    "gzip": "f80772337a38927f3496ea56ec6af9b4b496785ac364502b8d5ea89a34650a6d"
+  },
+  "js/product-qr.js": {
+    "source": "d0d1a4133afcd9367f93014a5d2f20e62743da8fe3bd8f7f418d315878036524",
+    "gzip": "8e2372c3ba37d177fd530a0cd5a4689f0960f75a83f7148ebcf8bec79ffe1882"
+  },
+  "js/shop-request.js": {
+    "source": "211e022b404c527724b1758c0b2e735ae1a07e95fafe12b58d7440001846b6bb",
+    "gzip": "bb53393572f48f0371949342b1690dcffe6ee410015b7d6279d380726f16f314"
+  },
+  "js/tag-decoder-worker.js": {
+    "source": "637bd751326ba5a46c7cc2e32ea7866c01229bcaedd525a07f6f70a2cc310b03",
+    "gzip": "81faf58b402cfa39922b4a7ff3c68124c92a8738768b00c0a884ec149f38fa64"
+  },
+  "js/tag-scanner.js": {
+    "source": "eabdfe75c12d5ba7e3c61fa7ed37fb700a2579c4e21d6cc70aa69f4ed126aaa5",
+    "gzip": "52cbe1a29340a81861aff16da6bd73c10271127f58fbbd1bbf467767e436007b"
+  },
+  "js/vendor/zxing-browser-0.2.1.min.js": {
+    "source": "066bc34edfcdd4a33f0964aeec967752a0dea1ccaf36e58e319ac9fcb5070f6a",
+    "gzip": "0596f73aa45d33e5a6f3e96dc33199d5c309ee71f35407fbc793656dab1cf171"
+  }
+}

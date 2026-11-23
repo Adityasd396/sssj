@@ -81,24 +81,12 @@ fs.mkdirSync(output, { recursive: true });
     await page.locator('.header-tools [data-open-scanner]').click();
     assert(await page.locator('#scan-modal').isVisible());
     await page.screenshot({path:path.join(output,'scanner-desktop.png')});
-    await page.locator('[data-scan-tab=code]').click();
-    await page.locator('#scan-manual').fill('GOLD-01');
-    await page.locator('#scan-manual').press('Enter');
-    await page.waitForSelector('#scan-result:not([hidden])');
-    assert.equal(await page.locator('#scan-result-name').textContent(),'Classic "Heritage" Ring');
-    await page.keyboard.press('Escape');
-    await page.locator('.header-tools [data-open-scanner]').click();
-    await page.locator('[data-scan-tab=photo]').click();
-    await page.locator('#qr-upload').setInputFiles(path.resolve('.cache/scanner-qr.png'));
-    await page.waitForSelector('#scan-result:not([hidden])');
-    assert.match(await page.locator('#scan-status').textContent(), /recognised/);
-    await page.locator('[data-close-scanner]').click();
-    await page.locator('.header-tools [data-open-scanner]').click();
-    await page.locator('[data-scan-tab=photo]').click();
-    await page.locator('#qr-upload').setInputFiles(path.resolve('.cache/scanner-barcode.png'));
-    await page.waitForSelector('#scan-result:not([hidden])');
-    assert.equal(await page.locator('#scan-result-code').textContent(),'GOLD-01');
-    await page.keyboard.press('Escape');
+    await page.locator('#scan-fallback').evaluate(d=>d.open=true);
+    await page.locator('#scan-manual').fill('GOLD-01');await page.locator('#scan-manual').press('Enter');await page.waitForURL(base+'/products/1');
+    assert.match(await page.locator('h1').textContent(),/Classic/);
+    for(const file of ['scanner-qr.png','scanner-barcode.png']){
+      await page.locator('.header-tools [data-open-scanner]').click();await page.locator('#scan-fallback').evaluate(d=>d.open=true);await page.locator('#qr-upload').setInputFiles(path.resolve('.cache/'+file));await page.waitForFunction(()=>document.getElementById('scan-modal').hidden);await page.waitForURL(base+'/products/1');
+    }
 
     // All record screens must stay within the viewport at phone/tablet/PC sizes.
     const pages = ['/', '/clients', '/products', '/invoices', '/collect', '/reports', '/settings',

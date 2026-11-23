@@ -1,85 +1,19 @@
-/* Camera lifecycle tests use virtual streams only, never the user's physical camera. */
-const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const {chromium} = require(process.env.PLAYWRIGHT_PATH || 'playwright');
-const base = 'http://127.0.0.1:' + (process.env.BILLING_PREVIEW_PORT || '56837');
-(async () => {
-  const browser = await chromium.launch({headless:true, executablePath:process.env.CHROME_PATH,
-    args:['--use-fake-device-for-media-stream','--use-fake-ui-for-media-stream']});
-  try {
-    const context = await browser.newContext({permissions:['camera']});
-    const page = await context.newPage();
-    await page.goto(base+'/login');
-    await page.locator('[name=username]').fill('ui-owner');
-    await page.locator('[name=password]').fill('preview-password');
-    await Promise.all([page.waitForURL(base+'/'),page.locator('button[type=submit]').click()]);
-    await page.evaluate(() => {
-      const actual = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
-      window.testCameraTracks = [];
-      navigator.mediaDevices.getUserMedia = async options => {
-        const stream = await actual(options); window.testCameraTracks.push(...stream.getTracks()); return stream;
-      };
-    });
-    await page.locator('.header-tools [data-open-scanner]').click();
-    await page.waitForFunction(()=>!document.getElementById('scanner-live').hidden).catch(async error => { console.error(await page.locator('#scan-status').textContent()); throw error; });
-    await page.keyboard.press('Escape');
-    await page.waitForFunction(()=>!document.getElementById('scan-modal').open && window.testCameraTracks.length>0 && window.testCameraTracks.every(track=>track.readyState==='ended'));
-    assert(await page.evaluate(()=>window.testCameraTracks.every(track=>track.readyState==='ended')));
-
-    // A small, sharp QR occupying about 3% of a 4K frame must remain readable.
-    await page.evaluate(async imageData => {
-      const image = new Image(); image.src = imageData; await image.decode();
-      const canvas = document.createElement('canvas'); canvas.width=3840; canvas.height=2160;
-      const ctx=canvas.getContext('2d');ctx.fillStyle='white';ctx.fillRect(0,0,3840,2160);
-      const size=image.naturalWidth / 5;
-      ctx.imageSmoothingEnabled=false;ctx.drawImage(image,(3840-size)/2,(2160-size)/2,size,size);
-      navigator.mediaDevices.getUserMedia = async options => {
-        window.requestedCameraOptions=options;
-        const stream=canvas.captureStream(5);window.smallQrTracks=stream.getTracks();
-        setTimeout(()=>ctx.drawImage(image,(3840-size)/2,(2160-size)/2,size,size),100);
-        return stream;
-      };
-    }, 'data:image/png;base64,'+fs.readFileSync('.cache/scanner-qr.png').toString('base64'));
-    await page.locator('.header-tools [data-open-scanner]').click();
-    await page.waitForSelector('#scan-result:not([hidden])').catch(async error=>{console.error(await page.evaluate(()=>({status:document.getElementById('scan-status').textContent,w:document.getElementById('scan-video').videoWidth,h:document.getElementById('scan-video').videoHeight})));await page.screenshot({path:'.cache/qr-debug.png'});throw error;});
-    assert.equal(await page.locator('#scan-result-code').textContent(),'GOLD-01');
-    assert.equal(await page.evaluate(()=>window.requestedCameraOptions.video.width.ideal),3840);
-    await page.waitForFunction(()=>window.smallQrTracks.every(track=>track.readyState==='ended'));
-    await page.keyboard.press('Escape');
-
-    await page.evaluate(()=>{
-      navigator.mediaDevices.getUserMedia = async()=>{throw new DOMException('Test refusal','NotAllowedError');};
-    });
-    await page.locator('.header-tools [data-open-scanner]').click();
-    await page.waitForFunction(()=>document.getElementById('scan-status').textContent.includes('permission was denied'));
-    assert(await page.locator('[data-scan-tab=photo]').isEnabled());
-    await page.keyboard.press('Escape');
-
-    // A permission request can resolve after the user has already closed the dialog.
-    await page.evaluate(()=>{
-      navigator.mediaDevices.getUserMedia = ()=>new Promise(resolve=>{window.releaseCamera=resolve;});
-    });
-    await page.locator('.header-tools [data-open-scanner]').click();
-    await page.waitForFunction(()=>typeof window.releaseCamera==='function');
-    await page.keyboard.press('Escape');
-    await page.evaluate(()=>{
-      const canvas=document.createElement('canvas');canvas.width=20;canvas.height=20;
-      const stream=canvas.captureStream(1);window.lateCameraTracks=stream.getTracks();window.releaseCamera(stream);
-    });
-    await page.waitForFunction(()=>window.lateCameraTracks.every(track=>track.readyState==='ended'));
-    assert.equal(await page.locator('#scan-modal').evaluate(dialog=>dialog.open),false);
-    await page.goto(base+'/invoices/create');
-    await page.locator('.header-tools [data-open-scanner]').click();
-    await page.locator('[data-scan-tab=code]').click();
-    await page.locator('#scan-manual').fill('GOLD-01');
-    await page.locator('#scan-manual').press('Enter');
-    await page.waitForSelector('#scan-result:not([hidden])');
-    await page.locator('#scan-add').click();
-    assert.equal(await page.locator('.item-row').count(),1);
-    assert.equal(await page.locator('[name=product_code]').inputValue(),'GOLD-01');
-    assert.equal(await page.locator('#scan-modal').evaluate(dialog=>dialog.open),false);
-    console.log('PASS: automatic camera, small QR in a 4K frame, permission refusal, late-stream cancellation, and confirmed scan-to-bill.');
-    await context.close();
-  } finally { await browser.close(); }
-})().catch(error=>{console.error(error);process.exitCode=1;});
-
+/* Virtual cameras only: high quality, autofocus, QR/1D, auto-add and cleanup. */
+const assert=require('node:assert/strict'),fs=require('node:fs');
+const {chromium}=require(process.env.PLAYWRIGHT_PATH||'playwright'),base='http://127.0.0.1:56837';
+(async()=>{const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH,args:['--use-fake-device-for-media-stream','--use-fake-ui-for-media-stream']});try{
+ const context=await browser.newContext({permissions:['camera']}),page=await context.newPage();await page.goto(base+'/login');await page.locator('#username').fill('ui-owner');await page.locator('#password').fill('preview-password');await Promise.all([page.waitForURL(base+'/'),page.locator('.login-card [type=submit]').click()]);await page.goto(base+'/invoices/create');
+ await page.evaluate(()=>{const actual=navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);window.testTracks=[];navigator.mediaDevices.getUserMedia=async options=>{const s=await actual(options);window.testTracks.push(...s.getTracks());return s;};});
+ await page.locator('.header-tools [data-open-scanner]').click();await page.waitForFunction(()=>Boolean(document.getElementById('scan-video').srcObject));assert.equal(await page.locator('dialog[open]').count(),0);await page.keyboard.press('Escape');await page.waitForFunction(()=>document.getElementById('scan-modal').hidden&&testTracks.every(t=>t.readyState==='ended'));
+ await page.locator('.header-tools [data-open-scanner]').click();await page.waitForFunction(()=>Boolean(document.getElementById('scan-video').srcObject));await page.goBack();await page.waitForFunction(()=>document.getElementById('scan-modal').hidden);assert(page.url().endsWith('/invoices/create'));
+ for(const fixture of ['scanner-qr.png','scanner-barcode.png']){
+  await page.evaluate(async ({imageData,barcode})=>{let img=new Image();img.src=imageData;await img.decode();let canvas=document.createElement('canvas');canvas.width=3840;canvas.height=2160;const ctx=canvas.getContext('2d');function draw(){ctx.fillStyle='white';ctx.fillRect(0,0,3840,2160);ctx.imageSmoothingEnabled=false;let w=barcode?1100:img.naturalWidth/5,h=barcode?300:w;ctx.drawImage(img,(3840-w)/2,(2160-h)/2,w,h);}draw();window.testDraw=setInterval(draw,100);navigator.mediaDevices.getUserMedia=async options=>{window.requestedCameraOptions=options;const s=canvas.captureStream(10);setTimeout(draw,50);const track=s.getVideoTracks()[0];window.smallTracks=s.getTracks();window.applied=[];track.getCapabilities=()=>({width:{max:3840},height:{max:2160},focusMode:['continuous'],exposureMode:['continuous'],whiteBalanceMode:['continuous']});track.applyConstraints=async c=>{window.applied.push(c);};return s;};},{imageData:'data:image/png;base64,'+fs.readFileSync('.cache/'+fixture).toString('base64'),barcode:fixture.includes('barcode')});
+  const began=Date.now(),before=await page.locator('.item-row [name=product_code][value="GOLD-01"]').count();await page.locator('.header-tools [data-open-scanner]').click();await page.waitForFunction(count=>document.querySelectorAll('.item-row [name=product_code][value="GOLD-01"]').length===count+1,before,{timeout:25000});assert(await page.locator('#scan-modal').isHidden());assert.equal(await page.evaluate(()=>requestedCameraOptions.video.width.ideal),3840);assert(await page.evaluate(()=>applied.some(c=>c.advanced&&c.advanced[0].focusMode==='continuous')));assert(await page.evaluate(()=>smallTracks.every(t=>t.readyState==='ended')));await page.evaluate(()=>clearInterval(testDraw));console.log(fixture+' capture ms: '+(Date.now()-began));
+ }
+ await page.evaluate(()=>{window.originalDecode=CameraTools.Decoder.prototype.decode;CameraTools.Decoder.prototype.decode=async()=> 'UNKNOWN-CODE';});
+ let unknownRequests=0;page.on('request',r=>{if(r.url().includes('/products/scan/UNKNOWN-CODE'))unknownRequests++;});await page.locator('.header-tools [data-open-scanner]').click();await page.waitForFunction(()=>document.getElementById('scan-status').textContent.includes('Unknown code')).catch(async e=>{console.log(await page.evaluate(()=>({status:document.getElementById('scan-status').textContent,hidden:document.getElementById('scan-modal').hidden,hasStream:Boolean(document.getElementById('scan-video').srcObject)})));throw e;});assert(await page.evaluate(()=>Boolean(document.getElementById('scan-video').srcObject)&&smallTracks.every(t=>t.readyState==='live')));await page.waitForTimeout(500);assert.equal(unknownRequests,1);await page.keyboard.press('Escape');await page.evaluate(()=>{CameraTools.Decoder.prototype.decode=originalDecode;});
+ await page.evaluate(()=>{navigator.mediaDevices.getUserMedia=async()=>{throw new DOMException('Denied','NotAllowedError');};});await page.locator('.header-tools [data-open-scanner]').click();await page.waitForFunction(()=>document.getElementById('scan-status').textContent.includes('permission was denied'));assert(await page.locator('#scan-manual').isVisible());await page.keyboard.press('Escape');
+ await page.evaluate(()=>{navigator.mediaDevices.getUserMedia=()=>new Promise(resolve=>window.releaseCamera=resolve);});await page.locator('.header-tools [data-open-scanner]').click();await page.waitForFunction(()=>typeof releaseCamera==='function');await page.keyboard.press('Escape');await page.evaluate(()=>{const c=document.createElement('canvas');c.width=20;c.height=20;const s=c.captureStream(1);window.late=s.getTracks();releaseCamera(s);});await page.waitForFunction(()=>late.every(t=>t.readyState==='ended'));
+ await page.locator('.header-tools [data-open-scanner]').click();await page.locator('#scan-fallback summary').click();await page.locator('#scan-manual').fill('GOLD-01');const count=await page.locator('.item-row [name=product_code][value="GOLD-01"]').count();await page.locator('#scan-manual').press('Enter');await page.waitForFunction(n=>document.querySelectorAll('.item-row [name=product_code][value="GOLD-01"]').length===n+1,count).catch(async e=>{console.log(await page.evaluate(()=>({status:document.getElementById('scan-status').textContent,hidden:document.getElementById('scan-modal').hidden,items:document.querySelectorAll('.item-row').length,history:history.state})));throw e;});assert(await page.locator('#scan-modal').isHidden());
+ console.log('PASS: inline automatic scanning, no confirmation, 4K small QR and 1D barcode, continuous focus/exposure, Back/Escape, denial, late-stream cleanup and manual fallback.');await context.close();
+}finally{await browser.close();}})().catch(error=>{console.error(error);process.exit(1)});

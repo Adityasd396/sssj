@@ -80,7 +80,7 @@ function rowHTML(values) {
         field('Price per unit (₹)', '<input type="number" inputmode="decimal" name="unit_price" class="price-field" step="0.01" min="0" required value="' + escapeAttribute(values.price) + '">') +
         '<input type="hidden" name="product_code" value="' + escapeAttribute(values.code) + '">' +
         field('Line total (₹)', '<input type="text" class="line-total" readonly value="0.00">') +
-        '<button type="button" class="btn btn-ghost item-remove" aria-label="Remove item" onclick="removeItem(this)">Remove</button><div class="line-note"></div>';
+        '<button type="button" class="btn btn-ghost item-remove" aria-label="Remove item" onclick="removeItem(this)">Remove</button><div class="item-verification" aria-label="Item verification"><span>Weight <strong data-item-weight>—</strong></span><span>Rate <strong data-item-rate>—</strong></span><span>Making <strong data-item-making>—</strong></span><span>Line total <strong data-item-total>—</strong></span></div><div class="line-note"></div>';
 }
 function newRow(values, weighed) {
     var row = document.createElement('div'); row.className = 'item-row';
@@ -151,6 +151,8 @@ function addProductToForm(product) {
             (product.stock_weight || 0) + ' g';
         sayScan('Weighed item: enter grams (' + (product.stock_weight || 0) + ' g in stock)');
     }
+    row.classList.add('item-added');setTimeout(function(){row.classList.remove('item-added');},1800);
+    sayScan('Added '+product.name+'. Review weight and price below.');
     calculateTotals();
     document.getElementById('invoice-form').dispatchEvent(new Event('input', {bubbles:true}));
 }
@@ -207,7 +209,8 @@ function initClientSearch() {
         var opt = sel.options[sel.selectedIndex];
         if (opt) opt.hidden = false;
         hint.textContent = (opt && opt.value)
-            ? 'Outstanding balance: ₹' + (opt.dataset.balance || '0.00') : '';
+            ? 'Existing account balance: ₹' + (opt.dataset.balance || '0.00') : '';
+        var previous=document.getElementById('previous-balance');if(previous)previous.textContent=opt&&opt.value?'₹'+(opt.dataset.balance||'0.00'):'Select customer';
         if (gstinBox && opt) {
             var g = (opt.dataset.gstin || '').trim();
             gstinBox.value = g;

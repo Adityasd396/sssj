@@ -116,16 +116,14 @@
 </div>
 {% endblock %}
 {% block scripts %}
-<dialog id="product-qr-camera" class="scan-dialog" aria-labelledby="product-camera-title">
-  <div class="scanner-heading"><h2 id="product-camera-title">Scan the existing QR</h2><button type="button" id="product-camera-close" class="scanner-close" aria-label="Close camera">×</button></div>
-  <p class="scanner-help">Scanning starts automatically. Keep the entire QR sharp and well lit. Only its code will be saved.</p>
-  <div class="scanner-viewfinder"><video id="product-camera-video" autoplay playsinline muted></video></div>
+<section id="product-qr-camera" class="inline-camera" aria-labelledby="product-camera-title" hidden>
+  <div class="scanner-heading"><h2 id="product-camera-title">Scan existing tag</h2><button type="button" id="product-camera-close" data-camera-close class="scanner-close" aria-label="Close camera">×</button></div>
+  <div class="scanner-viewfinder"><video id="product-camera-video" autoplay playsinline muted aria-label="Camera preview; tap to focus"></video></div>
   <p id="product-camera-status" role="status" aria-live="polite" class="scanner-status">Opening camera…</p>
-  <div class="scanner-camera-actions"><button type="button" class="btn btn-gold" id="product-camera-capture" disabled>Read photo instead</button><button type="button" class="btn btn-ghost" id="product-camera-upload">Choose an image instead</button></div>
-</dialog>
+</section>
 
 <script>
   window.productFormValues = {{ request.form.to_dict()|tojson }};
 </script>
-<script src="{{ url_for('static', filename='js/product-qr.js', v='workflow-1') }}" defer></script>
+<script src="{{ url_for('static', filename='js/product-qr.js', v='fast-1') }}" defer></script>
 {% endblock %}

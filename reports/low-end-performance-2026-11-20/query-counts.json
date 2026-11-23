@@ -1,0 +1,17 @@
+{
+  "dataset": "100 synthetic invoices across 61 customers; identical before/after data",
+  "before": {
+    "/collect": 248,
+    "/invoices": 30,
+    "/clients/1": 46,
+    "/clients/1/statement": 46,
+    "/": 21
+  },
+  "after": {
+    "/collect": 4,
+    "/invoices": 5,
+    "/clients/1": 6,
+    "/clients/1/statement": 6,
+    "/": 14
+  }
+}

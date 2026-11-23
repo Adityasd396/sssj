@@ -18,7 +18,7 @@ function initBillDraft() {
     return true;
   }
   function snapshot(){
-    var data={savedAt:Date.now(),fields:{},rows:[],section:form.dataset.activeSection||'customer',optionsOpen:document.getElementById('billing-options').open};
+    var data={savedAt:Date.now(),fields:{},rows:[],section:form.dataset.activeSection||'customer',optionsOpen:document.getElementById('billing-options').open,ratesOpen:Boolean(document.getElementById('bill-rates')&&document.getElementById('bill-rates').open)};
     names.forEach(function(name){if(form.elements[name])data.fields[name]=form.elements[name].value;});
     form.querySelectorAll('.item-row').forEach(function(row){var item={weighed:row.dataset.weighed==='1',detailsOpen:row.querySelector('.item-more').open};rowNames.forEach(function(name){item[name]=row.querySelector('[name="'+name+'"]').value;});data.rows.push(item);});
     var quick=document.getElementById('quick-customer-form');data.customerDraft={};['name','phone','gstin'].forEach(function(name){data.customerDraft[name]=quick.elements[name].value;});
@@ -46,13 +46,14 @@ function initBillDraft() {
     data.rows.forEach(function(item){var row=newRow({desc:item.description,type:item.item_type,weight:item.weight,price:item.unit_price,code:item.product_code,mode:item.making_mode},item.weighed);rowNames.forEach(function(name){if(item[name]!==undefined)row.querySelector('[name="'+name+'"]').value=item[name];});toggleMetalFields(row.querySelector('[name=item_type]'));if(item.detailsOpen!==undefined)row.querySelector('.item-more').open=item.detailsOpen;});
     if(!data.rows.length)newRow({});
     var partial=form.elements.payment_type.value==='partial';document.getElementById('partial_payment_section').style.display=partial?'block':'none';form.elements.partial_amount.required=partial;
+    var rates=document.getElementById('bill-rates');if(rates)rates.open=Boolean(data.ratesOpen);
     var options=document.getElementById('billing-options');options.open=Boolean(data.optionsOpen||form.elements.discount_type.value!=='none'||form.elements.exchange_metal.value!=='none');
     if(data.customerDraft){var quick=document.getElementById('quick-customer-form');['name','phone','gstin'].forEach(function(name){quick.elements[name].value=data.customerDraft[name]||'';});}
     pending=null;notice.hidden=true;restoring=false;buttons(false);calculateTotals();save();
     form.dataset.activeSection=data.section||'customer';if(window.MobileBill)MobileBill.go(form.dataset.activeSection);
   }
   if(SERVER_FORM){
-    var data={fields:{},rows:[],optionsOpen:true};names.forEach(function(name){if(SERVER_FORM[name])data.fields[name]=SERVER_FORM[name][0];});
+    var data={fields:{},rows:[],optionsOpen:true,ratesOpen:true};names.forEach(function(name){if(SERVER_FORM[name])data.fields[name]=SERVER_FORM[name][0];});
     for(var i=0;i<(SERVER_FORM.description||[]).length;i++){var item={detailsOpen:true};rowNames.forEach(function(name){item[name]=(SERVER_FORM[name]||[])[i]||'';});item.weighed=(SERVER_FORM.weighed||[])[i]==='1';data.rows.push(item);}
     restore(data);document.getElementById('bill-error').focus();
   }else if(pending){var chosen=Array.from(form.elements.client_id.options).find(function(option){return option.value===pending.fields.client_id;});document.getElementById('draft-summary').textContent='Unfinished bill'+(chosen&&chosen.value?' for '+chosen.text.split('—')[0].trim():'')+' · '+pending.rows.filter(function(row){return row.description;}).length+' items. Resume before starting another.';notice.hidden=false;form.inert=true;buttons(true);setMessage('Resume or discard the unfinished draft before starting another bill.');}

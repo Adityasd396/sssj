@@ -139,7 +139,8 @@ input[aria-invalid=true], select[aria-invalid=true] { border-color:var(--red); }
   .workflow-steps { gap:8px 12px; }
   .workflow-steps li { font-size:12px; }
   .mobile-cards table, .mobile-cards tbody { display:block; }
-  .mobile-cards thead { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
+  .mobile-cards thead { display:block; position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
+  .mobile-cards thead tr, .mobile-cards thead th { display:block; width:auto; min-width:0; white-space:normal; }
   .mobile-cards { border:0; background:none; box-shadow:none; overflow:visible; }
   .mobile-cards tbody tr { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; border:1px solid var(--line); border-radius:var(--radius); padding:14px; background:var(--card); margin-bottom:12px; }
   .mobile-cards tbody td { display:block; min-width:0; padding:0; border:0; text-align:left; overflow-wrap:anywhere; }

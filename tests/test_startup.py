@@ -17,6 +17,7 @@ def staged_app(tmp_path):
     root = Path(__file__).resolve().parents[1]
     for name in [
         "app.py",
+        "asset_delivery.py",
         "config.py",
         "passkeys.py",
         "security_controls.py",

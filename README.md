@@ -5,6 +5,8 @@ live metal rates, product/stock, client ledger, reports and audit log.
 
 ## Updating an existing shop
 
+Latest release: [Counter UI and mobile usability — 23 November 2026](reports/counter-ux-2026-11-23/RELEASE-REPORT.md). Includes larger readable forms, compact inventory filters, clear bill verification, and searchable customer histories. Existing database and V1 calculations are preserved.
+
 For the 17 November workflow update, replace code/assets only and reload the app.
 Keep your existing `.env`, `instance` directory and DATABASE_URL. Do not initialize,
 restore or replace the shop database. This update adds no schema changes.
@@ -143,3 +145,17 @@ Links have no time-based expiry. Preserve the same public domain, SECRET_KEY and
 bill records for continued access. Deleting a bill or changing the signing key
 makes its link unavailable. No URL-shortening service, new database field or
 migration is required. See [the sharing release report](reports/permanent-sharing-2026-11-19/RELEASE-REPORT.md).
+
+
+## Low-end phone/server update — 22 November 2026
+
+See [the performance release report](reports/low-end-performance-2026-11-20/RELEASE-REPORT.md).
+Collections, bill lists and customer histories use batched queries. Scanning is
+inline and automatic, with worker decoding and supported autofocus controls;
+photo/code fallbacks remain available. Empty bills avoid preview traffic.
+
+Public assets include prebuilt gzip variants verified by asset_delivery.py. Deploy
+all source/assets, keep the existing database, instance folder and .env, and reload
+the web app. No database initialization or migration is required. After editing
+assets or checking out with changed line endings, rebuild styles with
+`python scripts/build_styles.py`, then run `python scripts/build_assets.py`.

@@ -45,7 +45,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_PATH || 'playwright');
  },'data:image/png;base64,'+fs.readFileSync('.cache/product-existing-qr.png').toString('base64'));
  await page.locator('#existing-qr-take-photo').click();
  await page.waitForFunction(()=>document.getElementById('existing_code').value==='SUPPLIER-NEW-104');
- assert.equal(await page.locator('#product-qr-camera').evaluate(d=>d.open),false);
+ assert.equal(await page.locator('#product-qr-camera').evaluate(d=>!d.hidden),false);
  assert(await page.evaluate(()=>window.productCameraRequestedWidth===window.productCameraMaxWidth));
  assert(await page.evaluate(()=>window.productCameraTracks.every(t=>t.readyState==='ended')));
  assert(await page.evaluate(()=>!Array.from(new FormData(document.getElementById('product-form')).values()).some(value=>value instanceof File)));

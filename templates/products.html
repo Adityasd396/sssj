@@ -30,6 +30,27 @@
   </div>
 </div>
 
+<div class="card">
+  <form method="GET" class="toolbar inventory-search" aria-label="Find inventory">
+    <input type="text" name="q" value="{{ q or '' }}" aria-label="Search name, tag or weight" placeholder="Name, tag or weight (e.g. 2.5 g)">
+    <select name="stock" aria-label="Stock availability"><option value="all" {% if stock_filter == 'all' %}selected{% endif %}>All stock levels</option><option value="in" {% if stock_filter == 'in' %}selected{% endif %}>In stock</option><option value="out" {% if stock_filter == 'out' %}selected{% endif %}>Out of stock</option></select>
+    <details class="inventory-more" id="inventory-filters" {% if cat or min_weight or max_weight or code_filter != 'all' or sort != 'name' %}open{% endif %}><summary>More filters{% if cat or min_weight or max_weight or code_filter != 'all' or sort != 'name' %} · active{% endif %}</summary><div class="inventory-filter-fields">
+    <select name="cat" aria-label="Category">
+        <option value="">All categories</option>
+        {% for c in categories %}
+        <option value="{{ c }}" {% if cat == c %}selected{% endif %}>{{ c }}</option>
+        {% endfor %}
+    </select>
+    <select name="code" aria-label="Tag code filter"><option value="all" {% if code_filter == 'all' %}selected{% endif %}>All tag codes</option><option value="generated" {% if code_filter == 'generated' %}selected{% endif %}>Generated-style codes</option><option value="other" {% if code_filter == 'other' %}selected{% endif %}>Other tag codes</option><option value="missing" {% if code_filter == 'missing' %}selected{% endif %}>Missing code</option></select>
+    <select name="sort" aria-label="Sort products"><option value="name" {% if sort == 'name' %}selected{% endif %}>Name</option><option value="generated_first" {% if sort == 'generated_first' %}selected{% endif %}>Generated-style codes first</option><option value="stock_asc" {% if sort == 'stock_asc' %}selected{% endif %}>Lowest stock first</option><option value="recent" {% if sort == 'recent' %}selected{% endif %}>Newest products first</option></select>
+    <label class="weight-filter">Weight from (g)<input type="number" step="0.001" min="0" name="min_weight" value="{{ min_weight }}" placeholder="Min"></label>
+    <label class="weight-filter">Weight to (g)<input type="number" step="0.001" min="0" name="max_weight" value="{{ max_weight }}" placeholder="Max"></label>
+    </div></details>
+    <button type="submit" class="btn btn-primary">Search</button>
+    {% if q or cat or min_weight or max_weight or stock_filter != 'all' or code_filter != 'all' or sort != 'name' %}<a href="{{ url_for('products') }}" class="btn btn-ghost">Clear</a>{% endif %}
+  </form>
+
+  <details class="inventory-totals"><summary>Whole inventory totals <span class="compact-metrics"><span>Gold <b>{{ gold_stats.count }}</b></span><span>Silver <b>{{ silver_stats.count }}</b></span><span>Total <b>{{ all_stats.count }}</b></span></span></summary>
 <p class="mini">Whole inventory totals · includes out-of-stock products · unaffected by filters</p>
 <div class="stat-grid" id="inventory-summary" aria-label="Whole inventory totals" style="margin-bottom:18px">
     <div class="stat">
@@ -52,24 +73,7 @@
     </div>
 </div>
 
-<div class="card">
-  <form method="GET" class="toolbar">
-    <input type="text" name="q" value="{{ q or '' }}" placeholder="Name, tag or weight (e.g. 2.5 g)">
-    <select name="cat" onchange="this.form.submit()" style="flex:0 0 auto;min-width:180px">
-        <option value="">All categories</option>
-        {% for c in categories %}
-        <option value="{{ c }}" {% if cat == c %}selected{% endif %}>{{ c }}</option>
-        {% endfor %}
-    </select>
-    <select name="stock" aria-label="Stock availability"><option value="all" {% if stock_filter == 'all' %}selected{% endif %}>All stock levels</option><option value="in" {% if stock_filter == 'in' %}selected{% endif %}>In stock</option><option value="out" {% if stock_filter == 'out' %}selected{% endif %}>Out of stock</option></select>
-    <select name="code" aria-label="Tag code filter"><option value="all" {% if code_filter == 'all' %}selected{% endif %}>All tag codes</option><option value="generated" {% if code_filter == 'generated' %}selected{% endif %}>Generated-style codes</option><option value="other" {% if code_filter == 'other' %}selected{% endif %}>Other tag codes</option><option value="missing" {% if code_filter == 'missing' %}selected{% endif %}>Missing code</option></select>
-    <select name="sort" aria-label="Sort products"><option value="name" {% if sort == 'name' %}selected{% endif %}>Name</option><option value="generated_first" {% if sort == 'generated_first' %}selected{% endif %}>Generated-style codes first</option><option value="stock_asc" {% if sort == 'stock_asc' %}selected{% endif %}>Lowest stock first</option><option value="recent" {% if sort == 'recent' %}selected{% endif %}>Newest products first</option></select>
-    <label class="weight-filter">Weight from (g)<input type="number" step="0.001" min="0" name="min_weight" value="{{ min_weight }}" placeholder="Min"></label>
-    <label class="weight-filter">Weight to (g)<input type="number" step="0.001" min="0" name="max_weight" value="{{ max_weight }}" placeholder="Max"></label>
-    <button type="submit" class="btn btn-primary">Search</button>
-    {% if q or cat or min_weight or max_weight or stock_filter != 'all' or code_filter != 'all' or sort != 'name' %}<a href="{{ url_for('products') }}" class="btn btn-ghost">Clear</a>{% endif %}
-  </form>
-
+  </details>
   {% if weight_error %}<p class="bill-error" role="alert">{{ weight_error }}</p>{% endif %}
   <div class="mini" style="margin-bottom:14px">{{ pagination.total }} matches · weight filters use grams per piece</div>
   {% if code_filter != 'all' or sort == 'generated_first' %}<p class="help">Generated-style means JWL- followed by at least six digits. Scan history is not recorded; code format does not prove whether a QR was scanned.</p>{% endif %}
