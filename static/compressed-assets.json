@@ -92,8 +92,8 @@
     "gzip": "81faf58b402cfa39922b4a7ff3c68124c92a8738768b00c0a884ec149f38fa64"
   },
   "js/tag-print-profiles.js": {
-    "source": "b0e2d4574665cba63dc45a83bf33a7b07e6e0cea697e3f4d09e19b2c377fa406",
-    "gzip": "fb723125409c521ffacef06817029c8c1e4e983af15c68d3f7c24ff143eeab37"
+    "source": "261ecf8d7a6492a724c9687f78740a513d76a2eb8ba2aeaaa90a0d4264226e79",
+    "gzip": "bb6589bd4498150f8719e6b6a925db7443f72ad096af8613a0ba2b1d0fd41b62"
   },
   "js/tag-scanner.js": {
     "source": "eabdfe75c12d5ba7e3c61fa7ed37fb700a2579c4e21d6cc70aa69f4ed126aaa5",

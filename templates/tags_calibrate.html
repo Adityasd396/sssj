@@ -21,9 +21,10 @@
 {% from "tag_roll_controls.html" import alignment, orientation %}
 <section class="no-print">
     <h1>CD410 test label</h1>
+    <p>Measure the sticker face as it exits the printer. The paper width is across the roll and the paper height is along the feed. Press Feed once before testing. If it skips stickers or stops mid-label, calibrate the printer with Gap media first.</p>
     <form data-label-settings method="GET">
-        <label>Tag width (mm)<input name="w" type="number" min="10" max="420" step="0.001" value="{{ width|round(3) }}" required></label>
-        <label>Tag height (mm)<input name="h" type="number" min="5" max="300" step="0.001" value="{{ height|round(3) }}" required></label>
+        <label>Artwork width (mm)<input name="w" type="number" min="10" max="420" step="0.001" value="{{ width|round(3) }}" required></label>
+        <label>Artwork height (mm)<input name="h" type="number" min="5" max="300" step="0.001" value="{{ height|round(3) }}" required></label>
         {% if body < width %}
         <input type="hidden" name="body" value="{{ body }}">
         <input type="hidden" name="tail_height" value="{{ tail_height }}">
@@ -32,9 +33,11 @@
         {{ orientation(roll.rotation) }}
         {{ alignment(roll) }}
         <button type="submit">Update preview</button>
+        <button type="submit" name="format" value="pdf" formtarget="_blank">Open exact-size test PDF</button>
     </form>
     <p>Set paper to <strong>{{ roll.across|round(3) }} × {{ roll.feed|round(3) }} mm</strong> (across the roll × feed direction). Set Gap media, calibrate the roll, then print one copy at 100% with no margins, headers or footers.</p>
     {% if roll.gap is not none %}<p>Driver gap: {{ roll.gap }} mm.</p>{% endif %}
+    {% if roll.scale < 1 %}<p>Artwork fits at {{ (roll.scale * 100)|round(1) }}% without rotating the paper.</p>{% endif %}
     <p>The frame should stay inside one sticker. The arrow marks the top of the artwork. If the frame crosses a gap, check the paper size and run gap calibration again.</p>
     <p data-label-status role="status" hidden>Update the preview to print with the changed settings.</p>
     <button type="button" data-print-label onclick="window.print()">Print one test label</button>
@@ -43,16 +46,10 @@
 <div class="sheet">
     <div class="label-page">
         <svg class="jt sample-art" viewBox="0 0 {{ width }} {{ height }}" role="img" aria-label="Alignment frame and artwork orientation arrow">
-            <rect x="1" y="1" width="{{ body - 2 }}" height="{{ height - 2 }}" fill="#fff" stroke="#000" stroke-width=".22"/>
-            {% if width - body >= 3 and tail_height >= 2 %}
-            {% set tail_y = {'top': 0, 'middle': (height - tail_height) / 2, 'bottom': height - tail_height}[position] %}
-            <rect x="{{ body + 0.75 }}" y="{{ tail_y + 0.5 }}" width="{{ width - body - 1.5 }}" height="{{ tail_height - 1 }}" fill="none" stroke="#000" stroke-width=".22"/>
-            {% endif %}
-            {% set cx = body / 2 %}
-            {% set cy = height / 2 %}
-            {% set marker = [body, height, 24]|min / 5 %}
-            <path d="M {{ cx - marker }} {{ cy }} L {{ cx }} {{ cy - marker }} L {{ cx + marker }} {{ cy }} M {{ cx }} {{ cy - marker }} V {{ cy + marker }}" fill="none" stroke="#000" stroke-width=".35"/>
-            {% if body >= 26 and height >= 14 %}<text x="{{ cx }}" y="{{ cy + marker + 3.2 }}" text-anchor="middle" font-family="Arial, sans-serif" font-size="2.6">CD410 TEST</text>{% endif %}
+            {% for x, y, w, h in art.frames %}<rect x="{{ x }}" y="{{ y }}" width="{{ w }}" height="{{ h }}" fill="none" stroke="#000" stroke-width=".22"/>{% endfor %}
+            <polyline points="{% for x, y in art.arrow %}{{ x }},{{ y }} {% endfor %}" fill="none" stroke="#000" stroke-width=".35"/>
+            <line x1="{{ art.stem[0] }}" y1="{{ art.stem[1] }}" x2="{{ art.stem[2] }}" y2="{{ art.stem[3] }}" stroke="#000" stroke-width=".35"/>
+            {% if art.caption %}<text x="{{ art.caption[0] }}" y="{{ art.caption[1] }}" text-anchor="middle" font-family="Arial, sans-serif" font-size="2.6">CD410 TEST</text>{% endif %}
         </svg>
     </div>
 </div>

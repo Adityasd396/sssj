@@ -4,7 +4,7 @@
   if (!controls) return;
 
   const key = 'billing-tag-print-profiles-v1';
-  const fields = ['rotate', 'left', 'right', 'top', 'bottom', 'x', 'y', 'gap'];
+  const fields = ['paper_w', 'paper_h', 'rotate', 'left', 'right', 'top', 'bottom', 'x', 'y', 'gap'];
   const list = controls.querySelector('[data-profile-list]');
   const nameInput = controls.querySelector('[data-profile-name]');
   const status = controls.querySelector('[data-profile-status]');

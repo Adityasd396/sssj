@@ -12,6 +12,10 @@ async function checkPdf(page, name, count, width, height) {
     await page.emulateMedia({ media: 'print' });
     await page.pdf({ path, format: 'A4', preferCSSPageSize: true });
     await page.emulateMedia({ media: null });
+    checkPdfSize(path, count, width, height);
+}
+
+function checkPdfSize(path, count, width, height) {
     const info = execFileSync('pdfinfo', ['-f', '1', '-l', String(count), path], { encoding: 'utf8' });
     assert.equal(Number(info.match(/^Pages:\s*(\d+)/m)[1]), count, info);
     const sizes = [...info.matchAll(/^Page\s+\d+\s+size:\s+([\d.]+) x ([\d.]+)/gm)];
@@ -34,18 +38,18 @@ async function run(engine) {
         await page.locator('select[name=rotate]').selectOption('90');
         assert(await page.locator('[data-print-label]').isDisabled());
         await Promise.all([page.waitForURL(u => u.searchParams.get('rotate') === '90'), page.getByRole('button', { name: 'Update preview' }).click()]);
-        assert.match(await page.locator('.setup .paper').textContent(), /20\.0 × 50\.0/);
+        assert.match(await page.locator('.setup .paper').textContent(), /50\.0 × 20\.0/);
         assert(await page.locator('[data-print-label]').isEnabled());
         assert.equal(await page.locator('.label-page').count(), 1);
         const fit = await page.locator('.label-page').evaluate(e => {
             const frame = e.getBoundingClientRect();
             const art = e.firstElementChild.getBoundingClientRect();
-            return Math.abs(frame.width - art.width) < 0.1 && Math.abs(frame.height - art.height) < 0.1;
+            return art.width < frame.width && Math.abs(frame.height - art.height) < 0.1;
         });
         assert(fit);
         assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 2));
         if (engine === 'chromium') {
-            await checkPdf(page, 'vertical-tag', 1, 20, 50);
+            await checkPdf(page, 'vertical-tag', 1, 50, 20);
             await page.goto(base + '/products/1/tag?w=50&h=20&rotate=180');
             await checkPdf(page, 'flipped-tag', 1, 50, 20);
             await page.goto(base + '/products/1/tag?w=50&h=20&rotate=90');
@@ -56,7 +60,7 @@ async function run(engine) {
         assert.equal(await page.locator('select[name=rotate]').inputValue(), '90');
         await page.emulateMedia({ media: 'print' });
         assert.equal(await page.locator('.no-print').isVisible(), false);
-        if (engine === 'chromium') await checkPdf(page, 'vertical-test', 1, 20, 50);
+        if (engine === 'chromium') await checkPdf(page, 'vertical-test', 1, 50, 20);
         if (engine === 'chromium' && !(await (await page.request.get(base + '/tags')).text()).includes('Synthetic small tag')) {
             const session = await (await page.request.get(base + '/api/session')).json();
             await page.request.post(base + '/tags/save', { form: {
@@ -75,7 +79,7 @@ async function run(engine) {
         await Promise.all([page.waitForURL(u => u.searchParams.get('group') === '2'), page.getByRole('button', { name: 'Update preview' }).click()]);
         assert.equal(await page.locator('.label-page').count(), 3);
         assert.equal(await page.locator('.label-page .jt-name').first().textContent(), 'Silver chain');
-        if (engine === 'chromium') await checkPdf(page, 'three-rotated-tags', 3, 15, 40);
+        if (engine === 'chromium') await checkPdf(page, 'three-rotated-tags', 3, 40, 15);
         await page.goto(base + '/tags/print?ids=1,2&layout=sheet');
         assert.equal(await page.locator('.label-page').count(), 0);
         assert.equal(await page.locator('.sheet > .jt').count(), 4);
@@ -132,7 +136,24 @@ async function run(engine) {
         assert.equal(await page.locator('[name=x]').inputValue(), '0.4');
         assert(await page.locator('[data-print-label]').isDisabled());
         assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 2));
-        console.log(engine + ' passed orientation, shape presets, stock groups, tail calibration and saved printer profiles');
+        await page.goto(base + '/products/1/tag?preset=rect-38x15&rotate=270');
+        assert.match(await page.locator('.setup .paper').textContent(), /38 × 15|38\.0 × 15\.0/);
+        if (engine === 'chromium') {
+            for (const rotation of [0, 90, 180, 270]) {
+                const response = await page.request.get(base + '/tags/calibrate?format=pdf&w=38&h=15&rotate=' + rotation);
+                assert.equal(response.status(), 200);
+                assert.match(response.headers()['content-type'], /^application\/pdf/);
+                const file = output + '/38x15-cd410-' + rotation + '.pdf';
+                fs.writeFileSync(file, await response.body());
+                checkPdfSize(file, 1, 38, 15);
+            }
+            const custom = await page.request.get(base + '/tags/calibrate?format=pdf&w=38&h=15&paper_w=15&paper_h=38&rotate=90');
+            assert.equal(custom.status(), 200);
+            const file = output + '/15x38-cd410.pdf';
+            fs.writeFileSync(file, await custom.body());
+            checkPdfSize(file, 1, 15, 38);
+        }
+        console.log(engine + ' passed fixed stock dimensions, shape presets, stock groups, tail calibration and saved printer profiles');
     } finally {
         await browser.close();
     }

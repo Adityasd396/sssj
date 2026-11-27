@@ -55,7 +55,14 @@ from invoice_sharing import (
     whatsapp_number,
 )
 from security_controls import install_gate, safe_csv_writer
-from tag_print_settings import LABEL_PRESETS, millimetres, preset_spacing, roll_page
+from tag_print_settings import (
+    LABEL_PRESETS,
+    calibration_art,
+    calibration_pdf,
+    millimetres,
+    preset_spacing,
+    roll_page,
+)
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("billing")
@@ -4717,9 +4724,17 @@ def tag_calibration():
     tail_height = millimetres(request.args, "tail_height", height * 0.4, 0, height)
     position = request.args.get("tail_pos")
     position = position if position in ("top", "middle", "bottom") else "middle"
+    roll = tag_roll_page(width, height)
+    art = calibration_art(width, height, body, tail_height, position)
+    if request.args.get("format") == "pdf":
+        return Response(
+            calibration_pdf(roll, width, height, art),
+            mimetype="application/pdf",
+            headers={"Content-Disposition": 'inline; filename="cd410-test-label.pdf"'},
+        )
     return render_template(
-        "tags_calibrate.html", width=width, height=height, roll=tag_roll_page(width, height),
-        body=body, tail_height=tail_height, position=position,
+        "tags_calibrate.html", width=width, height=height, roll=roll,
+        body=body, tail_height=tail_height, position=position, art=art,
     )
 
 

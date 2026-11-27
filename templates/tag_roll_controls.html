@@ -1,5 +1,5 @@
 {% macro orientation(rotation) %}
-<label>Tag orientation
+<label>Artwork rotation
     <select name="rotate">
         {% for value, label in [(0, 'Default · 0°'), (90, 'Turn right · 90°'), (180, 'Flip · 180°'), (270, 'Turn left · 270°')] %}
         <option value="{{ value }}" {% if value == rotation %}selected{% endif %}>{{ label }}</option>
@@ -12,9 +12,10 @@
 <div class="setup">
     <strong>CD410 paper size:</strong>
     <span class="paper">{{ roll.across|round(3) }} × {{ roll.feed|round(3) }} mm</span>
-    <p>First number is across the roll. Second is in the feed direction.
+    <p>First number is across the roll. Second is in the feed direction. Artwork rotation keeps this paper size.
     {% if roll.gap is not none %}Set the driver gap to <b>{{ roll.gap }} mm</b>.{% else %}Measure the gap separately and set it in the driver.{% endif %}</p>
     <p>Use the CD410 <b>label driver</b> with <b>Gap</b> media for stickers like these. Match the size shown above, set scale to <b>100%</b>, margins to <b>None</b>, and turn off headers, footers and extra rotation.</p>
+    {% if roll.scale < 1 %}<p>Artwork fits at {{ (roll.scale * 100)|round(1) }}% of its design size. Check the QR or barcode before printing a batch.</p>{% endif %}
     {% if roll.may_clip %}<p><strong>The shift may crop the artwork.</strong> Check the preview and use padding or a smaller shift if a QR code or text is clipped.</p>{% endif %}
     <a class="ghost" href="{{ url_for('tag_calibration', w=geo.total, h=geo.height, body=geo.body if geo.tail else none, tail_height=design.tail_h_mm or geo.height * 0.4, tail_pos=design.tail_pos, **roll.query) }}">Print one test label</a>
     <a class="ghost" href="{{ url_for('printer_setup', _anchor='cd410') }}">CD410 printer settings</a>
@@ -22,9 +23,12 @@
 {% endmacro %}
 
 {% macro alignment(roll) %}
-<details class="printer-alignment" data-print-alignment>
-    <summary>Printer padding, alignment and saved profiles</summary>
+<details class="printer-alignment" data-print-alignment {% if roll.query.paper_w is defined or roll.query.paper_h is defined %}open{% endif %}>
+    <summary>Paper size, printer alignment and saved profiles</summary>
+    <p>Enter the measured sticker width and height if the roll differs from the design. Leave the gap out of the height.</p>
     <div class="printer-alignment-fields">
+        <label>Paper width across roll (mm)<input name="paper_w" type="number" min="5" max="420" step="0.001" value="{{ roll.query.get('paper_w', '') }}" placeholder="{{ roll.across }}"></label>
+        <label>Paper height along feed (mm)<input name="paper_h" type="number" min="5" max="420" step="0.001" value="{{ roll.query.get('paper_h', '') }}" placeholder="{{ roll.feed }}"></label>
         {% for side in ('left', 'right', 'top', 'bottom') %}
         <label>{{ side|capitalize }} padding (mm)
             <input name="{{ side }}" type="number" min="0" max="5" step="0.001" value="{{ roll[side] }}">
