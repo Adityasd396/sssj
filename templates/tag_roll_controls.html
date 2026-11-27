@@ -1,0 +1,47 @@
+{% macro orientation(rotation) %}
+<label>Tag orientation
+    <select name="rotate">
+        {% for value, label in [(0, 'Default · 0°'), (90, 'Turn right · 90°'), (180, 'Flip · 180°'), (270, 'Turn left · 270°')] %}
+        <option value="{{ value }}" {% if value == rotation %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+    </select>
+</label>
+{% endmacro %}
+
+{% macro roll_setup(roll, geo, design) %}
+<div class="setup">
+    <strong>CD410 paper size:</strong>
+    <span class="paper">{{ roll.across|round(3) }} × {{ roll.feed|round(3) }} mm</span>
+    <p>First number is across the roll. Second is in the feed direction.
+    {% if roll.gap is not none %}Set the driver gap to <b>{{ roll.gap }} mm</b>.{% else %}Measure the gap separately and set it in the driver.{% endif %}</p>
+    <p>Use the CD410 <b>label driver</b> with <b>Gap</b> media for stickers like these. Match the size shown above, set scale to <b>100%</b>, margins to <b>None</b>, and turn off headers, footers and extra rotation.</p>
+    {% if roll.may_clip %}<p><strong>The shift may crop the artwork.</strong> Check the preview and use padding or a smaller shift if a QR code or text is clipped.</p>{% endif %}
+    <a class="ghost" href="{{ url_for('tag_calibration', w=geo.total, h=geo.height, body=geo.body if geo.tail else none, tail_height=design.tail_h_mm or geo.height * 0.4, tail_pos=design.tail_pos, **roll.query) }}">Print one test label</a>
+    <a class="ghost" href="{{ url_for('printer_setup', _anchor='cd410') }}">CD410 printer settings</a>
+</div>
+{% endmacro %}
+
+{% macro alignment(roll) %}
+<details class="printer-alignment" data-print-alignment>
+    <summary>Printer padding, alignment and saved profiles</summary>
+    <div class="printer-alignment-fields">
+        {% for side in ('left', 'right', 'top', 'bottom') %}
+        <label>{{ side|capitalize }} padding (mm)
+            <input name="{{ side }}" type="number" min="0" max="5" step="0.001" value="{{ roll[side] }}">
+        </label>
+        {% endfor %}
+        <label>Shift across roll (mm)<input name="x" type="number" min="-5" max="5" step="0.001" value="{{ roll.x }}"></label>
+        <label>Shift along feed (mm)<input name="y" type="number" min="-5" max="5" step="0.001" value="{{ roll.y }}"></label>
+        <label>Driver gap (mm)<input name="gap" type="number" min="0" max="20" step="0.001" value="{{ roll.gap if roll.gap is not none else '' }}"></label>
+    </div>
+    <p>Padding fits the whole artwork into a smaller area while keeping the paper size. Positive shifts move it right or farther down the page. Set the gap in the driver as well. Use the one-label test after an adjustment.</p>
+    <div class="printer-profiles" data-print-profiles hidden>
+        <label>Saved profiles <select data-profile-list><option value="">Choose a profile</option></select></label>
+        <button type="button" data-profile-load>Load settings</button>
+        <button type="button" data-profile-delete>Remove profile</button>
+        <label>Profile name <input type="text" maxlength="48" data-profile-name></label>
+        <button type="button" data-profile-save>Save settings</button>
+        <p class="hint" data-profile-status role="status">Profiles are saved in this browser on this device. Use a name that identifies the roll.</p>
+    </div>
+</details>
+{% endmacro %}

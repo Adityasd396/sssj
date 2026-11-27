@@ -21,6 +21,7 @@ from datetime import UTC, datetime, timedelta, timezone
 from functools import wraps
 from io import BytesIO
 from itertools import zip_longest
+from types import SimpleNamespace
 from zoneinfo import ZoneInfo
 
 import qrcode
@@ -54,6 +55,7 @@ from invoice_sharing import (
     whatsapp_number,
 )
 from security_controls import install_gate, safe_csv_writer
+from tag_print_settings import LABEL_PRESETS, millimetres, preset_spacing, roll_page
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("billing")
@@ -4063,41 +4065,42 @@ def print_product_tag(product_id):
     _flash_tag_default()
     p = Product.query.get_or_404(product_id)
     tpl_id = request.args.get("tpl", type=int)
-    tpl = TagTemplate.query.get(tpl_id) if tpl_id else tag_template_for(p)
+    tpl = (db.session.get(TagTemplate, tpl_id) if tpl_id else None) or tag_template_for(p)
+    preset = LABEL_PRESETS.get(request.args.get("preset"))
+    values = {column.key: getattr(tpl, column.key) for column in TagTemplate.__table__.columns}
+    shape = request.args.get("shape", normalise_tag_shape(tpl.shape))
+    values["shape"] = normalise_tag_shape(shape)
+    if preset:
+        _, width, height, tail = preset
+        values.update(shape="tail" if tail else "rectangle", width_mm=width, height_mm=height,
+                      tail_mm=tail or 16, total_mm=0, tail_h_mm=0, tail_pos="middle", tail_hole_mm=0)
+        values.update(preset_spacing(height))
+    else:
+        values.update(
+            tail_h_mm=millimetres(request.args, "tail_height", tpl.tail_h_mm, 0, 300),
+            tail_hole_mm=millimetres(request.args, "tail_hole", tpl.tail_hole_mm, 0, 10),
+            pad_mm=millimetres(request.args, "pad", tpl.pad_mm, 0, 20),
+            pad_h_mm=millimetres(request.args, "pad_side", tpl.pad_h_mm, 0, 20),
+            font_name=millimetres(request.args, "name_size", tpl.font_name, 4, 40),
+            font_detail=millimetres(request.args, "detail_size", tpl.font_detail, 3, 30),
+            gap_mm=millimetres(request.args, "line_gap", tpl.gap_mm, 0, 10),
+            qr_mm=millimetres(request.args, "qr_size", tpl.qr_mm, 0, 100),
+            bc_h_mm=millimetres(request.args, "barcode_height", tpl.bc_h_mm, 0, 60),
+        )
+        tail_position = request.args.get("tail_pos")
+        if tail_position in ("top", "middle", "bottom"):
+            values["tail_pos"] = tail_position
+    tpl = SimpleNamespace(**values)
     qr, bc = _tag_art(p, tpl)
 
-    # ?w=&h=&tail=&total= are MILLIMETRES — the unit the form's inputs are
-    # labelled in. These used to be multiplied by 25.4 as if they were inches,
-    # so clicking "Apply size" with the pre-filled 50 x 25 turned a 50 mm tag
-    # into a 1270 mm one. They are applied to this render only; the saved
-    # design is never touched from a GET.
-    def _opt(name, low, high, zero_means_clear=False):
-        """Query override, or None when absent/garbage (=> use the design).
-
-        `zero_means_clear` is for the tag length, where 0 is a real, meaningful
-        value: "not pinned — size the tag from body + tail after all". It has
-        to survive as a 0, because clamping it up to the minimum would invent a
-        tag length nobody asked for, and treating it as "absent" would let the
-        design's pin win and make the field look broken.
-        """
-        raw = request.args.get(name)
-        if raw in (None, ""):
-            return None
-        try:
-            value = float(raw)
-        except (TypeError, ValueError):
-            return None
-        if zero_means_clear:
-            return 0.0 if value <= 0 else max(low, min(high, value))
-        return max(low, min(high, value))
-
-    geo = resolved_tag_geometry(
-        tpl,
-        w=_opt("w", 10.0, 300.0),
-        h=_opt("h", 5.0, 300.0),
-        tail=_opt("tail", MIN_TAIL_MM, 120.0),
-        total=_opt("total", 10.0, 400.0, zero_means_clear=True),
-    )
+    if not preset:
+        tpl.width_mm = millimetres(request.args, "w", tpl.width_mm, 10, 300)
+        tpl.height_mm = millimetres(request.args, "h", tpl.height_mm, 5, 300)
+        tpl.tail_mm = millimetres(request.args, "tail", tpl.tail_mm, MIN_TAIL_MM, 120)
+        tpl.total_mm = millimetres(
+            request.args, "total", 0 if "tail" in request.args else tpl.total_mm, 0, 400
+        )
+    geo = resolved_tag_geometry(tpl)
     return render_template(
         "product_tag.html",
         product=p,
@@ -4106,7 +4109,8 @@ def print_product_tag(product_id):
         qr_data=qr,
         barcode_data=bc,
         geo=geo,
-        presets=TAG_PRESETS,
+        roll=tag_roll_page(geo["total"], geo["height"]),
+        presets=LABEL_PRESETS,
         settings=Settings.query.first(),
     )
 
@@ -4245,19 +4249,6 @@ TAG_SHAPE_ALIASES = {
     "plain": "rectangle",
     "": "rectangle",
 }
-TAG_PRESETS = [
-    ("Thermal 40 × 25 mm", 40, 25),
-    ("Thermal 50 × 25 mm", 50, 25),
-    ("Thermal 58 × 40 mm", 58, 40),
-    ("Thermal 80 × 50 mm", 80, 50),
-    ("Tail 30 + 14 × 12 mm", 30, 12),
-    ("Tail 40 + 16 × 15 mm", 40, 15),
-    ("Tail 50 + 20 × 20 mm", 50, 20),
-    ("Tag 1.5 × 0.5 in", 38.1, 12.7),
-    ("Tag 2 × 1 in", 50.8, 25.4),
-    ("Tag 2.5 × 1.25 in", 63.5, 31.75),
-    ("Tag 3 × 2 in", 76.2, 50.8),
-]
 
 
 def normalise_tag_shape(shape) -> str:
@@ -4576,7 +4567,8 @@ def tag_designer():
         tpl=tpl,
         categories=categories,
         styles=TAG_STYLES,
-        presets=TAG_PRESETS,
+        presets=LABEL_PRESETS,
+        preset_spacing=preset_spacing,
         sample=sample,
         sample_qr=art[0],
         sample_bc=art[1],
@@ -4665,14 +4657,26 @@ def print_tags():
         return redirect(url_for("tag_designer"))
 
     tpl = TagTemplate.query.get(tpl_id) if tpl_id else None
-    tags = []
+    designs = {}
+    entries = []
     for p in products:
         design = tpl or (tag_template_for(p) if per_tpl else tag_template_for(None))
-        qr, bc = _tag_art(p, design)
-        # each tag carries its own resolved mm geometry, because with
-        # "each item's own design" two tags in one batch can be different sizes
         geo = resolved_tag_geometry(design)
-        for _ in range(copies if not per_tpl else max(1, min(10, design.copies or 1))):
+        size = (geo["total"], geo["height"], *tag_stock_shape(geo, design))
+        quantity = copies if not per_tpl else max(1, min(10, design.copies or 1))
+        entry = (p, design, geo, quantity)
+        entries.append(entry)
+        designs.setdefault(size, []).append(entry)
+
+    sizes = list(designs)
+    group = request.args.get("group", 1, type=int)
+    if not 1 <= group <= len(sizes):
+        abort(400, "Choose an available label size.")
+    selected = entries if layout == "sheet" else designs[sizes[group - 1]]
+    tags = []
+    for p, design, geo, quantity in selected:
+        qr, bc = _tag_art(p, design)
+        for _ in range(quantity):
             tags.append({"product": p, "tpl": design, "qr": qr, "bc": bc, "geo": geo})
     return render_template(
         "tags_print.html",
@@ -4681,24 +4685,41 @@ def print_tags():
         tpl=tpl,
         cat=cat,
         copies=copies,
+        roll=tag_roll_page(*sizes[group - 1][:2]),
+        group=group,
+        size_groups=[
+            (w, h, body, tail_height, position, sum(entry[3] for entry in items))
+            for (w, h, body, tail_height, position), items in designs.items()
+        ],
         settings=Settings.query.first(),
     )
+
+
+def tag_roll_page(width, height):
+    return roll_page(request.args, width, height)
+
+
+def tag_stock_shape(geo, design):
+    height = geo["height"]
+    if geo["shape"] != "tail":
+        return geo["total"], 0, "middle"
+    tail_height = min(height, design.tail_h_mm or height * 0.4)
+    return geo["body"], round(tail_height, 3), design.tail_pos or "middle"
 
 
 @app.route("/tags/calibrate")
 @login_required
 def tag_calibration():
-    """A ruler printed at 100%, to prove the printer is not scaling the page.
-
-    This is the answer to "the tag comes out the wrong size": a browser will
-    happily stretch the page to whatever paper the driver reports, and no
-    stylesheet can override the print dialog. Measuring this bar tells the
-    shopkeeper in five seconds whether the scale is right, without spending
-    label stock on a tag that comes out wrong.
-    """
-    bar = request.args.get("w", type=float) or 50.0
+    """Print one test page using the same physical size as a product tag."""
+    width = millimetres(request.args, "w", 50.0, 10, 420)
+    height = millimetres(request.args, "h", 25.0, 5, 300)
+    body = millimetres(request.args, "body", width, 10, width)
+    tail_height = millimetres(request.args, "tail_height", height * 0.4, 0, height)
+    position = request.args.get("tail_pos")
+    position = position if position in ("top", "middle", "bottom") else "middle"
     return render_template(
-        "tags_calibrate.html", bar_mm=max(20.0, min(200.0, bar)), settings=Settings.query.first()
+        "tags_calibrate.html", width=width, height=height, roll=tag_roll_page(width, height),
+        body=body, tail_height=tail_height, position=position,
     )
 
 

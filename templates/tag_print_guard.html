@@ -1,0 +1,19 @@
+<script>
+  (() => {
+    const form = document.querySelector('[data-label-settings]');
+    const printButton = document.querySelector('[data-print-label]');
+    const status = document.querySelector('[data-label-status]');
+    if (!form || !printButton || !status) return;
+
+    const applied = new URLSearchParams(new FormData(form)).toString();
+    const update = () => {
+      const changed = new URLSearchParams(new FormData(form)).toString() !== applied;
+      printButton.disabled = changed;
+      status.hidden = !changed;
+    };
+    form.addEventListener('input', update);
+    form.addEventListener('change', update);
+    window.addEventListener('pageshow', update);
+  })();
+</script>
+<script src="{{ url_for('static', filename='js/tag-print-profiles.js', v='1') }}" defer></script>

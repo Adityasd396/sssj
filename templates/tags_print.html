@@ -11,7 +11,7 @@
     {{ tag_css(thermal=(layout != 'sheet'),
                first_w=fg.body,
                first_h=fg.height,
-               first_tail=fg.tail) }}
+               first_tail=fg.tail, roll=roll if layout == 'roll' else none) }}
     <style>
         .no-print { max-width: 720px; margin: 0 auto 12px auto; font-family: Arial, sans-serif;
             background: var(--paper); border: 1px solid var(--paper-rule-2); border-radius: 10px; padding: 12px 16px; }
@@ -21,6 +21,8 @@
         .ghost { padding: 9px 16px; background: var(--paper); color: var(--paper-soft); border: 1px solid var(--paper-rule-2);
             border-radius: 6px; font-size: 13.5px; text-decoration: none;
             display: inline-flex; align-items: center; }
+        .print-options { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 12px; }
+        .print-options p { flex-basis: 100%; margin: 0; }
         .hint { font-size: 12.5px; color: var(--paper-hint); }
         .sheet { display: flex; flex-wrap: wrap; align-content: flex-start; }
         .setup { border: 1px solid var(--paper-rule); background: var(--paper-tint); border-radius: 9px;
@@ -29,32 +31,39 @@
         .setup ol { margin: 7px 0 0 18px; padding: 0; }
         .setup li { margin-bottom: 3px; }
     </style>
-<link rel="stylesheet" media="screen" href="{{ url_for('static', filename='css/paper-screen.css', v='2') }}">
+<link rel="stylesheet" media="screen" href="{{ url_for('static', filename='css/paper-screen.css', v='printer-3') }}">
 </head>
 <body>
     {% from "tag_design.html" import tag_art %}
+    {% from "tag_roll_controls.html" import alignment, orientation, roll_setup %}
     <div class="no-print">
         <h3>{{ tags|length }} tag{{ '' if tags|length == 1 else 's' }} ready
             · {{ 'thermal roll (one label per page)' if layout != 'sheet' else 'A4 sheet' }}</h3>
 
-        {% if layout != 'sheet' %}
-        <div class="setup">
-            <div>Set the paper size to <span class="paper">{{ fg.total|round(1) }} × {{ fg.height|round(1) }} mm</span>
-                {% if fg.tail %}({{ fg.body|round(1) }} mm body + {{ fg.tail|round(1) }} mm tail){% endif %}</div>
-            <ol>
-                <li>Scale <b>100%</b> — not “Fit to page”.</li>
-                <li>Margins <b>None</b>.</li>
-                <li><b>Untick</b> “Headers and footers”, or the URL and date print on the label.</li>
-            </ol>
-            <div style="margin-top:7px">
-                <a href="{{ url_for('tag_calibration', w=fg.total) }}" class="ghost" style="padding:4px 10px;font-size:12.5px">
-                    Print a {{ fg.total|round(0)|int }} mm ruler to check
-                </a>
-            </div>
-        </div>
+        {% if layout == 'roll' %}
+        {{ roll_setup(roll, fg, first.tpl) }}
+        <form data-label-settings method="GET" class="print-options">
+            {% for name in ('ids', 'cat', 'tpl', 'copies') %}
+            {% if request.args.get(name) %}<input type="hidden" name="{{ name }}" value="{{ request.args[name] }}">{% endif %}
+            {% endfor %}
+            {% if size_groups|length > 1 %}
+            <p>These tags use different sizes or shapes. Print one stock group at a time and load the matching roll before switching.</p>
+            <label>Tag size group
+                <select name="group">
+                    {% for width, height, body, tail_height, position, count in size_groups %}
+                    <option value="{{ loop.index }}" {% if loop.index == group %}selected{% endif %}>{{ width|round(3) }} × {{ height|round(3) }} mm · {% if tail_height %}{{ body|round(3) }} mm body, {{ position }} tail ({{ tail_height|round(3) }} mm high){% else %}rectangle{% endif %} · {{ count }} tags</option>
+                    {% endfor %}
+                </select>
+            </label>
+            {% endif %}
+            {{ orientation(roll.rotation) }}
+            {{ alignment(roll) }}
+            <button type="submit" class="ghost">Update preview</button>
+        </form>
         {% endif %}
 
-        <button class="print-btn" onclick="window.print()">Print</button>
+        <p data-label-status role="status" hidden>Update the preview to print with the changed settings.</p>
+        <button class="print-btn" data-print-label onclick="window.print()">Print</button>
         <a class="ghost" href="{{ url_for('tag_designer') }}">Back to designer</a>
         <span class="hint">
             {% if layout == 'sheet' %}
@@ -66,9 +75,12 @@
 
     <div class="sheet">
         {% for t in tags %}
+        {% if layout == 'roll' %}<div class="label-page">{% endif %}
         {{ tag_art(t.tpl, t.product, settings, t.qr, t.bc,
                    w=t.geo.body, h=t.geo.height, tail=t.geo.tail) }}
+        {% if layout == 'roll' %}</div>{% endif %}
         {% endfor %}
     </div>
+{% include "tag_print_guard.html" %}
 </body>
 </html>

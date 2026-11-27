@@ -9,7 +9,7 @@
     {{ tag_css(thermal=True,
                first_w=geo.body,
                first_h=geo.height,
-               first_tail=geo.tail) }}
+               first_tail=geo.tail, roll=roll) }}
     <style>
         .no-print { max-width: 700px; margin: 0 auto 14px auto; font-family: Arial, sans-serif;
             background: var(--paper); border: 1px solid var(--paper-rule-2); border-radius: 10px; padding: 14px 16px; }
@@ -35,76 +35,95 @@
         .readout { font-size: 12.5px; color: var(--paper-muted); margin: 2px 0 0; }
         .readout b { color: var(--paper-accent); }
     </style>
-<link rel="stylesheet" media="screen" href="{{ url_for('static', filename='css/paper-screen.css', v='2') }}">
+<link rel="stylesheet" media="screen" href="{{ url_for('static', filename='css/paper-screen.css', v='printer-3') }}">
 </head>
 <body>
     {% from "tag_design.html" import tag_art %}
+    {% from "tag_roll_controls.html" import alignment, orientation, roll_setup %}
     <div class="no-print">
         <h3>Tag preview — {{ product.name }}</h3>
 
-        <div class="setup">
-            <div>Set the paper size to <span class="paper">{{ geo.total|round(1) }} × {{ geo.height|round(1) }} mm</span>
-                {% if geo.tail %}({{ geo.body|round(1) }} mm body + {{ geo.tail|round(1) }} mm tail){% endif %}</div>
-            <ol>
-                <li>Scale <b>100%</b> — not “Fit to page”.</li>
-                <li>Margins <b>None</b>.</li>
-                <li><b>Untick</b> “Headers and footers”, or the URL and date print on the label.</li>
-            </ol>
-            <div style="margin-top:7px">
-                <a href="{{ url_for('tag_calibration', w=geo.total) }}" class="ghost" style="padding:4px 10px;font-size:12.5px">
-                    Print a {{ geo.total|round(0)|int }} mm ruler to check
-                </a>
-                <span class="hint">Measure it. If it is not exactly
-                    {{ geo.total|round(0)|int }} mm, the printer is scaling the page.</span>
-            </div>
-        </div>
+        {{ roll_setup(roll, geo, tpl) }}
 
-        <form method="GET" class="row" id="size-form">
-            <label for="tpl">Design</label>
-            <select id="tpl" name="tpl" onchange="this.form.submit()">
+        <form method="GET" class="row">
+            <label for="tpl">Saved design</label>
+            <select id="tpl" name="tpl">
                 {% for t in templates %}
-                <option value="{{ t.id }}" {% if t.id == tpl.id %}selected{% endif %}>
-                    {{ t.name }}{% if t.scope == 'category' %} · {{ t.category }}{% else %} · default{% endif %}
-                </option>
+                <option value="{{ t.id }}" {% if t.id == tpl.id %}selected{% endif %}>{{ t.name }}{% if t.scope == 'category' %} · {{ t.category }}{% endif %}</option>
                 {% endfor %}
             </select>
-            <label for="w">Body (mm)</label>
-            <input type="number" id="w" name="w" step="0.5" min="10" max="300" value="{{ geo.body|round(1) }}">
-            <label for="h">Height (mm)</label>
-            <input type="number" id="h" name="h" step="0.5" min="5" max="300" value="{{ geo.height|round(1) }}">
-            {% if geo.shape == 'tail' %}
-            <label for="total">Tag length (mm)</label>
-            <input type="number" id="total" name="total" step="1" min="0" max="400" value="{{ tpl.total_mm or 0 }}">
-            <label for="tail">Tail (mm)</label>
-            <input type="number" id="tail" name="tail" step="1" min="4" max="120" value="{{ geo.tail|round(1) }}">
-            {% endif %}
-            <button type="submit" class="ghost">Apply size</button>
+            <label for="preset">Stock preset</label>
+            <select id="preset" name="preset">
+                <option value="">Use the saved design size</option>
+                {% for key, (label, body, height, tail) in presets.items() %}
+                <option value="{{ key }}">{{ label }}</option>
+                {% endfor %}
+            </select>
+            {% for key, value in roll.query.items() %}<input type="hidden" name="{{ key }}" value="{{ value }}">{% endfor %}
+            <button type="submit" class="ghost">Load preset or design</button>
+        </form>
+
+        <form data-label-settings method="GET" class="row" id="size-form">
+            <input type="hidden" name="tpl" value="{{ tpl.id }}">
+            <label for="shape">Shape</label>
+            <select id="shape" name="shape">
+                <option value="rectangle" {% if geo.shape == 'rectangle' %}selected{% endif %}>Rectangle</option>
+                <option value="tail" {% if geo.shape == 'tail' %}selected{% endif %}>Rectangle + tail</option>
+            </select>
+            <label for="w">Body width (mm)</label>
+            <input type="number" id="w" name="w" step="0.001" min="10" max="300" value="{{ geo.body|round(3) }}" required>
+            <label for="h">Body height (mm)</label>
+            <input type="number" id="h" name="h" step="0.001" min="5" max="300" value="{{ geo.height|round(3) }}" required>
+            {{ orientation(roll.rotation) }}
+            <details class="printer-alignment" {% if geo.shape == 'tail' %}open{% endif %}>
+                <summary>Tail dimensions, text and design padding</summary>
+                <div class="printer-alignment-fields">
+                    <label>Full length (mm)
+                        <input type="number" id="total" name="total" step="0.001" min="0" max="400" value="{{ tpl.total_mm or 0 }}">
+                    </label>
+                    <label>Tail length (mm)
+                        <input type="number" id="tail" name="tail" step="0.001" min="4" max="120" value="{{ (geo.tail or tpl.tail_mm or 16)|round(3) }}">
+                    </label>
+                    <label>Tail height (mm)<input type="number" name="tail_height" step="0.001" min="0" max="300" value="{{ tpl.tail_h_mm or 0 }}"></label>
+                    <label>Tail position
+                        <select name="tail_pos">
+                            {% for position in ('top', 'middle', 'bottom') %}<option value="{{ position }}" {% if (tpl.tail_pos or 'middle') == position %}selected{% endif %}>{{ position|capitalize }}</option>{% endfor %}
+                        </select>
+                    </label>
+                    <label>Tail hole (mm)<input type="number" name="tail_hole" step="0.001" min="0" max="10" value="{{ tpl.tail_hole_mm or 0 }}"></label>
+                    <label>Top and bottom design padding (mm)<input name="pad" type="number" step="0.001" min="0" max="20" value="{{ tpl.pad_mm if tpl.pad_mm is not none else 1.4 }}"></label>
+                    <label>Side design padding (mm)<input name="pad_side" type="number" step="0.001" min="0" max="20" value="{{ tpl.pad_h_mm if tpl.pad_h_mm is not none else 2 }}"></label>
+                    <label>Name size (pt)<input name="name_size" type="number" step="0.001" min="4" max="40" value="{{ tpl.font_name or 10 }}"></label>
+                    <label>Detail size (pt)<input name="detail_size" type="number" step="0.001" min="3" max="30" value="{{ tpl.font_detail or 8 }}"></label>
+                    <label>Space between lines (mm)<input name="line_gap" type="number" step="0.001" min="0" max="10" value="{{ tpl.gap_mm if tpl.gap_mm is not none else 0.5 }}"></label>
+                    <label>QR size (mm)<input name="qr_size" type="number" step="0.001" min="0" max="100" value="{{ tpl.qr_mm or 0 }}"></label>
+                    <label>Barcode height (mm)<input name="barcode_height" type="number" step="0.001" min="0" max="60" value="{{ tpl.bc_h_mm or 0 }}"></label>
+                </div>
+                <p>Use 0 for automatic tail height, QR size or barcode height. Set full length to 0 to use body width plus tail length. Choose which fields print in Tag Studio.</p>
+            </details>
+            {{ alignment(roll) }}
+            <button type="submit" class="ghost">Update preview</button>
         </form>
         {% if geo.shape == 'tail' %}
-        <p class="readout" id="readout">Body {{ geo.body|round(1) }} + tail {{ geo.tail|round(1) }}
-            = <b>{{ geo.total|round(1) }} mm</b>{% if tpl.total_mm %} — tag length fixed at {{ tpl.total_mm|round(1) }} mm{% endif %}</p>
+        <p class="readout" id="readout">Body {{ geo.body|round(3) }} + tail {{ geo.tail|round(3) }} = <b>{{ geo.total|round(3) }} mm</b></p>
         {% endif %}
 
+        <p data-label-status role="status" hidden>Update the preview to print with the changed settings.</p>
         <div class="row">
-            <span class="hint">Presets:</span>
-            {% for label, pw, ph in presets %}
-            <a class="ghost" href="{{ url_for('print_product_tag', product_id=product.id, tpl=tpl.id, w=pw, h=ph, total=0) }}">{{ label }}</a>
-            {% endfor %}
-        </div>
-        <div class="row">
-            <button class="print-btn" onclick="window.print()">Print tag</button>
+            <button class="print-btn" data-print-label onclick="window.print()">Print tag</button>
             <a class="ghost" href="{{ url_for('printer_setup') }}">Printer setup</a>
-            <a class="ghost" href="{{ url_for('tag_designer') }}">Designer &amp; batch print</a>
+            <a class="ghost" href="{{ url_for('tag_designer', tpl=tpl.id) }}">Save or edit a design in Tag Studio</a>
             <a class="ghost" href="{{ url_for('view_product', product_id=product.id) }}">Back</a>
         </div>
     </div>
 
     <div class="sheet">
-        {{ tag_art(tpl, product, settings, qr_data, barcode_data,
-                   w=geo.body, h=geo.height, tail=geo.tail) }}
+        <div class="label-page">
+            {{ tag_art(tpl, product, settings, qr_data, barcode_data,
+                       w=geo.body, h=geo.height, tail=geo.tail) }}
+        </div>
     </div>
 
-    {% if geo.shape == 'tail' %}
     <script>
     /* Keep the three length fields consistent so "Apply size" can never send a
        tag length that contradicts the tail. Editing the tail clears the fixed
@@ -119,19 +138,20 @@
       function f(el) { return parseFloat(el.value) || 0; }
       function show() {
         var body = f(w), t = f(tail), fixed = f(total);
-        readout.innerHTML = 'Body ' + body.toFixed(1) + ' + tail ' + t.toFixed(1) +
-          ' = <b>' + (body + t).toFixed(1) + ' mm</b>' +
-          (fixed > 0 ? ' — tag length fixed at ' + fixed.toFixed(1) + ' mm' : '');
+        if (!readout) return;
+        readout.innerHTML = 'Body ' + body.toFixed(3) + ' + tail ' + t.toFixed(3) +
+          ' = <b>' + (body + t).toFixed(3) + ' mm</b>' +
+          (fixed > 0 ? ' — tag length fixed at ' + fixed.toFixed(3) + ' mm' : '');
       }
       function deriveFromLength() {
         var fixed = f(total);
-        if (fixed > 0) tail.value = Math.max(4, fixed - f(w)).toFixed(1);
+        if (fixed > 0) tail.value = Math.max(4, fixed - f(w)).toFixed(3);
       }
       w.addEventListener('change', function () { deriveFromLength(); show(); });
       total.addEventListener('change', function () { deriveFromLength(); show(); });
       tail.addEventListener('change', function () { total.value = 0; show(); });
     })();
-    </script>
-    {% endif %}
+</script>
+{% include "tag_print_guard.html" %}
 </body>
 </html>

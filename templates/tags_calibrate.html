@@ -1,87 +1,61 @@
-{#
-  A ruler, printed at 100%, to prove the printer is not scaling the page.
-
-  No CSS can force a printer to honour a page size 1:1 — if the driver's paper
-  size or the print dialog's scale is wrong, the tag comes out the wrong
-  physical size and nothing in the stylesheet can stop it. So print this, put a
-  ruler on it, and find out before wasting label stock.
-#}
-{% set pw = bar_mm + 18 %}
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
 {% include "paper_css.html" %}
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Print calibration · {{ bar_mm|round(0)|int }} mm</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CD410 · Test label</title>
+{% from "tag_design.html" import tag_css %}
+{{ tag_css(roll=roll) }}
+<link rel="stylesheet" media="screen" href="{{ url_for('static', filename='css/paper-screen.css', v='printer-3') }}">
 <style>
-  @page { size: {{ pw }}mm 30mm; margin: 0; }
-  * { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; background: var(--paper); color: var(--paper-ink);
-               font-family: Arial, Helvetica, sans-serif; }
-  .strip { width: {{ pw }}mm; height: 30mm; padding: 2mm 4mm; position: relative; }
-  .lead { font-size: 3.2mm; font-weight: 700; margin: 0; line-height: 1.1; }
-  .sub  { font-size: 2.6mm; margin: .6mm 0 0; }
-
-  /* 1 mm ticks 2 mm tall, 5 mm ticks 4 mm tall, both sitting on the baseline */
-  .ruler {
-    position: absolute; left: 4mm; top: 8mm;
-    width: {{ bar_mm }}mm; height: 6mm;
-    border: .3mm solid var(--paper-ink); border-bottom: 0;
-    background-image:
-      repeating-linear-gradient(90deg, var(--paper-ink) 0 .25mm, transparent .25mm 5mm),
-      repeating-linear-gradient(90deg, var(--paper-ink) 0 .15mm, transparent .15mm 1mm);
-    background-size: 100% 4mm, 100% 2mm;
-    background-position: 0 100%, 0 100%;
-    background-repeat: repeat-x, repeat-x;
-  }
-  .ruler::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0;
-                  border-bottom: .3mm solid var(--paper-ink); }
-  .lbl { position: absolute; top: 14.4mm; font-size: 2.6mm;
-         transform: translateX(-50%); }
-  .lbl.first { transform: none; }
-
-  .vbar { position: absolute; left: {{ bar_mm + 10 }}mm; top: 8mm;
-          width: 4mm; height: 10mm; border: .3mm solid var(--paper-ink);
-          background-image: repeating-linear-gradient(0deg, var(--paper-ink) 0 .25mm, transparent .25mm 5mm),
-                            repeating-linear-gradient(0deg, var(--paper-ink) 0 .15mm, transparent .15mm 1mm);
-          background-size: 4mm 100%, 2mm 100%;
-          background-position: 100% 0, 100% 0;
-          background-repeat: repeat-y, repeat-y; }
-  .vbar::after { content: ""; position: absolute; top: 0; bottom: 0; left: 0;
-                 border-left: .3mm solid var(--paper-ink); }
-  .vnote { position: absolute; left: {{ bar_mm + 10 }}mm; top: 18.6mm;
-           font-size: 2.6mm; width: 12mm; }
-
-  .verdict { position: absolute; left: 4mm; top: 20mm; right: 4mm;
-             font-size: 2.8mm; line-height: 1.35; }
-  .verdict b { font-weight: 700; }
-  @media screen {
-    body { background: var(--paper-tick); padding: 14px; }
-    .strip { background: var(--paper); box-shadow: 0 1px 6px rgba(0,0,0,.18); }
-  }
+  .no-print { max-width: 680px; margin: 14px auto; padding: 16px; font: 16px/1.5 sans-serif; }
+  .no-print form { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
+  .no-print label { display: grid; gap: 4px; }
+  .no-print input { width: 9ch; }
+  .sheet { display: flex; padding: 0; margin: 0; overflow-x: auto; }
+  .sample-art { width: {{ width }}mm; height: {{ height }}mm; display: block; }
 </style>
-<link rel="stylesheet" media="screen" href="{{ url_for('static', filename='css/paper-screen.css', v='2') }}">
 </head>
 <body>
-<div class="strip">
-  <p class="lead">Print calibration — measure the bar</p>
-  <p class="sub">This bar must measure exactly <b>{{ bar_mm|round(0)|int }} mm</b> with a ruler.</p>
-
-  <div class="ruler"></div>
-  {% for mm in range(0, (bar_mm|round(0)|int) + 1, 10) %}
-  <span class="lbl{% if loop.first %} first{% endif %}"
-        style="left: {{ 4 + mm }}mm">{{ mm }}</span>
-  {% endfor %}
-
-  <div class="vbar"></div>
-  <div class="vnote">10 mm</div>
-
-  <div class="verdict">
-    <b>If it measures {{ bar_mm|round(0)|int }} mm:</b> the scale is right — print your tags.<br>
-    <b>If it does not:</b> set Scale to 100% (not “Fit to page”), Margins to None,
-    and pick the {{ bar_mm|round(0)|int }} mm label as the paper size.
-  </div>
+{% from "tag_roll_controls.html" import alignment, orientation %}
+<section class="no-print">
+    <h1>CD410 test label</h1>
+    <form data-label-settings method="GET">
+        <label>Tag width (mm)<input name="w" type="number" min="10" max="420" step="0.001" value="{{ width|round(3) }}" required></label>
+        <label>Tag height (mm)<input name="h" type="number" min="5" max="300" step="0.001" value="{{ height|round(3) }}" required></label>
+        {% if body < width %}
+        <input type="hidden" name="body" value="{{ body }}">
+        <input type="hidden" name="tail_height" value="{{ tail_height }}">
+        <input type="hidden" name="tail_pos" value="{{ position }}">
+        {% endif %}
+        {{ orientation(roll.rotation) }}
+        {{ alignment(roll) }}
+        <button type="submit">Update preview</button>
+    </form>
+    <p>Set paper to <strong>{{ roll.across|round(3) }} × {{ roll.feed|round(3) }} mm</strong> (across the roll × feed direction). Set Gap media, calibrate the roll, then print one copy at 100% with no margins, headers or footers.</p>
+    {% if roll.gap is not none %}<p>Driver gap: {{ roll.gap }} mm.</p>{% endif %}
+    <p>The frame should stay inside one sticker. The arrow marks the top of the artwork. If the frame crosses a gap, check the paper size and run gap calibration again.</p>
+    <p data-label-status role="status" hidden>Update the preview to print with the changed settings.</p>
+    <button type="button" data-print-label onclick="window.print()">Print one test label</button>
+    <a href="{{ url_for('printer_setup', _anchor='cd410') }}">CD410 settings</a>
+</section>
+<div class="sheet">
+    <div class="label-page">
+        <svg class="jt sample-art" viewBox="0 0 {{ width }} {{ height }}" role="img" aria-label="Alignment frame and artwork orientation arrow">
+            <rect x="1" y="1" width="{{ body - 2 }}" height="{{ height - 2 }}" fill="#fff" stroke="#000" stroke-width=".22"/>
+            {% if width - body >= 3 and tail_height >= 2 %}
+            {% set tail_y = {'top': 0, 'middle': (height - tail_height) / 2, 'bottom': height - tail_height}[position] %}
+            <rect x="{{ body + 0.75 }}" y="{{ tail_y + 0.5 }}" width="{{ width - body - 1.5 }}" height="{{ tail_height - 1 }}" fill="none" stroke="#000" stroke-width=".22"/>
+            {% endif %}
+            {% set cx = body / 2 %}
+            {% set cy = height / 2 %}
+            {% set marker = [body, height, 24]|min / 5 %}
+            <path d="M {{ cx - marker }} {{ cy }} L {{ cx }} {{ cy - marker }} L {{ cx + marker }} {{ cy }} M {{ cx }} {{ cy - marker }} V {{ cy + marker }}" fill="none" stroke="#000" stroke-width=".35"/>
+            {% if body >= 26 and height >= 14 %}<text x="{{ cx }}" y="{{ cy + marker + 3.2 }}" text-anchor="middle" font-family="Arial, sans-serif" font-size="2.6">CD410 TEST</text>{% endif %}
+        </svg>
+    </div>
 </div>
+{% include "tag_print_guard.html" %}
 </body>
 </html>

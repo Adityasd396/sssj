@@ -24,7 +24,7 @@ The customer history change bounds rendered rows, not the entire server workload
 - Chromium and WebKit mobile checks passed inventory filter behavior, visible gold/silver counts, tablet tables, searchable paged history, server-approved item figures, separate account/current-bill amounts and the single mobile payment dock. No horizontal overflow at tested widths from 320 to 1440 pixels.
 - Full browser regression passed checkout/customer creation, draft and validation recovery, mobile cards/navigation, print rendering, 125 responsive screen checks and touch interactions.
 - Chromium and WebKit passed guided billing, keyboard clearance, Back handling, tab-loss recovery, duplicate-save protection, blocked-storage fallback, permanent anonymous bill links and PDF downloads. Inventory/rate checks include zero-stock products, totals, categories, filters, draft rate recovery, preview/save agreement and unchanged master rates.
-- A 6× CPU/constrained-network simulation passed quick-customer creation, mobile save, PDF/WhatsApp preparation, native share/cancel, 20 responsive views and camera worker responsiveness (heartbeat p95 215 ms). This is a simulation, not a physical-device performance guarantee.
+- A 6Ã— CPU/constrained-network simulation passed quick-customer creation, mobile save, PDF/WhatsApp preparation, native share/cancel, 20 responsive views and camera worker responsiveness (heartbeat p95 215 ms). This is a simulation, not a physical-device performance guarantee.
 - Virtual-camera tests passed small QR within a 4K frame, 1D capture, requested autofocus/exposure controls, automatic add, Back/Escape, permission denial, unknown-code cooldown, late-stream cleanup and manual fallback. Both engines passed photo decoding, offline failure/retry and zero preview traffic for empty bills.
 - Narrow iPhone filter overflow discovered during regression was fixed with single-column filters below 400 pixels and constrained native field sizes. Hidden mobile table headers also avoid intrinsic table overflow while remaining in the document.
 - Virtual-authenticator passkey registration, signed login, replay rejection and removal passed. Remote customer search, Enter selection and recovery beyond the initial list passed in Chromium and WebKit on a fresh synthetic shop.
@@ -42,3 +42,13 @@ For later source edits, rebuild styles before compressed assets:
 python scripts/build_styles.py
 python scripts/build_assets.py
 ```
+
+## Shreyans CD410 setup addition
+
+Added a dedicated CD410 section on Printers, with separate label/receipt driver guidance, USB/Bluetooth setup, official Android/iOS app links, label-gap calibration and exact-size instructions. Tag previews and receipt setup link directly to it. Existing tag dimensions, receipt layouts, database and all pricing code are unchanged.
+
+Official source checked on 23 November 2026: https://www.shreyanspos.com/pages/driver-for-thermal-label-printer-cd410 . Manufacturer installers remain on the official site rather than being redistributed.
+
+Chromium and WebKit checks passed four responsive widths (320, 390, 768, 1440), the tag setup link and exclusion of controls from print output. Physical CD410 output has not been tested. This is driver/print-dialog setup support, not a raw USB/Bluetooth integration. Mobile direct printing requires a compatible print service; manufacturer app file import and device support must be checked on the actual phone.
+
+CD410 follow-up: all 18 focused workflow/counter-UX tests passed after the setup edits. The broader route sweep is unchanged by this template-only addition.

@@ -161,13 +161,13 @@ body{background:var(--bg)}
           <div class="field-grid three">
             <div class="field">
               <label for="tail_mm">Tail length (mm)</label>
-              <input type="number" id="tail_mm" name="tail_mm" step="1" min="4" max="120"
+              <input type="number" id="tail_mm" name="tail_mm" step="0.001" min="4" max="120"
                      value="{{ tpl.tail_mm if tpl.tail_mm is not none else 16 }}">
               <div class="help">Follows the tag length when one is set.</div>
             </div>
             <div class="field">
               <label for="tail_h_mm">Tail height (mm)</label>
-              <input type="number" id="tail_h_mm" name="tail_h_mm" step="0.5" min="0" max="300"
+              <input type="number" id="tail_h_mm" name="tail_h_mm" step="0.001" min="0" max="300"
                      value="{{ tpl.tail_h_mm or 0 }}">
               <div class="help" id="tailh-auto">0 = auto ({{ tail_h_mm|round(1) }} mm)</div>
             </div>
@@ -183,7 +183,7 @@ body{background:var(--bg)}
           <div class="field-grid">
             <div class="field">
               <label for="tail_hole_mm">Hole in tail (mm)</label>
-              <input type="number" id="tail_hole_mm" name="tail_hole_mm" step="0.5" min="0" max="10"
+              <input type="number" id="tail_hole_mm" name="tail_hole_mm" step="0.001" min="0" max="10"
                      value="{{ tpl.tail_hole_mm or 0 }}">
               <div class="help">Diameter of a punched hole for string. 0 = no hole.</div>
             </div>
@@ -195,26 +195,26 @@ body{background:var(--bg)}
         <div class="card-head" style="margin-top:8px"><h3>Size (mm)</h3>
           <span class="hint" id="total-w-hint"></span></div>
         <div class="presets">
-          {% for label, w, h in presets %}
-          <button type="button" onclick="setSize({{ w }}, {{ h }})">{{ label }}</button>
+          {% for label, w, h, tail in presets.values() %}
+          <button type="button" onclick='setSize({{ w }}, {{ h }}, {{ tail }}, {{ preset_spacing(h)|tojson }})'>{{ label }}</button>
           {% endfor %}
         </div>
         <div class="field-grid three">
           <div class="field">
             <label for="width_mm">Body length (mm)</label>
-            <input type="number" id="width_mm" name="width_mm" step="0.5" min="10" max="300"
+            <input type="number" id="width_mm" name="width_mm" step="0.001" min="10" max="300"
                    value="{{ tpl.width_mm or 50 }}" required>
             <div class="help">The printed part. On a plain rectangle this is the whole tag.</div>
           </div>
           <div class="field">
             <label for="height_mm">Tag height (mm)</label>
-            <input type="number" id="height_mm" name="height_mm" step="0.5" min="5" max="300"
+            <input type="number" id="height_mm" name="height_mm" step="0.001" min="5" max="300"
                    value="{{ tpl.height_mm or 25 }}" required>
             <div class="help">How tall the strip is.</div>
           </div>
           <div class="field tail-only {% if tpl.shape == 'tail' %}show{% endif %}">
             <label for="total_mm">Tag length (mm)</label>
-            <input type="number" id="total_mm" name="total_mm" step="1" min="0" max="400"
+            <input type="number" id="total_mm" name="total_mm" step="0.001" min="0" max="400"
                    value="{{ tpl.total_mm or 0 }}">
             <div class="help">Body + tail — the full label. 0 = let body + tail decide.</div>
           </div>
@@ -416,9 +416,9 @@ body{background:var(--bg)}
           <li><b>Untick</b> “Headers and footers”, or the URL and date land on the label.</li>
         </ol>
         <div style="margin-top:6px">
-          <a href="{{ url_for('tag_calibration') }}" target="_blank" rel="noopener">
-            Print a ruler to check the scale</a>
-          <span class="help">— measure it before you spend label stock.</span>
+          <a id="studio-calibration" href="{{ url_for('tag_calibration') }}" target="_blank" rel="noopener">
+            Print one test label</a>
+          <span class="help">Match the test to your sticker size before printing a batch.</span>
         </div>
       </div>
     </div>
@@ -553,7 +553,7 @@ function toggleScope(){
   $('cat-field').style.display = isCat ? '' : 'none';
 }
 
-function setSize(w, h){
+function setSize(w, h, tail, spacing){
   $('width_mm').value = w;
   $('height_mm').value = h;
   // A preset means "exactly this size", so release any pinned tag length —
@@ -561,7 +561,12 @@ function setSize(w, h){
   // print 70 x 25 and the button would be lying.
   var totalEl = $('total_mm');
   if (totalEl) totalEl.value = 0;
-  renderPreview();
+  $('tail_mm').value = tail || 16;
+  $('tail_h_mm').value = 0;
+  $('tail_hole_mm').value = 0;
+  $('tail_pos').value = 'middle';
+  Object.keys(spacing).forEach(function(id){ $(id).value = spacing[id]; });
+  setShape(tail ? 'tail' : 'rectangle');
 }
 
 /* Keep the tag length and the tail in step. Whichever one the shopkeeper
@@ -683,14 +688,15 @@ function resolved(){
       ? Math.max(MIN_TAIL, pinned - w)
       : Math.max(MIN_TAIL, num('tail_mm', 16));
   }
+  var tailHeight = shape === 'tail' ? Math.min(h, tailH > 0 ? tailH : h * 0.40) : 0;
   return {
     shape: shape,
     w: w,
     h: h,
-    tail: r2(tail),
-    total: r2(w + tail),
-    tailh: r2(tailH > 0 ? tailH : h * 0.40),
-    hole: shape === 'tail' ? num('tail_hole_mm', 0) : 0,
+    tail: Math.round(tail * 1000) / 1000,
+    total: Math.round((w + tail) * 1000) / 1000,
+    tailh: tailHeight,
+    hole: shape === 'tail' ? Math.min(num('tail_hole_mm', 0), tailHeight * 0.8, tail * 0.5) : 0,
     tailpos: $('tail_pos') ? $('tail_pos').value : 'middle',
     qr: r2(qrIn > 0 ? qrIn : h * 0.55),
     bch: r2(bcIn > 0 ? bcIn : h * 0.28),
@@ -737,7 +743,7 @@ function renderPreview(){
     var firm = document.createElement('div');
     firm.className = 'jt-firm';
     firm.textContent = SAMPLE.firm;
-    tag.appendChild(firm);
+    if (r.shape !== 'tail') tag.appendChild(firm);
   }
 
   var body = document.createElement('div');
@@ -747,7 +753,9 @@ function renderPreview(){
     // body card + tail strip, exactly as tag_design.html lays it out
     var card = document.createElement('div');
     card.className = 'jt-card';
-    card.appendChild(buildLeft());
+    var left = buildLeft();
+    if (firm) left.prepend(firm);
+    card.appendChild(left);
     if (val('show_qr')) card.appendChild(buildQR());
     body.appendChild(card);
 
@@ -799,7 +807,14 @@ function updateHints(){
     }
   }
   var paper = $('paper-hint');
-  if (paper) paper.textContent = r.total.toFixed(1) + ' × ' + r.h.toFixed(1) + ' mm';
+  if (paper) paper.textContent = r.total + ' × ' + r.h + ' mm';
+  var calibration = $('studio-calibration');
+  if (calibration) {
+    var url = new URL(calibration.href);
+    var dimensions = {w: r.total, h: r.h, body: r.w, tail_height: r.tailh, tail_pos: r.tailpos};
+    url.search = new URLSearchParams(dimensions).toString();
+    calibration.href = url.href;
+  }
 
   var qa = $('qr-auto');
   if (qa) qa.textContent = '0 = auto (' + r.qr.toFixed(1) + ' mm)';

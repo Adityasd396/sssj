@@ -26,8 +26,9 @@
   so a change to what a tag prints can never land in one shape and be missed
   in the other.
 #}
-{% macro _tag_left(tpl, p, bc=None) %}
+{% macro _tag_left(tpl, p, bc=None, firm=None) %}
 <div class="jt-left">
+  {% if firm %}<div class="jt-firm">{{ firm }}</div>{% endif %}
   {% if tpl.show_name %}<div class="jt-name">{{ p.name }}</div>{% endif %}
   <div class="jt-line">
     {% if tpl.show_category and p.category %}<span>{{ p.category }}</span>{% endif %}
@@ -51,8 +52,8 @@
 {% set body_h = (h if h else (tpl.height_mm or 25)) %}
 {% set tail_mm = (tail if tail is not none else (tpl.tail_mm or 16)) if shape == 'tail' else 0 %}
 {# auto sizing: a 0 on the design means "scale it from the tag height" #}
-{% set tail_h = (tpl.tail_h_mm if tpl.tail_h_mm and tpl.tail_h_mm > 0 else body_h * 0.40) if shape == 'tail' else 0 %}
-{% set hole_mm = (tpl.tail_hole_mm or 0) if shape == 'tail' else 0 %}
+{% set tail_h = [body_h, (tpl.tail_h_mm or body_h * 0.40)]|min if shape == 'tail' else 0 %}
+{% set hole_mm = [tpl.tail_hole_mm or 0, tail_h * 0.8, tail_mm * 0.5]|min if shape == 'tail' else 0 %}
 {% set qr_sz = tpl.qr_mm if tpl.qr_mm and tpl.qr_mm > 0 else body_h * 0.55 %}
 {% set bc_h = tpl.bc_h_mm if tpl.bc_h_mm and tpl.bc_h_mm > 0 else body_h * 0.28 %}
 {% set tail_pos = {'top': 'flex-start', 'bottom': 'flex-end'}.get(tpl.tail_pos, 'center') %}
@@ -69,15 +70,14 @@
             --bcw:{{ tpl.bc_w_pct or 100 }}%;
             --tail:{{ tail_mm }}mm; --tailh:{{ tail_h|round(2) }}mm;
             --tailpos:{{ tail_pos }}; --hole:{{ hole_mm }}mm;">
-  {% if tpl.show_firm and settings and settings.firm_name %}
-  <div class="jt-firm">{{ settings.firm_name }}</div>
-  {% endif %}
+  {% set firm = settings.firm_name if tpl.show_firm and settings and settings.firm_name else none %}
+  {% if shape != 'tail' and firm %}<div class="jt-firm">{{ firm }}</div>{% endif %}
 
   {% if shape == 'tail' %}
   {# Body card + the tail strip running out of its right edge. #}
   <div class="jt-body">
     <div class="jt-card">
-      {{ _tag_left(tpl, p, bc) }}
+      {{ _tag_left(tpl, p, bc, firm) }}
       {% if qr %}<div class="jt-qr"><img src="{{ qr }}" alt="QR"></div>{% endif %}
     </div>
     <div class="jt-tail">
@@ -96,7 +96,7 @@
 
 
 {# Print + screen CSS for tags. `thermal` switches @page to the tag size. #}
-{% macro tag_css(thermal=True, first_w=50, first_h=25, first_tail=0) %}
+{% macro tag_css(thermal=True, first_w=50, first_h=25, first_tail=0, roll=None) %}
 {% set total_w = first_w + (first_tail or 0) %}
 <style>
   .jt { box-sizing: border-box; background: #fff; overflow: hidden;
@@ -149,7 +149,7 @@
   .jt-shape-tail.jt-b-double .jt-tail { border: .8mm double #000; border-left: 0; }
   .jt-shape-tail.jt-b-dashed .jt-tail { border: .4mm dashed #000; border-left: 0; }
   .jt-shape-tail .jt-hole {
-    position: absolute; right: 2mm; top: 50%;
+    position: absolute; right: min(2mm, calc(var(--tail) * .2)); top: 50%;
     width: var(--hole); height: var(--hole);
     border-radius: 50%; background: #fff; border: .3mm solid #000;
     transform: translateY(-50%);
@@ -199,13 +199,35 @@
 
   /* ---- print & sheet framing ---------------------------------------- */
   {% if thermal %}
-  /* One label per page, and the page IS the label — this is what makes a tag
-     come out at its true physical size. */
+  {% if roll %}
+  .label-page {
+    position: relative;
+    flex: none;
+    width: {{ roll.across }}mm;
+    height: {{ roll.feed }}mm;
+    overflow: hidden;
+    background: white;
+  }
+  .label-page > .jt {
+    position: absolute;
+    left: calc(50% + {{ roll.centre_x }}mm);
+    top: calc(50% + {{ roll.centre_y }}mm);
+    margin: 0 !important;
+    transform: translate(-50%, -50%) rotate({{ roll.rotation }}deg) scale({{ roll.scale }});
+  }
+  @page { size: {{ roll.across }}mm {{ roll.feed }}mm; margin: 0; }
+  @media print {
+    .sheet { display: block !important; overflow: visible; }
+    .label-page { break-inside: avoid; page-break-inside: avoid; }
+    .label-page + .label-page { break-before: page; page-break-before: always; }
+  }
+  {% else %}
   @page { size: {{ total_w }}mm {{ first_h }}mm; margin: 0; }
-  html, body { margin: 0; padding: 0; background: #fff; }
   .jt { margin: 0; break-inside: avoid;
         page-break-after: always; break-after: page; }
   .jt:last-child { page-break-after: auto; break-after: auto; }
+  {% endif %}
+  html, body { margin: 0; padding: 0; background: #fff; }
   {% else %}
   /* Sheet layout: many tags on the shop's own paper, each still at its true
      mm size. Do NOT pin @page to a single tag's size here — doing exactly

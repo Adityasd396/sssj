@@ -8,8 +8,8 @@
     "gzip": "5e2bd665f8922a2a7dc28a340a2406750fde2b83f959f44b5982c16bb0250c89"
   },
   "css/paper-screen.css": {
-    "source": "4f41b57bcaf97100724ef0505a0a85fffdeeaca7768973a08a6fcdc5333c5886",
-    "gzip": "66e3519925ac73bb7bfd8ebc48dd9205456467a6b4d7c9f6ae4e48e79a884bf9"
+    "source": "aaf964841d7a621bfaa5136bd93f553aed1b29fab18c7aea86fb1c5685843019",
+    "gzip": "3e5e4479560c468adf0686446fc40f98d8997359e752583d7cb976662488e2aa"
   },
   "css/premium.css": {
     "source": "92ebac3000dcf48af60b0e2cc4e076512b2d90fc33ce6edfabbd2f4e2723c2e5",
@@ -90,6 +90,10 @@
   "js/tag-decoder-worker.js": {
     "source": "637bd751326ba5a46c7cc2e32ea7866c01229bcaedd525a07f6f70a2cc310b03",
     "gzip": "81faf58b402cfa39922b4a7ff3c68124c92a8738768b00c0a884ec149f38fa64"
+  },
+  "js/tag-print-profiles.js": {
+    "source": "b0e2d4574665cba63dc45a83bf33a7b07e6e0cea697e3f4d09e19b2c377fa406",
+    "gzip": "fb723125409c521ffacef06817029c8c1e4e983af15c68d3f7c24ff143eeab37"
   },
   "js/tag-scanner.js": {
     "source": "eabdfe75c12d5ba7e3c61fa7ed37fb700a2579c4e21d6cc70aa69f4ed126aaa5",
