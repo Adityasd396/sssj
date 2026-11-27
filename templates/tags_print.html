@@ -42,7 +42,7 @@
 
         {% if layout == 'roll' %}
         {{ roll_setup(roll, fg, first.tpl) }}
-        <form data-label-settings method="GET" class="print-options">
+        <form id="roll-settings" data-label-settings method="GET" class="print-options">
             {% for name in ('ids', 'cat', 'tpl', 'copies') %}
             {% if request.args.get(name) %}<input type="hidden" name="{{ name }}" value="{{ request.args[name] }}">{% endif %}
             {% endfor %}
@@ -63,7 +63,10 @@
         {% endif %}
 
         <p data-label-status role="status" hidden>Update the preview to print with the changed settings.</p>
-        <button class="print-btn" data-print-label onclick="window.print()">Print</button>
+        {% if layout == 'roll' %}
+        <button class="print-btn" type="submit" form="roll-settings" name="format" value="pdf" formtarget="_blank">Open exact-size tag PDF</button>
+        {% endif %}
+        <button class="{{ 'ghost' if layout == 'roll' else 'print-btn' }}" type="button" data-print-label onclick="window.print()">{{ 'Browser print' if layout == 'roll' else 'Print' }}</button>
         <a class="ghost" href="{{ url_for('tag_designer') }}">Back to designer</a>
         <span class="hint">
             {% if layout == 'sheet' %}

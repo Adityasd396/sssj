@@ -153,7 +153,35 @@ async function run(engine) {
             fs.writeFileSync(file, await custom.body());
             checkPdfSize(file, 1, 15, 38);
         }
-        console.log(engine + ' passed fixed stock dimensions, shape presets, stock groups, tail calibration and saved printer profiles');
+        await page.goto(base + '/products/2/tag?preset=rect-38x15');
+        const requestedPdf = page.context().waitForEvent('request', r => {
+            const url = new URL(r.url());
+            return url.pathname === '/products/2/tag' && url.searchParams.get('format') === 'pdf';
+        });
+        const [printRequest] = await Promise.all([
+            requestedPdf, page.getByRole('button', { name: 'Open exact-size tag PDF' }).click()
+        ]);
+        const productPdf = await page.request.get(printRequest.url());
+        assert.equal(productPdf.status(), 200);
+        assert.match(productPdf.headers()['content-type'], /^application\/pdf/);
+        const bytes = await productPdf.body();
+        assert(bytes.includes(Buffer.from('/Subtype /Image')), 'the tag PDF must embed the product QR');
+        const productFile = output + '/38x15-product-tag-' + engine + '.pdf';
+        fs.writeFileSync(productFile, bytes);
+        checkPdfSize(productFile, 1, 38, 15);
+        if (engine === 'chromium') {
+            const batch = await page.request.get(base + '/tags/print?ids=1,2&group=2&format=pdf&paper_w=38&paper_h=15');
+            assert.equal(batch.status(), 200);
+            const batchFile = output + '/38x15-product-batch.pdf';
+            fs.writeFileSync(batchFile, await batch.body());
+            checkPdfSize(batchFile, 3, 38, 15);
+            const tail = await page.request.get(base + '/products/1/tag?preset=tail-56x15&format=pdf');
+            assert.equal(tail.status(), 200);
+            const tailFile = output + '/56x15-product-tail.pdf';
+            fs.writeFileSync(tailFile, await tail.body());
+            checkPdfSize(tailFile, 1, 56, 15);
+        }
+        console.log(engine + ' passed label settings, fixed stock sizes and the exact-size product tag PDF');
     } finally {
         await browser.close();
     }

@@ -55,6 +55,7 @@ from invoice_sharing import (
     whatsapp_number,
 )
 from security_controls import install_gate, safe_csv_writer
+from tag_pdf import thermal_tag_pdf
 from tag_print_settings import (
     LABEL_PRESETS,
     calibration_art,
@@ -4108,6 +4109,11 @@ def print_product_tag(product_id):
             request.args, "total", 0 if "tail" in request.args else tpl.total_mm, 0, 400
         )
     geo = resolved_tag_geometry(tpl)
+    roll = tag_roll_page(geo["total"], geo["height"])
+    settings = Settings.query.first()
+    if request.args.get("format") == "pdf":
+        tags = [{"product": p, "tpl": tpl, "qr": qr, "bc": bc, "geo": geo}]
+        return _thermal_tag_response(tags, roll, settings, "product-tag.pdf")
     return render_template(
         "product_tag.html",
         product=p,
@@ -4116,9 +4122,9 @@ def print_product_tag(product_id):
         qr_data=qr,
         barcode_data=bc,
         geo=geo,
-        roll=tag_roll_page(geo["total"], geo["height"]),
+        roll=roll,
         presets=LABEL_PRESETS,
-        settings=Settings.query.first(),
+        settings=settings,
     )
 
 
@@ -4685,6 +4691,10 @@ def print_tags():
         qr, bc = _tag_art(p, design)
         for _ in range(quantity):
             tags.append({"product": p, "tpl": design, "qr": qr, "bc": bc, "geo": geo})
+    roll = tag_roll_page(*sizes[group - 1][:2])
+    settings = Settings.query.first()
+    if layout == "roll" and request.args.get("format") == "pdf":
+        return _thermal_tag_response(tags, roll, settings, "product-tags.pdf")
     return render_template(
         "tags_print.html",
         tags=tags,
@@ -4692,13 +4702,21 @@ def print_tags():
         tpl=tpl,
         cat=cat,
         copies=copies,
-        roll=tag_roll_page(*sizes[group - 1][:2]),
+        roll=roll,
         group=group,
         size_groups=[
             (w, h, body, tail_height, position, sum(entry[3] for entry in items))
             for (w, h, body, tail_height, position), items in designs.items()
         ],
-        settings=Settings.query.first(),
+        settings=settings,
+    )
+
+
+def _thermal_tag_response(tags, roll, settings, filename):
+    return Response(
+        thermal_tag_pdf(tags, roll, settings.firm_name if settings else "", inr0_filter),
+        mimetype="application/pdf",
+        headers={"Content-Disposition": f'inline; filename="{filename}"'},
     )
 
 

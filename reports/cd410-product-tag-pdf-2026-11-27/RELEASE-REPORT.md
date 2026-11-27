@@ -1,0 +1,9 @@
+# CD410 exact-size product tag PDFs
+
+The screenshots show a small tag in a much larger Chrome preview while the CD410 queue is selected. The screenshot does not show the selected stock under More settings. The app now offers **Open exact-size tag PDF** for a product and for a thermal roll batch. The document encodes the measured paper width and feed height and has one page per label. It uses the selected tag fields, rotation, alignment and embedded QR or barcode in a compact PDF layout. Browser printing remains available, including A4 sheets.
+
+For a Windows USB test, open the actual tag PDF, or save and open it in a PDF viewer such as Acrobat Reader. In the CD410 label driver's properties select the custom size for the sticker face, with the first dimension across the roll and the second along the feed. Set Gap media and calibrate if Feed does not advance one sticker. Print one page at Actual size. A PDF carries its own dimensions, and the printer driver still selects the stock size. If Windows shows a large page, check More settings or printer Properties. See [CD410 drivers and support](https://www.shreyanspos.com/pages/driver-for-thermal-label-printer-cd410) and [Adobe's print sizing guide](https://helpx.adobe.com/uk/acrobat/desktop/print-documents/set-up-and-print-pdfs/page-size.html).
+
+This update adds tag_pdf.py and uses the existing ReportLab dependency and supplied Manrope font. It needs no migration or price changes. Deploy the code, templates and static files and keep the existing configuration and shop database. Physical output on the shop printer still needs one test print.
+
+Verification passed 443 automated tests. Chromium and WebKit opened a one-page 38 × 15 mm product PDF. A three-copy roll batch had three pages at 38 × 15 mm, and a tail-tag PDF was 56 × 15 mm. The product QR decoded from a 203 dpi render.

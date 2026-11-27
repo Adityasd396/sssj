@@ -24,6 +24,7 @@ def staged_app(tmp_path):
         "database_recovery.py",
         "invoice_sharing.py",
         "tag_print_settings.py",
+        "tag_pdf.py",
     ]:
         shutil.copy2(root / name, tmp_path / name)
     shutil.copytree(root / "templates", tmp_path / "templates")
