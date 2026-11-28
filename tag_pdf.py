@@ -1,6 +1,7 @@
 """Render thermal-roll tags as PDF pages at the measured stock size."""
 
 from base64 import b64decode
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from io import BytesIO
 from pathlib import Path
 from threading import Lock
@@ -12,6 +13,18 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen.canvas import Canvas
 
 _render_lock = Lock()
+
+
+def format_tag_weight(grams):
+    """Format grams as whole grams / thousandths (5.1 g -> 5/100)."""
+    try:
+        rounded = Decimal(str(grams)).quantize(Decimal("0.001"), rounding=ROUND_HALF_UP)
+        milli_grams = abs(int(rounded * 1000))
+    except (InvalidOperation, TypeError, ValueError, OverflowError):
+        return str(grams or "")
+    whole, fraction = divmod(milli_grams, 1000)
+    sign = "-" if rounded < 0 else ""
+    return f"{sign}{whole}/{fraction:03d}"
 
 
 def _font():
@@ -40,7 +53,7 @@ def _tag_rows(design, product, firm, format_price):
     if any(details):
         rows.append(("detail", " · ".join(filter(None, details))))
     if design.show_weight and not per_gram and product.weight_per_unit:
-        rows.append(("weight", f"{product.weight_per_unit:g} g"))
+        rows.append(("weight", format_tag_weight(product.weight_per_unit)))
     if design.show_price:
         unit = "/g" if per_gram else ""
         rows.append(("price", f"₹{format_price(product.unit_price)}{unit}"))

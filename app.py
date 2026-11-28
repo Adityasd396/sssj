@@ -55,7 +55,7 @@ from invoice_sharing import (
     whatsapp_number,
 )
 from security_controls import install_gate, safe_csv_writer
-from tag_pdf import thermal_tag_pdf
+from tag_pdf import format_tag_weight, thermal_tag_pdf
 from tag_print_settings import (
     LABEL_PRESETS,
     calibration_art,
@@ -734,6 +734,12 @@ def inr0_filter(paise) -> str:
         return str(int(round((paise or 0) / 100)))
     except TypeError:
         return "0"
+
+
+@app.template_filter("tag_weight")
+def tag_weight_filter(grams) -> str:
+    """Display tag-only weight notation without changing stored grams or pricing."""
+    return format_tag_weight(grams)
 
 
 @app.template_filter("makingtext")

@@ -34,7 +34,7 @@
     {% if tpl.show_category and p.category %}<span>{{ p.category }}</span>{% endif %}
     {% if tpl.show_metal and p.item_type %}<span>{{ p.item_type|capitalize }}</span>{% endif %}
   </div>
-  {% if tpl.show_weight and (p.unit or 'pcs') != 'g' and p.weight_per_unit %}<div class="jt-line jt-weight">{{ '%g'|format(p.weight_per_unit) }} g</div>{% endif %}
+  {% if tpl.show_weight and (p.unit or 'pcs') != 'g' and p.weight_per_unit %}<div class="jt-line jt-weight">{{ p.weight_per_unit|tag_weight }}</div>{% endif %}
   {% if tpl.show_price %}
   <div class="jt-price">₹{{ (p.unit_price)|inr0 }}{% if (p.unit or 'pcs') == 'g' %}<span class="jt-per">/g</span>{% endif %}</div>
   {% endif %}

@@ -39,6 +39,7 @@
     <p>First number is across the roll. Second is in the feed direction. Artwork rotation keeps this paper size.
     {% if roll.gap is not none %}Set the driver gap to <b>{{ roll.gap }} mm</b>.{% else %}Measure the gap separately and set it in the driver.{% endif %}</p>
     <p>Use the CD410 <b>label driver</b> with <b>Gap</b> media for stickers like these. Match the size shown above, set scale to <b>100%</b>, margins to <b>None</b>, and turn off headers, footers and extra rotation.</p>
+    <p><b>Bulk roll printing:</b> each tag is sent on the next exact-size page, with no software-added spacer labels or page margins. The printer advances across only the physical gap on the roll; set that gap in its driver.</p>
     <p>If Chrome shows a tiny tag on a large sheet, open the exact-size PDF. In the PDF viewer, choose Actual size and select this custom paper size in the CD410 driver.</p>
     {% if roll.scale < 1 %}<p>Artwork fits at {{ (roll.scale * 100)|round(1) }}% of its design size. Check the QR or barcode before printing a batch.</p>{% endif %}
     {% if roll.may_clip %}<p><strong>The shift may crop the artwork.</strong> Check the preview and use padding or a smaller shift if a QR code or text is clipped.</p>{% endif %}

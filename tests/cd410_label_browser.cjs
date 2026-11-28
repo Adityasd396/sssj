@@ -38,6 +38,7 @@ async function run(engine) {
         assert.match(await page.locator('#tag-total-area').textContent(), /mm²/);
         assert.match(await page.locator('#tag-printable-area').textContent(), /mm²/);
         assert.match(await page.locator('#tag-content-area').textContent(), /mm²/);
+        assert.equal(await page.locator('#tag-stage .jt-weight').textContent(), '2/125');
         await page.locator('#preview_valign').selectOption('bottom');
         await page.locator('#preview_font_bold').selectOption('normal');
         await page.locator('#preview_weight_bold').selectOption('bold');
@@ -193,6 +194,7 @@ async function run(engine) {
             assert.equal(batch.status(), 200);
             const batchFile = output + '/38x15-product-batch.pdf';
             fs.writeFileSync(batchFile, await batch.body());
+            // Exactly three stock-sized pages for three tags means no spacer pages.
             checkPdfSize(batchFile, 3, 38, 15);
             const tail = await page.request.get(base + '/products/1/tag?preset=tail-56x15&format=pdf');
             assert.equal(tail.status(), 200);

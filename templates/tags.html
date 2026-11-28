@@ -593,6 +593,12 @@ function inr0(paise){
   return String(whole);
 }
 function fmtMoney(paise){return '₹' + inr0(paise);}
+function formatTagWeight(grams){
+  var scaled=Math.round(Number(grams)*1000);
+  if(!Number.isFinite(scaled)) return '';
+  var sign=scaled<0?'-':'';scaled=Math.abs(scaled);
+  return sign+Math.floor(scaled/1000)+'/'+String(scaled%1000).padStart(3,'0');
+}
 
 function toggleScope(){
   var isCat = $('scope').value === 'category';
@@ -993,7 +999,7 @@ function buildLeft(){
   if (val('show_metal')) parts.push({text:(SAMPLE.item_type||'gold').replace(/^./,function(c){return c.toUpperCase();}),cls:''});
   parts.forEach(function(item){var span=document.createElement('span');span.className=item.cls;span.textContent=item.text;line.appendChild(span);});
   if (parts.length) left.appendChild(line);
-  if (val('show_weight') && SAMPLE.unit !== 'g' && SAMPLE.weight) left.appendChild(elText('jt-line jt-weight', SAMPLE.weight + ' g'));
+  if (val('show_weight') && SAMPLE.unit !== 'g' && SAMPLE.weight) left.appendChild(elText('jt-line jt-weight', formatTagWeight(SAMPLE.weight)));
 
   if (val('show_price')) {
     var p = document.createElement('div');
