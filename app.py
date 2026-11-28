@@ -4098,6 +4098,12 @@ def print_product_tag(product_id):
         tail_position = request.args.get("tail_pos")
         if tail_position in ("top", "middle", "bottom"):
             values["tail_pos"] = tail_position
+    print_valign = request.args.get("valign", "middle")
+    values["print_valign"] = print_valign if print_valign in ("top", "middle", "bottom") else "middle"
+    font_bold = request.args.get("font_bold", "bold")
+    values["font_bold"] = font_bold if font_bold in ("normal", "bold") else "bold"
+    weight_bold = request.args.get("weight_bold", "bold")
+    values["weight_bold"] = weight_bold if weight_bold in ("normal", "bold") else "bold"
     tpl = SimpleNamespace(**values)
     qr, bc = _tag_art(p, tpl)
 
@@ -4687,7 +4693,18 @@ def print_tags():
         abort(400, "Choose an available label size.")
     selected = entries if layout == "sheet" else designs[sizes[group - 1]]
     tags = []
+    print_valign = request.args.get("valign", "middle")
+    print_valign = print_valign if print_valign in ("top", "middle", "bottom") else "middle"
+    font_bold = request.args.get("font_bold", "bold")
+    font_bold = font_bold if font_bold in ("normal", "bold") else "bold"
+    weight_bold = request.args.get("weight_bold", "bold")
+    weight_bold = weight_bold if weight_bold in ("normal", "bold") else "bold"
     for p, design, geo, quantity in selected:
+        # These are print-request overrides only; they are never stored in the
+        # database or applied to the saved design.
+        design.print_valign = print_valign
+        design.font_bold = font_bold
+        design.weight_bold = weight_bold
         qr, bc = _tag_art(p, design)
         for _ in range(quantity):
             tags.append({"product": p, "tpl": design, "qr": qr, "bc": bc, "geo": geo})

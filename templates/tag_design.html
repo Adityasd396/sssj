@@ -33,8 +33,8 @@
   <div class="jt-line">
     {% if tpl.show_category and p.category %}<span>{{ p.category }}</span>{% endif %}
     {% if tpl.show_metal and p.item_type %}<span>{{ p.item_type|capitalize }}</span>{% endif %}
-    {% if tpl.show_weight and (p.unit or 'pcs') != 'g' and p.weight_per_unit %}<span>{{ '%g'|format(p.weight_per_unit) }} g</span>{% endif %}
   </div>
+  {% if tpl.show_weight and (p.unit or 'pcs') != 'g' and p.weight_per_unit %}<div class="jt-line jt-weight">{{ '%g'|format(p.weight_per_unit) }} g</div>{% endif %}
   {% if tpl.show_price %}
   <div class="jt-price">₹{{ (p.unit_price)|inr0 }}{% if (p.unit or 'pcs') == 'g' %}<span class="jt-per">/g</span>{% endif %}</div>
   {% endif %}
@@ -57,7 +57,7 @@
 {% set qr_sz = tpl.qr_mm if tpl.qr_mm and tpl.qr_mm > 0 else body_h * 0.55 %}
 {% set bc_h = tpl.bc_h_mm if tpl.bc_h_mm and tpl.bc_h_mm > 0 else body_h * 0.28 %}
 {% set tail_pos = {'top': 'flex-start', 'bottom': 'flex-end'}.get(tpl.tail_pos, 'center') %}
-<div class="jt jt-shape-{{ shape }} jt-{{ tpl.style or 'classic' }} jt-b-{{ tpl.border or 'solid' }}"
+<div class="jt jt-shape-{{ shape }} jt-{{ tpl.style or 'classic' }} jt-b-{{ tpl.border or 'solid' }} jt-valign-{{ tpl.print_valign|default('middle') }} jt-font-{{ tpl.font_bold|default('normal') }} jt-weight-{{ tpl.weight_bold|default('bold') }}"
      data-shape="{{ shape }}"
      style="--jn:{{ tpl.font_name or 10 }}pt; --jd:{{ tpl.font_detail or 8 }}pt;
             --tw:{{ body_w }}mm; --th:{{ body_h }}mm;
@@ -159,9 +159,9 @@
   .jt-body { display: flex; align-items: stretch; min-height: 0;
              width: 100%; height: 100%; }
   .jt-left { flex: 1 1 auto; min-width: 0; display: flex;
-             flex-direction: column; justify-content: center;
+             flex-direction: column; justify-content: var(--tag-v-align, center);
              gap: var(--gaph); }
-  .jt-qr { flex: 0 0 auto; display: flex; align-items: center; }
+  .jt-qr { flex: 0 0 auto; display: flex; align-self: var(--tag-v-align, center); align-items: center; }
   .jt-qr img { width: var(--qr); height: var(--qr); display: block; }
 
   .jt-name { font-weight: 700; font-size: var(--jn); line-height: 1.05;
@@ -175,6 +175,10 @@
   .jt-note { font-style: italic; }
   .jt-firm { font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
              white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .jt-valign-top { --tag-v-align: flex-start; }
+  .jt-valign-middle { --tag-v-align: center; }
+  .jt-valign-bottom { --tag-v-align: flex-end; }
+  .jt-weight-bold .jt-weight { font-weight: 700; }
   /* width comes from the design (a % of the text column) and height is an
      explicit mm, so the bars are never squashed by the tag's aspect ratio */
   .jt-bc { display: block; width: var(--bcw); height: var(--bch);
@@ -196,6 +200,12 @@
   .jt-minimal { text-align: center; }
   .jt-minimal .jt-body { justify-content: center; }
   .jt-minimal .jt-tail { display: none; }
+  .jt-font-normal .jt-firm, .jt-font-normal .jt-name, .jt-font-normal .jt-line,
+  .jt-font-normal .jt-price, .jt-font-normal .jt-code, .jt-font-normal .jt-sku,
+  .jt-font-normal .jt-note { font-weight: 400; }
+  .jt-font-bold .jt-firm, .jt-font-bold .jt-name, .jt-font-bold .jt-line,
+  .jt-font-bold .jt-price, .jt-font-bold .jt-code, .jt-font-bold .jt-sku,
+  .jt-font-bold .jt-note { font-weight: 700; }
 
   /* ---- print & sheet framing ---------------------------------------- */
   {% if thermal %}

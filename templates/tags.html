@@ -22,6 +22,12 @@ body{background:var(--bg)}
 .tag-stage{background:#f5f5f5;border:1px dashed #d9d2c4;border-radius:12px;
   padding:22px;display:flex;justify-content:center;overflow:auto;min-height:140px}
 .tag-stage .jt{box-shadow:0 2px 10px rgba(0,0,0,.18)}
+.tag-area-readout{margin-top:14px;padding:13px 15px;border:1px solid var(--line);border-radius:10px;background:var(--surface,#fff)}
+.tag-area-readout h4{margin:0 0 9px;font-size:15px}
+.tag-area-readout div{display:flex;justify-content:space-between;gap:10px;padding:5px 0;font-size:13px}
+.tag-area-readout div+div{border-top:1px solid var(--line)}
+.tag-area-readout b{text-align:right;font-variant-numeric:tabular-nums}
+.tag-area-readout p{font-size:11.5px;color:var(--muted);margin:8px 0 0}
 .toggle-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:0 14px}
 .toggle-grid .check{margin-bottom:8px}
 .pick-list{max-height:340px;overflow:auto;border:1px solid var(--line);
@@ -129,7 +135,6 @@ body{background:var(--bg)}
             </datalist>
           </div>
         </div>
-
         {# --- SHAPE --------------------------------------------------- #}
         <div class="card-head" style="margin-top:8px"><h3>Shape</h3>
           <span class="hint">the two label stocks we print on</span></div>
@@ -245,6 +250,16 @@ body{background:var(--bg)}
             </select>
           </div>
         </div>
+        <div class="field-grid three">
+          <div class="field"><label for="preview_valign">Content position on tag</label>
+            <select id="preview_valign"><option value="top">Top</option><option value="middle">Middle</option><option value="bottom">Bottom</option></select>
+            <div class="help">Positions text and QR within the tag.</div>
+          </div>
+          <div class="field"><label for="preview_font_bold">Font weight</label>
+            <select id="preview_font_bold"><option value="normal">Regular</option><option value="bold">Bold</option></select></div>
+          <div class="field"><label for="preview_weight_bold">Product weight text</label>
+            <select id="preview_weight_bold"><option value="normal">Regular</option><option value="bold">Bold</option></select></div>
+        </div>
         <div class="field-grid">
           <div class="field">
             <label for="font_name">Name size (pt)</label>
@@ -281,6 +296,30 @@ body{background:var(--bg)}
             <div class="help">Gap between lines.</div>
           </div>
         </div>
+
+        <div class="card-head" style="margin-top:8px"><h3>Printer margins &amp; alignment</h3><span class="hint">roll printer only</span></div>
+        <div class="field-grid three">
+          <div class="field"><label for="print_paper_w">Roll width (mm)</label><input type="number" id="print_paper_w" min="5" max="420" step="0.001" placeholder="Auto from tag"></div>
+          <div class="field"><label for="print_paper_h">Feed height (mm)</label><input type="number" id="print_paper_h" min="5" max="420" step="0.001" placeholder="Auto from tag"></div>
+          <div class="field"><label for="print_gap">Driver gap (mm)</label><input type="number" id="print_gap" min="0" max="20" step="0.001" placeholder="Set in printer driver"></div>
+        </div>
+        <div class="field-grid three">
+          {% for side in ('left','right','top','bottom') %}<div class="field"><label for="print_{{ side }}">{{ side|capitalize }} paper margin (mm)</label><input type="number" id="print_{{ side }}" min="0" max="5" step="0.001" value="0"></div>{% endfor %}
+          <div class="field"><label for="print_x">Shift across roll (mm)</label><input type="number" id="print_x" min="-5" max="5" step="0.001" value="0"></div>
+          <div class="field"><label for="print_y">Shift along feed (mm)</label><input type="number" id="print_y" min="-5" max="5" step="0.001" value="0"></div>
+          <div class="field"><label for="print_rotate">Artwork rotation</label><select id="print_rotate"><option value="0">0°</option><option value="90">90°</option><option value="180">180°</option><option value="270">270°</option></select></div>
+        </div>
+        <div class="field-grid three" id="studio-printer-profiles">
+          <div class="field"><label for="studio-profile-list">Saved printer presets</label><select id="studio-profile-list"><option value="">Choose a preset</option></select></div>
+          <div class="field"><label for="studio-profile-name">Preset name</label><input type="text" id="studio-profile-name" maxlength="48" placeholder="e.g. CD410 38 × 15 mm"></div>
+          <div class="field" style="align-self:end;display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn btn-ghost btn-sm" type="button" id="studio-profile-load">Load</button>
+            <button class="btn btn-ghost btn-sm" type="button" id="studio-profile-save">Save preset</button>
+            <button class="btn btn-ghost btn-sm" type="button" id="studio-profile-delete">Remove</button>
+          </div>
+        </div>
+        <p class="help" id="studio-profile-status" role="status">Presets are saved in this browser. Use one for each tag stock or printer.</p>
+        <p class="help">Paper margins are outside the tag. Tag padding above reduces the usable area inside the label. Printer settings are saved in this browser, not in the shop database.</p>
         <div class="field-grid three">
           <div class="field">
             <label for="qr_mm">QR size (mm)</label>
@@ -353,7 +392,7 @@ body{background:var(--bg)}
           <button type="submit" class="btn btn-success">Save design</button>
           {% if tpl.id %}
           <a class="btn btn-ghost" href="{{ url_for('tag_designer') }}">Cancel</a>
-          <a class="btn btn-primary"
+          <a class="btn btn-primary" id="print-all-design"
              href="{{ url_for('print_tags', tpl=tpl.id, copies=tpl.copies or 1, layout='roll' if tpl.is_thermal else 'sheet') }}">Print all with this</a>
           {% endif %}
         </div>
@@ -397,6 +436,13 @@ body{background:var(--bg)}
       {% endif %}
 
       <div class="tag-stage" id="tag-stage">{% if sample %}{{ tag_art(tpl, sample, settings, sample_qr, sample_bc) }}{% endif %}</div>
+      <section class="tag-area-readout" aria-label="Tag and printable area">
+        <h4>Tag area and print footprint</h4>
+        <div><span>Total tag area</span><b id="tag-total-area">—</b></div>
+        <div><span>Printable area inside tag</span><b id="tag-printable-area">—</b></div>
+        <div><span>Content footprint inside printable area</span><b id="tag-content-area">Measuring preview…</b></div>
+        <p>Footprint is the layout box around visible text, barcode and QR. It estimates used space; it is not the exact black-ink area.</p>
+      </section>
       <p class="mini" id="size-hint" style="margin-top:10px">
         {% if sample %}Printing {{ (tpl.width_mm or 50)|round(1) }}{% if tpl.shape == 'tail' %} + {{ (tpl.tail_mm or 16)|round(0) }} tail{% endif %} × {{ (tpl.height_mm or 25)|round(1) }} mm.{% endif %}
       </p>
@@ -643,9 +689,62 @@ function setSample(el){
 function syncRealTagLink(){
   var a = $('real-tag');
   if (!a) return;
-  a.href = (SAMPLE_ID && TPL_ID)
-    ? '/products/' + SAMPLE_ID + '/tag?tpl=' + TPL_ID
-    : '#';
+  if (!(SAMPLE_ID && TPL_ID)) { a.href = '#'; return; }
+  var params = printParams();
+  params.set('tpl', TPL_ID);
+  a.href = '/products/' + SAMPLE_ID + '/tag?' + params.toString();
+}
+
+var PRINT_IDS = ['valign','font_bold','weight_bold','paper_w','paper_h','gap','left','right','top','bottom','x','y','rotate'];
+function printParams(){
+  var params = new URLSearchParams();
+  params.set('valign', val('preview_valign') || 'middle');
+  params.set('font_bold', val('preview_font_bold') || 'bold');
+  params.set('weight_bold', val('preview_weight_bold') || 'bold');
+  var map = {paper_w:'print_paper_w', paper_h:'print_paper_h', gap:'print_gap', left:'print_left',
+    right:'print_right', top:'print_top', bottom:'print_bottom', x:'print_x', y:'print_y', rotate:'print_rotate'};
+  PRINT_IDS.slice(3).forEach(function(key){var input=$(map[key]);if(input && input.value!=='')params.set(key,input.value);});
+  return params;
+}
+function appendPrintSettings(form){
+  form.querySelectorAll('[data-studio-print-setting]').forEach(function(input){input.remove();});
+  printParams().forEach(function(value,key){var input=document.createElement('input');input.type='hidden';input.name=key;input.value=value;input.dataset.studioPrintSetting='';form.appendChild(input);});
+}
+function saveStudioPrintSettings(){
+  try {var data={};['preview_valign','preview_font_bold','preview_weight_bold','print_paper_w','print_paper_h','print_gap','print_left','print_right','print_top','print_bottom','print_x','print_y','print_rotate'].forEach(function(id){data[id]=val(id);});var encoded=JSON.stringify(data);localStorage.setItem('tag-studio-print-v1-'+(TPL_ID||'new'),encoded);localStorage.setItem('tag-studio-print-v1-last',encoded);}catch(_){/* local preview remains usable without storage */}
+}
+function restoreStudioPrintSettings(){
+  try {var data=JSON.parse(localStorage.getItem('tag-studio-print-v1-'+(TPL_ID||'new'))||localStorage.getItem('tag-studio-print-v1-last')||'null');if(!data||typeof data!=='object')return;Object.keys(data).forEach(function(id){if($(id)&&typeof data[id]==='string')$(id).value=data[id];});}catch(_){/* use the defaults */}
+}
+var STUDIO_PROFILE_KEY='tag-studio-printer-presets-v1';
+function studioProfiles(){try{var value=JSON.parse(localStorage.getItem(STUDIO_PROFILE_KEY)||'[]');return Array.isArray(value)?value.filter(function(x){return x&&typeof x.name==='string'&&x.fields&&typeof x.fields==='object';}).slice(0,30):[];}catch(_){return[];}}
+function renderStudioProfiles(selected){
+  var list=$('studio-profile-list');if(!list)return;
+  list.replaceChildren(new Option('Choose a preset',''));
+  studioProfiles().forEach(function(p){list.add(new Option(p.name,p.name));});
+  list.value=selected||'';
+  $('studio-profile-load').disabled=!list.value;$('studio-profile-delete').disabled=!list.value;
+}
+function initStudioProfiles(){
+  var status=$('studio-profile-status'), list=$('studio-profile-list');if(!list)return;
+  renderStudioProfiles();list.addEventListener('change',function(){renderStudioProfiles(list.value);});
+  $('studio-profile-save').addEventListener('click',function(){
+    var name=$('studio-profile-name').value.trim();if(!name){status.textContent='Enter a name for this printer preset.';$('studio-profile-name').focus();return;}
+    var current=studioProfiles().filter(function(p){return p.name!==name;});if(current.length>=30){status.textContent='Remove a preset before saving another.';return;}
+    try{var fields=Object.fromEntries(printParams());current.push({name:name,fields:fields});localStorage.setItem(STUDIO_PROFILE_KEY,JSON.stringify(current));renderStudioProfiles(name);status.textContent='Printer preset saved on this device.';}
+    catch(_){status.textContent='Browser storage is unavailable. The current settings can still be used for printing.';}
+  });
+  $('studio-profile-load').addEventListener('click',function(){
+    var p=studioProfiles().find(function(item){return item.name===list.value;});if(!p)return;
+    var map={valign:'preview_valign',font_bold:'preview_font_bold',weight_bold:'preview_weight_bold',paper_w:'print_paper_w',paper_h:'print_paper_h',gap:'print_gap',left:'print_left',right:'print_right',top:'print_top',bottom:'print_bottom',x:'print_x',y:'print_y',rotate:'print_rotate'};
+    Object.keys(map).forEach(function(key){if($(map[key]))$(map[key]).value=typeof p.fields[key]==='string'?p.fields[key]:((key==='paper_w'||key==='paper_h'||key==='gap')?'':'0');});
+    $('studio-profile-name').value=p.name;saveStudioPrintSettings();renderPreview();status.textContent='Preset loaded. Review the preview before printing.';
+  });
+  $('studio-profile-delete').addEventListener('click',function(){
+    var name=list.value;if(!name)return;
+    try{localStorage.setItem(STUDIO_PROFILE_KEY,JSON.stringify(studioProfiles().filter(function(p){return p.name!==name;})));renderStudioProfiles();status.textContent='Preset removed from this device.';}
+    catch(_){status.textContent='Could not remove this preset from browser storage.';}
+  });
 }
 
 function toggleAll(on){
@@ -665,7 +764,9 @@ $('print-form').addEventListener('submit', function(e){
   $('ids').value = ids.join(',');
   if (!ids.length && !$('pcat').value) {
     e.preventDefault(); alert('Select products or a category to print.');
+    return;
   }
+  appendPrintSettings(this);
 });
 
 /* ------- resolved geometry -------------------------------------
@@ -705,7 +806,10 @@ function resolved(){
     padh: num('pad_h_mm', 2),
     gap: num('gap_mm', 0.5),
     jn: num('font_name', 10),
-    jd: num('font_detail', 8)
+    jd: num('font_detail', 8),
+    valign: val('preview_valign') || 'middle',
+    fontBold: val('preview_font_bold') || 'bold',
+    weightBold: val('preview_weight_bold') || 'bold'
   };
 }
 
@@ -722,7 +826,8 @@ function renderPreview(){
 
   // build the container — mirror the macro exactly
   var tag = document.createElement('div');
-  tag.className = 'jt jt-shape-' + r.shape + ' jt-' + style + ' jt-b-' + border;
+  tag.className = 'jt jt-shape-' + r.shape + ' jt-' + style + ' jt-b-' + border +
+    ' jt-valign-' + r.valign + ' jt-font-' + r.fontBold + ' jt-weight-' + r.weightBold;
   tag.style.setProperty('--jn', r.jn + 'pt');
   tag.style.setProperty('--jd', r.jd + 'pt');
   tag.style.setProperty('--tw', r.w + 'mm');
@@ -826,6 +931,28 @@ function updateHints(){
   var anyOn = FIELDS.some(function(f){ return val(f); });
   show('empty-warn', !anyOn);
   show('nofit-warn', anyOn && contentHeightMm(r) > availableMm(r));
+  updateAreaReadout(r);
+  syncRealTagLink();
+  var allLink=$('print-all-design');
+  if(allLink){var allUrl=new URL(allLink.href);printParams().forEach(function(v,k){allUrl.searchParams.set(k,v);});allLink.href=allUrl.href;}
+}
+
+function updateAreaReadout(r){
+  var totalEl=$('tag-total-area'), usableEl=$('tag-printable-area'), contentEl=$('tag-content-area');
+  if(!totalEl || !usableEl || !contentEl) return;
+  var border=val('border'), edge=border==='none'?0:(border==='double'?0.85:0.4), compact=val('style')==='compact';
+  var px=Math.min(edge+r.padh*(compact?0.7:1),r.w/3), py=Math.min(edge+r.pad*(compact?0.6:1),r.h/3);
+  var printableW=Math.max(0,r.w-2*px), printableH=Math.max(0,r.h-2*py), totalArea=r.w*r.h+r.tail*r.tailh;
+  totalEl.textContent=r.total.toFixed(2)+' × '+r.h.toFixed(2)+' mm · '+totalArea.toFixed(2)+' mm²';
+  usableEl.textContent=printableW.toFixed(2)+' × '+printableH.toFixed(2)+' mm · '+(printableW*printableH).toFixed(2)+' mm²';
+  var tag=$('tag-stage').querySelector('.jt');
+  if(!tag){contentEl.textContent='No visible content';return;}
+  var root=tag.getBoundingClientRect(), nodes=tag.querySelectorAll('.jt-left > *, .jt-qr img, .jt-qr-mock, .jt-bc, .jt-bc-mock');
+  var minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+  nodes.forEach(function(node){if(!node.getClientRects().length||getComputedStyle(node).display==='none')return;var box=node.getBoundingClientRect();minX=Math.min(minX,box.left-root.left);minY=Math.min(minY,box.top-root.top);maxX=Math.max(maxX,box.right-root.left);maxY=Math.max(maxY,box.bottom-root.top);});
+  if(!isFinite(minX)){contentEl.textContent='No visible content';return;}
+  var boxW=Math.min(printableW,(maxX-minX)*(r.total/root.width)), boxH=Math.min(printableH,(maxY-minY)*(r.h/root.height));
+  contentEl.textContent=boxW.toFixed(2)+' × '+boxH.toFixed(2)+' mm · '+(boxW*boxH).toFixed(2)+' mm²';
 }
 
 /* Rough stack height of everything that will print, in mm. Used only to warn
@@ -838,10 +965,9 @@ function contentHeightMm(r){
   function add(x){ h += x; n++; }
   if (val('show_firm') && SAMPLE.firm) add(r.jd * MM_PER_PT * 1.2);
   if (val('show_name')) add(r.jn * MM_PER_PT * 1.05);
-  var detail = (val('show_category') && SAMPLE.category)
-            || val('show_metal')
-            || (val('show_weight') && SAMPLE.unit !== 'g' && SAMPLE.weight);
+  var detail = (val('show_category') && SAMPLE.category) || val('show_metal');
   if (detail) add(line);
+  if (val('show_weight') && SAMPLE.unit !== 'g' && SAMPLE.weight) add(line);
   if (val('show_price')) add(line);
   if (val('show_code') && SAMPLE.barcode) add(line);
   if (val('show_sku') && SAMPLE.sku) add(line);
@@ -863,11 +989,11 @@ function buildLeft(){
   var line = document.createElement('div');
   line.className = 'jt-line';
   var parts = [];
-  if (val('show_category') && SAMPLE.category) parts.push(SAMPLE.category);
-  if (val('show_metal')) parts.push((SAMPLE.item_type||'gold').replace(/^./,function(c){return c.toUpperCase();}));
-  if (val('show_weight') && SAMPLE.unit !== 'g' && SAMPLE.weight) parts.push(SAMPLE.weight + ' g');
-  line.innerHTML = parts.map(function(p){return '<span>'+esc(p)+'</span>';}).join('');
+  if (val('show_category') && SAMPLE.category) parts.push({text:SAMPLE.category,cls:''});
+  if (val('show_metal')) parts.push({text:(SAMPLE.item_type||'gold').replace(/^./,function(c){return c.toUpperCase();}),cls:''});
+  parts.forEach(function(item){var span=document.createElement('span');span.className=item.cls;span.textContent=item.text;line.appendChild(span);});
   if (parts.length) left.appendChild(line);
+  if (val('show_weight') && SAMPLE.unit !== 'g' && SAMPLE.weight) left.appendChild(elText('jt-line jt-weight', SAMPLE.weight + ' g'));
 
   if (val('show_price')) {
     var p = document.createElement('div');
@@ -908,12 +1034,13 @@ function elText(cls, text){
 function esc(s){return String(s).replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];});}
 
 /* Wire up: every changeable input drives a re-render. */
-['height_mm','tail_h_mm','tail_hole_mm','tail_pos',
+['height_mm','tail_h_mm','tail_hole_mm','tail_pos','preview_valign','preview_font_bold','preview_weight_bold',
  'pad_mm','pad_h_mm','gap_mm','qr_mm','bc_h_mm','bc_w_pct',
- 'font_name','font_detail','style','border','note','is_thermal'].forEach(function(id){
+ 'font_name','font_detail','style','border','note','is_thermal',
+ 'print_paper_w','print_paper_h','print_gap','print_left','print_right','print_top','print_bottom','print_x','print_y','print_rotate'].forEach(function(id){
   var e=$(id); if(!e) return;
-  e.addEventListener('input', renderPreview);
-  e.addEventListener('change', renderPreview);
+  e.addEventListener('input', function(){saveStudioPrintSettings();renderPreview();});
+  e.addEventListener('change', function(){saveStudioPrintSettings();renderPreview();});
 });
 /* these three are linked — editing one moves the others */
 ['width_mm','total_mm','tail_mm'].forEach(function(id){
@@ -935,6 +1062,13 @@ toggleScope();
 document.querySelectorAll('.tail-only').forEach(function(el){
   el.classList.toggle('show', ($('shape').value || 'rectangle') === 'tail');
 });
+restoreStudioPrintSettings();
+initStudioProfiles();
+var initialTag=$('tag-stage').querySelector('.jt');
+if(initialTag){
+  initialTag.classList.remove('jt-valign-top','jt-valign-middle','jt-valign-bottom','jt-font-normal','jt-font-bold','jt-weight-normal','jt-weight-bold');
+  initialTag.classList.add('jt-valign-'+(val('preview_valign')||'middle'),'jt-font-'+(val('preview_font_bold')||'bold'),'jt-weight-'+(val('preview_weight_bold')||'bold'));
+}
 syncRealTagLink();
 updateHints();
 </script>

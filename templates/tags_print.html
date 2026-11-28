@@ -35,7 +35,7 @@
 </head>
 <body>
     {% from "tag_design.html" import tag_art %}
-    {% from "tag_roll_controls.html" import alignment, orientation, roll_setup %}
+    {% from "tag_roll_controls.html" import alignment, orientation, roll_setup, typography %}
     <div class="no-print">
         <h3>{{ tags|length }} tag{{ '' if tags|length == 1 else 's' }} ready
             · {{ 'thermal roll (one label per page)' if layout != 'sheet' else 'A4 sheet' }}</h3>
@@ -57,6 +57,7 @@
             </label>
             {% endif %}
             {{ orientation(roll.rotation) }}
+            {{ typography(first.tpl) }}
             {{ alignment(roll) }}
             <button type="submit" class="ghost">Update preview</button>
         </form>

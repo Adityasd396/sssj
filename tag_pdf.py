@@ -36,12 +36,11 @@ def _tag_rows(design, product, firm, format_price):
     details = [
         product.category if design.show_category else "",
         (product.item_type or "").capitalize() if design.show_metal else "",
-        f"{product.weight_per_unit:g} g"
-        if design.show_weight and not per_gram and product.weight_per_unit
-        else "",
     ]
     if any(details):
         rows.append(("detail", " · ".join(filter(None, details))))
+    if design.show_weight and not per_gram and product.weight_per_unit:
+        rows.append(("weight", f"{product.weight_per_unit:g} g"))
     if design.show_price:
         unit = "/g" if per_gram else ""
         rows.append(("price", f"₹{format_price(product.unit_price)}{unit}"))
@@ -107,9 +106,14 @@ def _draw_tag(canvas, tag, firm, format_price, font):
     text_w = usable_w - (
         qr_size + min(gap, usable_w * 0.1) if qr and (rows or barcode) else qr_size if qr else 0
     )
+    valign = getattr(design, "print_valign", "middle")
     if qr:
         qr_x = width - pad_x - qr_size if rows or barcode else (width - qr_size) / 2
-        canvas.drawImage(qr, qr_x, (height - qr_size) / 2, qr_size, qr_size)
+        qr_y = {
+            "top": height - pad_y - qr_size,
+            "bottom": pad_y,
+        }.get(valign, (height - qr_size) / 2)
+        canvas.drawImage(qr, qr_x, qr_y, qr_size, qr_size)
 
     name_size, detail_size = design.font_name or 10, design.font_detail or 8
     sizes = [
@@ -126,8 +130,11 @@ def _draw_tag(canvas, tag, firm, format_price, font):
     text_height = sum(sizes) * 1.18
     natural_h = text_height + intervals * gap + barcode_h
     fit = min(1, usable_h / natural_h) if natural_h else 1
-    y = (height + natural_h * fit) / 2
-    for (kind, text), size in zip(rows, sizes, strict=True):
+    y = {
+        "top": height - pad_y,
+        "bottom": pad_y + natural_h * fit,
+    }.get(valign, (height + natural_h * fit) / 2)
+    for index, ((kind, text), size) in enumerate(zip(rows, sizes, strict=True)):
         if design.style == "modern" and kind == "name":
             text = text.upper()
         target = size * fit
@@ -135,12 +142,18 @@ def _draw_tag(canvas, tag, firm, format_price, font):
         canvas.setFont(font, min(target, target * text_w / text_width) if text_width else target)
         # Manrope's embedded default is light. A small stroke keeps text clear
         # on 203 dpi thermal stock without changing its layout or the codes.
-        canvas.setLineWidth(min(target * 0.055, 0.26 if kind == "name" else 0.16))
+        bold = getattr(design, "font_bold", "normal") == "bold"
+        weight_bold = getattr(design, "weight_bold", "bold") == "bold"
+        should_bold = bold or (kind == "weight" and weight_bold)
+        canvas.setLineWidth(
+            min(target * (0.055 if should_bold else 0.018), 0.26 if should_bold else 0.08)
+        )
         if design.style == "minimal":
-            canvas.drawCentredString(pad_x + text_w / 2, y - target, text, mode=2)
+            canvas.drawCentredString(pad_x + text_w / 2, y - target, text, mode=2 if should_bold else 0)
         else:
-            canvas.drawString(pad_x, y - target, text, mode=2)
-        y -= (size * 1.18 + gap) * fit
+            canvas.drawString(pad_x, y - target, text, mode=2 if should_bold else 0)
+        has_next = index < len(rows) - 1 or barcode is not None
+        y -= (size * 1.18 + (gap if has_next else 0)) * fit
     if barcode and barcode_w > 0:
         actual_w, actual_h = barcode_w * fit, barcode_h * fit
         canvas.drawImage(barcode, pad_x + (text_w - actual_w) / 2, y - actual_h, actual_w, actual_h)

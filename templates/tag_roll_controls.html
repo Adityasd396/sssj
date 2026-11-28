@@ -8,6 +8,30 @@
 </label>
 {% endmacro %}
 
+{% macro typography(design) %}
+<div class="printer-alignment-fields tag-type-controls">
+    <label>Content position on tag
+        <select name="valign">
+            {% for value in ('top', 'middle', 'bottom') %}
+            <option value="{{ value }}" {% if (design.print_valign|default('middle')) == value %}selected{% endif %}>{{ value|capitalize }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <label>Font weight
+        <select name="font_bold">
+            <option value="normal" {% if (design.font_bold|default('bold')) == 'normal' %}selected{% endif %}>Regular</option>
+            <option value="bold" {% if (design.font_bold|default('bold')) == 'bold' %}selected{% endif %}>Bold</option>
+        </select>
+    </label>
+    <label>Product weight text
+        <select name="weight_bold">
+            <option value="normal" {% if (design.weight_bold|default('bold')) == 'normal' %}selected{% endif %}>Regular</option>
+            <option value="bold" {% if (design.weight_bold|default('bold')) == 'bold' %}selected{% endif %}>Bold</option>
+        </select>
+    </label>
+</div>
+{% endmacro %}
+
 {% macro roll_setup(roll, geo, design) %}
 <div class="setup">
     <strong>CD410 paper size:</strong>
@@ -31,7 +55,7 @@
         <label>Paper width across roll (mm)<input name="paper_w" type="number" min="5" max="420" step="0.001" value="{{ roll.query.get('paper_w', '') }}" placeholder="{{ roll.across }}"></label>
         <label>Paper height along feed (mm)<input name="paper_h" type="number" min="5" max="420" step="0.001" value="{{ roll.query.get('paper_h', '') }}" placeholder="{{ roll.feed }}"></label>
         {% for side in ('left', 'right', 'top', 'bottom') %}
-        <label>{{ side|capitalize }} padding (mm)
+        <label>{{ side|capitalize }} print margin (mm)
             <input name="{{ side }}" type="number" min="0" max="5" step="0.001" value="{{ roll[side] }}">
         </label>
         {% endfor %}

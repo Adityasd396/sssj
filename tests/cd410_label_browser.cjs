@@ -34,6 +34,25 @@ async function run(engine) {
         await page.locator('#username').fill('ui-owner');
         await page.locator('#password').fill('preview-password');
         await Promise.all([page.waitForURL(base + '/'), page.locator('.login-card [type=submit]').click()]);
+        await page.goto(base + '/tags?tpl=1');
+        assert.match(await page.locator('#tag-total-area').textContent(), /mm²/);
+        assert.match(await page.locator('#tag-printable-area').textContent(), /mm²/);
+        assert.match(await page.locator('#tag-content-area').textContent(), /mm²/);
+        await page.locator('#preview_valign').selectOption('bottom');
+        await page.locator('#preview_font_bold').selectOption('normal');
+        await page.locator('#preview_weight_bold').selectOption('bold');
+        await page.locator('#studio-profile-name').fill('CD410 38x15 bottom');
+        await page.locator('#studio-profile-save').click();
+        await page.locator('#preview_valign').selectOption('top');
+        await page.locator('#studio-profile-list').selectOption('CD410 38x15 bottom');
+        await page.locator('#studio-profile-load').click();
+        assert.equal(await page.locator('#preview_valign').inputValue(), 'bottom');
+        assert(await page.locator('#tag-stage .jt').evaluate(tag => tag.classList.contains('jt-valign-bottom')));
+        const realTagUrl = new URL(await page.locator('#real-tag').getAttribute('href'), base);
+        assert.equal(realTagUrl.searchParams.get('valign'), 'bottom');
+        assert.equal(realTagUrl.searchParams.get('font_bold'), 'normal');
+        assert.equal(realTagUrl.searchParams.get('weight_bold'), 'bold');
+        assert.equal(new URL(await page.locator('#print-all-design').getAttribute('href'), base).searchParams.get('valign'), 'bottom');
         await page.goto(base + '/products/1/tag?w=50&h=20');
         await page.locator('select[name=rotate]').selectOption('90');
         assert(await page.locator('[data-print-label]').isDisabled());
@@ -180,6 +199,11 @@ async function run(engine) {
             const tailFile = output + '/56x15-product-tail.pdf';
             fs.writeFileSync(tailFile, await tail.body());
             checkPdfSize(tailFile, 1, 56, 15);
+            const adjusted = await page.request.get(base + '/products/1/tag?preset=rect-38x15&format=pdf&valign=bottom&font_bold=normal&weight_bold=bold&paper_w=38&paper_h=15');
+            assert.equal(adjusted.status(), 200);
+            const adjustedFile = output + '/38x15-tag-studio-adjusted.pdf';
+            fs.writeFileSync(adjustedFile, await adjusted.body());
+            checkPdfSize(adjustedFile, 1, 38, 15);
         }
         console.log(engine + ' passed label settings, fixed stock sizes and the exact-size product tag PDF');
     } finally {

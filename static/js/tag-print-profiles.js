@@ -4,7 +4,9 @@
   if (!controls) return;
 
   const key = 'billing-tag-print-profiles-v1';
-  const fields = ['paper_w', 'paper_h', 'rotate', 'left', 'right', 'top', 'bottom', 'x', 'y', 'gap'];
+  const fields = ['paper_w', 'paper_h', 'rotate', 'left', 'right', 'top', 'bottom', 'x', 'y', 'gap',
+    'valign', 'font_bold', 'weight_bold', 'pad', 'pad_side', 'name_size', 'detail_size',
+    'line_gap', 'qr_size', 'barcode_height', 'tail_height', 'tail', 'tail_pos', 'tail_hole', 'total'];
   const list = controls.querySelector('[data-profile-list]');
   const nameInput = controls.querySelector('[data-profile-name]');
   const status = controls.querySelector('[data-profile-status]');
@@ -56,7 +58,7 @@
       status.textContent = 'Remove a profile before saving another.';
       return;
     }
-    const inputs = fields.map(field => form.elements.namedItem(field));
+    const inputs = fields.map(field => form.elements.namedItem(field)).filter(Boolean);
     if (inputs.some(input => !input.reportValidity())) return;
     const settings = Object.fromEntries(inputs.map(input => [input.name, input.value]));
     write([...next, { name, fields: settings }], name, 'Printer settings saved on this device.');
@@ -68,7 +70,8 @@
     if (!profile) return;
     for (const field of fields) {
       const value = profile.fields[field];
-      if (typeof value === 'string') form.elements.namedItem(field).value = value;
+      const input = form.elements.namedItem(field);
+      if (typeof value === 'string' && input) input.value = value;
     }
     nameInput.value = profile.name;
     form.dispatchEvent(new Event('input', { bubbles: true }));

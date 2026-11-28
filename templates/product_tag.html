@@ -39,7 +39,7 @@
 </head>
 <body>
     {% from "tag_design.html" import tag_art %}
-    {% from "tag_roll_controls.html" import alignment, orientation, roll_setup %}
+    {% from "tag_roll_controls.html" import alignment, orientation, roll_setup, typography %}
     <div class="no-print">
         <h3>Tag preview — {{ product.name }}</h3>
 
@@ -76,8 +76,9 @@
             <input type="number" id="h" name="h" step="0.001" min="5" max="300" value="{{ geo.height|round(3) }}" required>
             {{ orientation(roll.rotation) }}
             <details class="printer-alignment" {% if geo.shape == 'tail' %}open{% endif %}>
-                <summary>Tail dimensions, text and design padding</summary>
+                <summary>Tag layout, padding and font weight</summary>
                 <div class="printer-alignment-fields">
+                    {{ typography(tpl) }}
                     <label>Full length (mm)
                         <input type="number" id="total" name="total" step="0.001" min="0" max="400" value="{{ tpl.total_mm or 0 }}">
                     </label>
@@ -91,8 +92,8 @@
                         </select>
                     </label>
                     <label>Tail hole (mm)<input type="number" name="tail_hole" step="0.001" min="0" max="10" value="{{ tpl.tail_hole_mm or 0 }}"></label>
-                    <label>Top and bottom design padding (mm)<input name="pad" type="number" step="0.001" min="0" max="20" value="{{ tpl.pad_mm if tpl.pad_mm is not none else 1.4 }}"></label>
-                    <label>Side design padding (mm)<input name="pad_side" type="number" step="0.001" min="0" max="20" value="{{ tpl.pad_h_mm if tpl.pad_h_mm is not none else 2 }}"></label>
+                    <label>Top and bottom tag padding (mm)<input name="pad" type="number" step="0.001" min="0" max="20" value="{{ tpl.pad_mm if tpl.pad_mm is not none else 1.4 }}"></label>
+                    <label>Side tag padding (mm)<input name="pad_side" type="number" step="0.001" min="0" max="20" value="{{ tpl.pad_h_mm if tpl.pad_h_mm is not none else 2 }}"></label>
                     <label>Name size (pt)<input name="name_size" type="number" step="0.001" min="4" max="40" value="{{ tpl.font_name or 10 }}"></label>
                     <label>Detail size (pt)<input name="detail_size" type="number" step="0.001" min="3" max="30" value="{{ tpl.font_detail or 8 }}"></label>
                     <label>Space between lines (mm)<input name="line_gap" type="number" step="0.001" min="0" max="10" value="{{ tpl.gap_mm if tpl.gap_mm is not none else 0.5 }}"></label>
